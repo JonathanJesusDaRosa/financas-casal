@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { api } from '../api.js';
+import { useValoresOcultos } from '../hooks/useValoresOcultos.js';
 import Cabecalho from '../components/Cabecalho.jsx';
 import ItemLancamento from '../components/ItemLancamento.jsx';
 import SeletorMes from '../components/SeletorMes.jsx';
@@ -19,6 +20,7 @@ function agruparPorDia(lancamentos) {
 }
 
 export default function Lancamentos() {
+  useValoresOcultos(); // redesenha a tela quando tocam no "olho" do topo
   // O mês fica na URL (?mes=2026-11): ao voltar do formulário, continua no mesmo mês.
   const [parametros, setParametros] = useSearchParams();
   const mes = parametros.get('mes') || mesAtual();

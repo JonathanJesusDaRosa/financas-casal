@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { PiggyBank, TrendingUp } from 'lucide-react';
 import { api } from '../api.js';
+import { useValoresOcultos } from '../hooks/useValoresOcultos.js';
 import Cabecalho from '../components/Cabecalho.jsx';
 import ItemLancamento from '../components/ItemLancamento.jsx';
 import SeletorMes from '../components/SeletorMes.jsx';
@@ -13,6 +14,7 @@ import { mesAtual, nomeDoMes } from '../utils/datas.js';
 const CATEGORIAS_NO_RESUMO = 3; // as 3 maiores; "Ver todos" mostra o resto
 
 export default function Inicio() {
+  useValoresOcultos(); // redesenha a tela quando tocam no "olho" do topo
   const [parametros, setParametros] = useSearchParams();
   const mes = parametros.get('mes') || mesAtual();
   const [resumo, setResumo] = useState(null);

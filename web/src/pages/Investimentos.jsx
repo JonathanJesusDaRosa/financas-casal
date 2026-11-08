@@ -4,11 +4,13 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Pencil, Trash2, TrendingUp } from 'lucide-react';
 import { api } from '../api.js';
+import { useValoresOcultos } from '../hooks/useValoresOcultos.js';
 import Cabecalho from '../components/Cabecalho.jsx';
 import Icone from '../components/Icone.jsx';
 import { formatarReais } from '../utils/dinheiro.js';
 
 export default function Investimentos() {
+  useValoresOcultos(); // redesenha a tela quando tocam no "olho" do topo
   const [dados, setDados] = useState(null); // { totalCentavos, investimentos, caixinhasSemInvestimento }
   const [erro, setErro] = useState('');
   const [novoNome, setNovoNome] = useState('');

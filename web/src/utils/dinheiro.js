@@ -2,8 +2,40 @@
 
 const formatoReais = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
 
-// 10050 -> "R$ 100,50"
+// ---------- Ocultar valores (o "olho" do topo) ----------
+// A escolha fica guardada no aparelho (localStorage). Cada um decide no seu celular.
+const CHAVE_OCULTAR = 'casa-em-conta:ocultar-valores';
+let ocultar = false;
+try {
+  ocultar = localStorage.getItem(CHAVE_OCULTAR) === 'sim';
+} catch {
+  // navegador sem acesso ao localStorage (ex.: modo privado): começa mostrando
+}
+const avisar = new Set(); // telas que querem saber quando a escolha muda
+
+export function valoresOcultos() {
+  return ocultar;
+}
+
+export function alternarValoresOcultos() {
+  ocultar = !ocultar;
+  try {
+    localStorage.setItem(CHAVE_OCULTAR, ocultar ? 'sim' : 'nao');
+  } catch {
+    // sem localStorage: vale só até fechar o app
+  }
+  avisar.forEach((funcao) => funcao());
+}
+
+// Usado pelo hook useValoresOcultos (hooks/useValoresOcultos.js) para redesenhar as telas.
+export function aoMudarOcultar(funcao) {
+  avisar.add(funcao);
+  return () => avisar.delete(funcao);
+}
+
+// 10050 -> "R$ 100,50" (ou "R$ ••••" com os valores ocultos)
 export function formatarReais(centavos) {
+  if (ocultar) return 'R$ ••••';
   return formatoReais.format(centavos / 100);
 }
 

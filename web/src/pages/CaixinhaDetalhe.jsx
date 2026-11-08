@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { ChevronLeft, PiggyBank, RefreshCw, TrendingUp, Undo2, X } from 'lucide-react';
 import { api } from '../api.js';
+import { useValoresOcultos } from '../hooks/useValoresOcultos.js';
 import { useAuth } from '../auth.jsx';
 import Icone from '../components/Icone.jsx';
 import Progresso from '../components/Progresso.jsx';
@@ -24,6 +25,7 @@ const MOVIMENTOS = {
 };
 
 export default function CaixinhaDetalhe() {
+  useValoresOcultos(); // redesenha a tela quando tocam no "olho" do topo
   const { id } = useParams();
   const navegar = useNavigate();
   const [caixinha, setCaixinha] = useState(null);

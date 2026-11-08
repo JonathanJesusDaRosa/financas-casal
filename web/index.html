@@ -2,8 +2,10 @@
 <html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
-    <!-- viewport-fit=cover: usa a tela inteira do iPhone (inclusive perto do "notch") -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <!-- viewport-fit=cover: usa a tela inteira do iPhone (inclusive perto do "notch").
+         maximum-scale=1 e user-scalable=no: sem zoom de pinça (vale no Android; no iPhone
+         quem bloqueia é o código em main.jsx) -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
     <title>Casa em Conta</title>
     <meta name="description" content="As contas da casa, em dia e sem briga." />
 

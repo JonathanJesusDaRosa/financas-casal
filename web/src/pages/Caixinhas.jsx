@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Plus } from 'lucide-react';
 import { api } from '../api.js';
+import { useValoresOcultos } from '../hooks/useValoresOcultos.js';
 import Cabecalho from '../components/Cabecalho.jsx';
 import Icone from '../components/Icone.jsx';
 import Progresso from '../components/Progresso.jsx';
@@ -10,6 +11,7 @@ import { formatarReais } from '../utils/dinheiro.js';
 import { porcentagem } from '../utils/caixinhas.js';
 
 export default function Caixinhas() {
+  useValoresOcultos(); // redesenha a tela quando tocam no "olho" do topo
   const [caixinhas, setCaixinhas] = useState(null);
   const [erro, setErro] = useState('');
   const [verArquivadas, setVerArquivadas] = useState(false);

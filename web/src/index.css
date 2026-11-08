@@ -919,3 +919,8 @@ body:has(.area-logada) {
   overflow: hidden;
   overscroll-behavior: none;
 }
+
+/* Sem zoom de pinça e sem zoom de toque duplo: o dedo só rola a tela */
+html {
+  touch-action: pan-x pan-y;
+}

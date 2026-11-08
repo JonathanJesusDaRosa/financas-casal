@@ -18,6 +18,10 @@ registerSW({
   },
 });
 
+// Sem zoom de pinça no iPhone: o Safari ignora o "user-scalable=no" do index.html,
+// mas avisa quando começa um gesto de pinça ("gesturestart"), e aí cancelamos.
+document.addEventListener('gesturestart', (evento) => evento.preventDefault());
+
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     {/* BrowserRouter: permite ter várias "páginas" (/login, /cadastro...) */}
