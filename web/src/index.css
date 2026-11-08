@@ -50,9 +50,24 @@ a {
   padding-top: max(var(--space-4), env(safe-area-inset-top));
 }
 
-/* Área logada: espaço embaixo para a barra de navegação não cobrir o conteúdo */
+/* Área logada: dois blocos que ocupam exatamente a altura da tela.
+   100dvh = altura visível de verdade no celular (desconta as barras do navegador);
+   100vh fica como reserva para navegadores antigos. */
 .area-logada {
-  padding-bottom: calc(96px + env(safe-area-inset-bottom));
+  height: 100vh;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* O conteúdo rola sozinho; a barra fica parada embaixo */
+.conteudo-rolavel {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: var(--space-8); /* espaço para o botão "+" que sobe um pouco */
 }
 
 .cabecalho {
@@ -815,10 +830,8 @@ a.card-meta,
 
 /* ---------- Navegação inferior ---------- */
 .navegacao {
-  position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  position: relative; /* não é mais "fixed": é o último bloco da tela */
+  flex-shrink: 0;
   z-index: 10;
   background: var(--surface-raised);
   border-top: 1px solid var(--line);
@@ -895,4 +908,14 @@ a.card-meta,
   .card-saldo > .label {
     color: var(--ink);
   }
+}
+
+/* Enquanto a área logada está na tela, a página em si não rola nem "estica"
+   (o efeito elástico do iPhone): só a área de conteúdo rola.
+   Isso evita o Safari deslocar a tela e esconder a barra de navegação. */
+html:has(.area-logada),
+body:has(.area-logada) {
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
 }

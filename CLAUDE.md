@@ -115,7 +115,7 @@ Cada fase só começa quando a anterior está em uso no dia a dia.
 - O guia visual é o **DESIGN.md** (marca, tokens, tipografia, layout). Seguir sempre. As telas de referência (imagens) ficam na pasta `Ideia Design/` e o usuário gosta delas: seguir esse layout o mais perto possível.
 - Cores só por tokens (`web/src/styles/tokens.css`): nunca cor fixa nas telas. Ícones: `lucide-react` via `<Icone nome="..." />` (lista em `web/src/utils/icones.js`; o banco guarda só o nome).
 - Interface sem a palavra "casal" (usar "casa", "membros", "quem pagou") e sem emoji. Por dentro (banco, rotas `/casal`, `casalId`) o nome continua.
-- Navegação: Início, Extrato, (+), Metas, Investir, Casa. O "+" central abre o lançamento; na Fase 3 vira o microfone. Rótulos curtos para caber em 360px.
+- Navegação: Início, Extrato, (+), Metas, Investir, Casa. NÃO usar `position: fixed` na barra (sumiu no iPhone instalado): o Layout é uma coluna de 100dvh com `.conteudo-rolavel` (rola) + `.navegacao` (fixa no fim). O "+" central abre o lançamento; na Fase 3 vira o microfone. Rótulos curtos para caber em 360px.
 - "Caixinhas" se chamam **Metas** na interface (rotas do front `/metas`; API continua `/caixinhas`).
 - Para conferir telas: prints com o Edge headless dentro de um iframe de 360/390px (o Edge sem janela tem largura mínima maior que um celular).
 
