@@ -37,8 +37,13 @@ export function AuthProvider({ children }) {
     setUsuario(null);
   }
 
+  // Atualiza só alguns campos do usuário (ex.: depois de entrar num casal).
+  function atualizarUsuario(campos) {
+    setUsuario((atual) => ({ ...atual, ...campos }));
+  }
+
   return (
-    <AuthContext.Provider value={{ usuario, carregando, entrar, cadastrar, sair }}>
+    <AuthContext.Provider value={{ usuario, carregando, entrar, cadastrar, sair, atualizarUsuario }}>
       {children}
     </AuthContext.Provider>
   );

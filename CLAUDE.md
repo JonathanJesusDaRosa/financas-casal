@@ -55,6 +55,14 @@ financas-casal/
 - Rotas protegidas usam o middleware `api/src/middlewares/autenticar.js` (coloca `req.usuarioId`).
 - Validação de entrada com `zod`; erros da API sempre no formato `{ "erro": "mensagem em português" }`.
 
+### Espaço do casal
+
+- Rotas em `api/src/routes/casal.js`: criar (`POST /casal`), entrar com código (`POST /casal/entrar`), ver (`GET /casal`), novo convite (`POST /casal/convite`).
+- `Usuario.papel`: `TITULAR` (máx. 2 por casal) ou `DEPENDENTE` (previsto para um filho no futuro, ainda sem telas/permissões).
+- Convite: código `XXX-XXX` (crypto, sem 0/O/1/I/L), vale 7 dias, é apagado quando o casal fica completo.
+- Rotas com dados do casal usam `autenticar` + `exigirCasal` e SEMPRE filtram por `req.casalId`.
+- `prisma migrate dev` não funciona quando o Prisma quer confirmar um aviso (terminal não interativo). Alternativa: gerar o SQL com `prisma migrate diff --from-config-datasource --to-schema prisma/schema.prisma --script` numa pasta nova em `prisma/migrations/` e aplicar com `prisma migrate deploy`.
+
 ## Funcionalidades
 
 **Primeira versão (MVP):**

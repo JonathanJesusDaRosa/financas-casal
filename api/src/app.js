@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import { prisma } from './lib/prisma.js';
 import authRoutes from './routes/auth.js';
+import casalRoutes from './routes/casal.js';
 
 const app = express();
 
@@ -29,6 +30,9 @@ app.get('/health/db', async (req, res) => {
 
 // Cadastro, login e "quem sou eu"
 app.use('/auth', authRoutes);
+
+// Espaço do casal (criar, entrar com código, ver, novo convite)
+app.use('/casal', casalRoutes);
 
 // Rota que não existe
 app.use((req, res) => {

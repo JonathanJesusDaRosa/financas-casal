@@ -15,15 +15,24 @@ enum TipoLancamento {
   DESPESA
 }
 
+// Papel de cada pessoa no espaço do casal.
+// TITULAR = o casal (máximo 2). DEPENDENTE = previsto para um filho no futuro.
+enum Papel {
+  TITULAR
+  DEPENDENTE
+}
+
 // O "espaço do casal": tudo pertence a um casal.
 model Casal {
-  id          Int          @id @default(autoincrement())
-  nome        String
-  criadoEm    DateTime     @default(now())
-  usuarios    Usuario[]
-  categorias  Categoria[]
-  lancamentos Lancamento[]
-  metas       Meta[]
+  id              Int          @id @default(autoincrement())
+  nome            String
+  codigoConvite   String?      @unique // ex.: "K7M-4QX"; vira null quando o casal fica completo
+  conviteExpiraEm DateTime?
+  criadoEm        DateTime     @default(now())
+  usuarios        Usuario[]
+  categorias      Categoria[]
+  lancamentos     Lancamento[]
+  metas           Meta[]
 }
 
 model Usuario {
@@ -32,6 +41,7 @@ model Usuario {
   email               String       @unique
   senhaHash           String
   rendaMensalCentavos Int          @default(0) // usada na divisão proporcional
+  papel               Papel        @default(TITULAR)
   criadoEm            DateTime     @default(now())
   casalId             Int? // opcional: a pessoa pode se cadastrar antes de entrar num casal
   casal               Casal?       @relation(fields: [casalId], references: [id])

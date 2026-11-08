@@ -48,7 +48,7 @@ function validar(schema, req, res) {
 // ---------- Ajudantes ----------
 
 // Campos do usuário que podem sair da API (o hash da senha NUNCA sai).
-const camposPublicos = { id: true, nome: true, email: true, casalId: true };
+const camposPublicos = { id: true, nome: true, email: true, casalId: true, papel: true };
 
 function gerarToken(usuarioId) {
   // "sub" (subject) = de quem é o token. Vale por 30 dias.
@@ -95,8 +95,8 @@ router.post('/login', async (req, res) => {
     return res.status(401).json({ erro: 'E-mail ou senha inválidos.' });
   }
 
-  const { id, nome, email: emailSalvo, casalId } = usuario;
-  res.json({ token: gerarToken(id), usuario: { id, nome, email: emailSalvo, casalId } });
+  const { id, nome, email: emailSalvo, casalId, papel } = usuario;
+  res.json({ token: gerarToken(id), usuario: { id, nome, email: emailSalvo, casalId, papel } });
 });
 
 // GET /auth/eu  (precisa de token) -> dados de quem está logado
