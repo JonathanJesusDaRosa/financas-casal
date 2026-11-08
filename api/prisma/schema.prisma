@@ -43,6 +43,7 @@ model Casal {
   lancamentos     Lancamento[]
   caixinhas       Caixinha[]
   investimentos   Investimento[]
+  contasFixas     ContaFixa[]
 }
 
 model Usuario {
@@ -59,13 +60,15 @@ model Usuario {
 }
 
 model Categoria {
-  id          Int          @id @default(autoincrement())
-  nome        String
-  cor         String? // ex.: "#4caf50" (não usado na interface nova)
-  icone       String? // nome do ícone Lucide, ex.: "carrinho" (ver web/src/components/Icone.jsx)
-  casalId     Int
-  casal       Casal        @relation(fields: [casalId], references: [id], onDelete: Cascade)
-  lancamentos Lancamento[]
+  id                   Int          @id @default(autoincrement())
+  nome                 String
+  cor                  String? // ex.: "#4caf50" (não usado na interface nova)
+  icone                String? // nome do ícone Lucide, ex.: "carrinho" (ver web/src/components/Icone.jsx)
+  limiteMensalCentavos Int? // orçamento: quanto podem gastar por mês nesta categoria (opcional)
+  contasFixas          ContaFixa[]
+  casalId              Int
+  casal                Casal        @relation(fields: [casalId], references: [id], onDelete: Cascade)
+  lancamentos          Lancamento[]
 
   @@unique([casalId, nome]) // o mesmo casal não pode ter duas "Mercado"
 }
@@ -88,7 +91,12 @@ model Lancamento {
   // Só nos movimentos de caixinha. NoAction: o banco não deixa apagar uma caixinha que tem movimentos.
   caixinhaId  Int?
   caixinha    Caixinha?  @relation(fields: [caixinhaId], references: [id], onDelete: NoAction)
+  // Pagamento de conta fixa: qual conta e de qual mês ("2026-11"). Apagar a conta mantém o lançamento.
+  contaFixaId Int?
+  contaFixa   ContaFixa? @relation(fields: [contaFixaId], references: [id], onDelete: SetNull)
+  competencia String?
 
+  @@unique([contaFixaId, competencia]) // cada conta só pode ser paga uma vez por mês
   @@index([casalId, data]) // deixa rápido o "resumo do mês"
   @@index([caixinhaId])
 }
@@ -120,4 +128,21 @@ model Investimento {
   caixinhas Caixinha[]
 
   @@unique([casalId, nome])
+}
+
+// Conta que se repete todo mês (aluguel, internet...). Não vira lançamento sozinha:
+// no mês, ela aparece "a pagar" até alguém marcar como paga (aí cria o lançamento).
+model ContaFixa {
+  id            Int            @id @default(autoincrement())
+  nome          String
+  valorCentavos Int // valor de costume (pode ser ajustado ao pagar)
+  diaVencimento Int // 1 a 31; em mês mais curto vira o último dia
+  tipo          TipoLancamento @default(DESPESA) // só DESPESA ou RECEITA
+  ativa         Boolean        @default(true)
+  criadoEm      DateTime       @default(now())
+  casalId       Int
+  casal         Casal          @relation(fields: [casalId], references: [id], onDelete: Cascade)
+  categoriaId   Int?
+  categoria     Categoria?     @relation(fields: [categoriaId], references: [id], onDelete: SetNull)
+  pagamentos    Lancamento[]
 }

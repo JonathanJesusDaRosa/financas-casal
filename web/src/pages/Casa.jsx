@@ -1,7 +1,7 @@
 // Aba "Casa": a casa, os membros, o convite (se ainda houver vaga), categorias e sair.
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ChevronRight, Copy, LogOut, MessageCircle, RefreshCw, Tag } from 'lucide-react';
+import { CalendarClock, ChevronRight, Copy, LogOut, MessageCircle, RefreshCw, Tag } from 'lucide-react';
 import { api } from '../api.js';
 import { useAuth } from '../auth.jsx';
 import Cabecalho from '../components/Cabecalho.jsx';
@@ -48,6 +48,16 @@ export default function Casa() {
           <section className="secao">
             <div className="secao-topo"><h2>Ajustes</h2></div>
             <ul className="card lista">
+              <li>
+                <Link to="/contas" className="item">
+                  <span className="item-icone"><CalendarClock size={20} strokeWidth={1.75} aria-hidden="true" /></span>
+                  <span className="item-textos">
+                    <span className="item-titulo">Contas fixas</span>
+                    <span className="item-sub">Aluguel, internet, luz… com vencimento</span>
+                  </span>
+                  <ChevronRight size={20} strokeWidth={1.75} aria-hidden="true" className="muted" />
+                </Link>
+              </li>
               <li>
                 <Link to="/casa/categorias" className="item">
                   <span className="item-icone"><Tag size={20} strokeWidth={1.75} aria-hidden="true" /></span>

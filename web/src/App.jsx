@@ -14,6 +14,8 @@ import FormCaixinha from './pages/FormCaixinha.jsx';
 import Investimentos from './pages/Investimentos.jsx';
 import Casa from './pages/Casa.jsx';
 import Categorias from './pages/Categorias.jsx';
+import Contas from './pages/Contas.jsx';
+import FormContaFixa from './pages/FormContaFixa.jsx';
 
 // Para quem está logado E já está numa casa.
 // Sem login -> login. Logado sem casa -> tela "Criar casa".
@@ -56,6 +58,7 @@ export default function App() {
         <Route path="/investimentos" element={<Investimentos />} />
         <Route path="/casa" element={<Casa />} />
         <Route path="/casa/categorias" element={<Categorias />} />
+        <Route path="/contas" element={<Contas />} />
       </Route>
 
       {/* Formulários em tela cheia (sem a navegação, para sobrar espaço ao teclado) */}
@@ -63,6 +66,8 @@ export default function App() {
       <Route path="/lancamentos/:id" element={<RotaDaCasa><FormLancamento /></RotaDaCasa>} />
       <Route path="/metas/nova" element={<RotaDaCasa><FormCaixinha /></RotaDaCasa>} />
       <Route path="/metas/:id/editar" element={<RotaDaCasa><FormCaixinha /></RotaDaCasa>} />
+      <Route path="/contas/nova" element={<RotaDaCasa><FormContaFixa /></RotaDaCasa>} />
+      <Route path="/contas/:id/editar" element={<RotaDaCasa><FormContaFixa /></RotaDaCasa>} />
 
       <Route path="/bem-vindo" element={<RotaSemCasa><Espaco /></RotaSemCasa>} />
       <Route path="/login" element={<RotaPublica><Login /></RotaPublica>} />

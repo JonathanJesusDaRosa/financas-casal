@@ -8,6 +8,7 @@ import lancamentosRoutes from './routes/lancamentos.js';
 import caixinhasRoutes from './routes/caixinhas.js';
 import investimentosRoutes from './routes/investimentos.js';
 import resumoRoutes from './routes/resumo.js';
+import contasFixasRoutes from './routes/contasFixas.js';
 
 const app = express();
 
@@ -57,6 +58,9 @@ app.use('/investimentos', investimentosRoutes);
 
 // Números da tela Início (dashboard do mês)
 app.use('/resumo', resumoRoutes);
+
+// Contas fixas (aluguel, internet...) e a situação delas no mês
+app.use('/contas-fixas', contasFixasRoutes);
 
 // Rota que não existe
 app.use((req, res) => {

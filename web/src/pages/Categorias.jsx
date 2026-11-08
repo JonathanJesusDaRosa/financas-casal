@@ -1,12 +1,15 @@
-// Categorias da casa: adicionar, renomear, trocar o ícone e apagar.
+// Categorias da casa: adicionar, renomear, trocar o ícone, definir o limite do mês e apagar.
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronLeft, Plus } from 'lucide-react';
 import { api } from '../api.js';
+import { useValoresOcultos } from '../hooks/useValoresOcultos.js';
 import Icone from '../components/Icone.jsx';
 import { ICONES, ICONES_CATEGORIA } from '../utils/icones.js';
+import { centavosParaTexto, formatarReais, textoParaCentavos } from '../utils/dinheiro.js';
 
 export default function Categorias() {
+  useValoresOcultos(); // redesenha a tela quando tocam no "olho" do topo
   const [categorias, setCategorias] = useState(null);
   const [erro, setErro] = useState('');
   // Qual categoria está aberta para edição: um id, 'nova', ou null
@@ -92,7 +95,10 @@ export default function Categorias() {
                   <span className="item-icone"><Icone nome={c.icone} /></span>
                   <span className="item-textos" style={{ textAlign: 'left' }}>
                     <span className="item-titulo">{c.nome}</span>
-                    <span className="item-sub">{c.totalLancamentos} lançamento(s)</span>
+                    <span className="item-sub">
+                      {c.totalLancamentos} lançamento(s)
+                      {c.limiteMensalCentavos && ` · limite ${formatarReais(c.limiteMensalCentavos)}/mês`}
+                    </span>
                   </span>
                   <span className="label" style={{ color: 'var(--indigo)' }}>Editar</span>
                 </button>
@@ -105,14 +111,25 @@ export default function Categorias() {
   );
 }
 
-// Formulário de uma categoria (nova ou existente): nome + ícone.
+// Formulário de uma categoria (nova ou existente): nome, ícone e limite por mês.
 function EditorCategoria({ categoria, aoSalvar, aoApagar, aoCancelar }) {
   const [nome, setNome] = useState(categoria?.nome ?? '');
   const [icone, setIcone] = useState(categoria?.icone ?? 'etiqueta');
+  const [limite, setLimite] = useState(
+    categoria?.limiteMensalCentavos ? centavosParaTexto(categoria.limiteMensalCentavos) : '',
+  );
+  const [erroLimite, setErroLimite] = useState('');
 
   function aoEnviar(evento) {
     evento.preventDefault();
-    aoSalvar({ nome, icone });
+    // Campo vazio = sem limite (null)
+    const limiteMensalCentavos = limite.trim() ? textoParaCentavos(limite) : null;
+    if (limite.trim() && !limiteMensalCentavos) {
+      setErroLimite('Limite inválido. Exemplo: 1.500');
+      return;
+    }
+    setErroLimite('');
+    aoSalvar({ nome, icone, limiteMensalCentavos });
   }
 
   return (
@@ -122,6 +139,13 @@ function EditorCategoria({ categoria, aoSalvar, aoApagar, aoCancelar }) {
         <input type="text" required maxLength={40} autoFocus placeholder="Ex.: Pets"
           value={nome} onChange={(e) => setNome(e.target.value)} />
       </label>
+
+      <label className="campo">
+        <span>Limite por mês (R$) <small>Opcional. Deixe vazio para não ter limite</small></span>
+        <input type="text" inputMode="decimal" placeholder="Ex.: 1.500"
+          value={limite} onChange={(e) => setLimite(e.target.value)} />
+      </label>
+      {erroLimite && <p className="erro" role="alert">{erroLimite}</p>}
 
       <fieldset className="campo" style={{ border: 'none', padding: 0, margin: 0 }}>
         <legend style={{ marginBottom: 'var(--space-2)' }}>Ícone</legend>

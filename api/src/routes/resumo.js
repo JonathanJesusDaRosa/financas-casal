@@ -2,6 +2,7 @@
 //   totais        entradas, saídas, guardado, sobra e rendimento (mesmas regras da lista)
 //   porCategoria  quanto SAIU em cada categoria, do maior para o menor, com a %
 //   ultimos       os 5 lançamentos mais recentes do mês
+//   orcamento     categorias com limite: quanto já saiu e quanto falta (ou passou)
 import { Router } from 'express';
 import { prisma } from '../lib/prisma.js';
 import { autenticar } from '../middlewares/autenticar.js';
@@ -10,6 +11,14 @@ import { mesSchema, paraTexto, validar } from '../lib/validar.js';
 
 const router = Router();
 router.use(autenticar, exigirCasal);
+
+// Maior gasto primeiro. Empate: ordem alfabética, com "Sem categoria" por último.
+function ordenarCategorias(a, b) {
+  if (b.totalCentavos !== a.totalCentavos) return b.totalCentavos - a.totalCentavos;
+  if (!a.categoria) return 1;
+  if (!b.categoria) return -1;
+  return a.categoria.nome.localeCompare(b.categoria.nome);
+}
 
 function intervaloDoMes(mes) {
   const [ano, numero] = mes.split('-').map(Number);
@@ -54,25 +63,45 @@ router.get('/', async (req, res) => {
   const saidas = soma('DESPESA');
   const guardado = soma('GUARDADO');
 
-  // Busca nome e ícone das categorias que apareceram.
+  // Busca nome e ícone das categorias que apareceram + as que têm limite (orçamento).
   const ids = porCategoriaBruto.map((g) => g.categoriaId).filter(Boolean);
   const categorias = await prisma.categoria.findMany({
-    where: { id: { in: ids }, casalId: req.casalId },
-    select: { id: true, nome: true, icone: true },
+    where: { casalId: req.casalId, OR: [{ id: { in: ids } }, { limiteMensalCentavos: { not: null } }] },
+    select: { id: true, nome: true, icone: true, limiteMensalCentavos: true },
   });
+  const gastoDa = (id) => porCategoriaBruto.find((g) => g.categoriaId === id)?._sum.valorCentavos ?? 0;
+
+  // { id, nome, icone } da categoria, ou null para "Sem categoria"
+  const dadosDa = (id) => {
+    const c = categorias.find((cat) => cat.id === id);
+    return c ? { id: c.id, nome: c.nome, icone: c.icone } : null;
+  };
 
   const porCategoria = porCategoriaBruto
     .map((g) => ({
-      categoria: categorias.find((c) => c.id === g.categoriaId) ?? null, // null = "Sem categoria"
+      categoria: dadosDa(g.categoriaId),
       totalCentavos: g._sum.valorCentavos ?? 0,
       percentual: saidas ? Math.round(((g._sum.valorCentavos ?? 0) / saidas) * 100) : 0,
     }))
-    .sort((a, b) => b.totalCentavos - a.totalCentavos);
+    .sort(ordenarCategorias);
 
   res.json({
     mes,
     totais: { entradas, saidas, guardado, sobra: entradas - saidas - guardado, rendimento: soma('RENDIMENTO') },
     porCategoria,
+    orcamento: categorias
+      .filter((c) => c.limiteMensalCentavos)
+      .map((c) => {
+        const gasto = gastoDa(c.id);
+        return {
+          categoria: { id: c.id, nome: c.nome, icone: c.icone },
+          limiteCentavos: c.limiteMensalCentavos,
+          gastoCentavos: gasto,
+          restaCentavos: c.limiteMensalCentavos - gasto, // negativo = passou do previsto
+          percentual: Math.round((gasto / c.limiteMensalCentavos) * 100),
+        };
+      })
+      .sort((a, b) => b.percentual - a.percentual),
     ultimos: ultimos.map((l) => ({ ...l, data: paraTexto(l.data) })),
   });
 });

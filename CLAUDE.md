@@ -90,7 +90,7 @@ financas-casal/
 - Lançamentos de despesas e receitas: valor, data, categoria, descrição e quem pagou
 - Categorias editáveis (Mercado, Transporte, Moradia, Lazer...)
 - Resumo do mês: entradas, saídas, saldo e gastos por categoria
-- Divisão proporcional à renda: quanto cada um deveria pagar e quem deve a quem
+- ~~Divisão proporcional à renda~~: REMOVIDA. A casa junta todo o dinheiro (não divide salários nem despesas), então não existe "quem deve a quem". "Quem pagou" é só registro de quem fez o lançamento.
 - Caixinhas para sonhos (tabela `Meta`): valor-alvo, prazo e quanto já foi guardado; cada caixinha pode apontar para um investimento
 - Guardar dinheiro numa caixinha aparece no mês como "Separado para investir" (não é despesa); o mês mostra entradas, saídas, guardado e sobra
 - Investimentos com registro manual: onde o dinheiro está aplicado (ex.: CDB Nubank) e o saldo, atualizado à mão. Sem cotações automáticas.
@@ -119,11 +119,20 @@ Cada fase só começa quando a anterior está em uso no dia a dia.
 - "Caixinhas" se chamam **Metas** na interface (rotas do front `/metas`; API continua `/caixinhas`).
 - Para conferir telas: prints com o Edge headless dentro de um iframe de 360/390px (o Edge sem janela tem largura mínima maior que um celular).
 
+### Contas fixas e orçamento
+
+- `ContaFixa` (nome, valor de costume, dia de vencimento 1–31, tipo, categoria, ativa). NÃO vira lançamento sozinha: no mês fica "a pagar"/"atrasada" até alguém tocar em "Pagar" (`POST /contas-fixas/:id/pagar`), que cria um `Lancamento` com `contaFixaId` + `competencia` ("2026-11"; único por conta e mês). Desfazer = apagar esse lançamento.
+- Dia 31 em mês curto = último dia. "Hoje" para vencimento usa o fuso de São Paulo (`api/src/lib/datas.js`), porque a Vercel roda em UTC.
+- Orçamento: `Categoria.limiteMensalCentavos` (opcional, o mesmo todo mês). `/resumo` devolve `orcamento`; barra na cor `--warning` a partir de 80%; texto calmo ("Faltam R$ X" / "Passou R$ X do previsto").
+- Telas: `/contas` (dentro da navegação, acesso pelo Início e por Casa → Ajustes), `/contas/nova`, `/contas/:id/editar`. Limite editado em Casa → Categorias.
+
 ## Pendências combinadas
 
-- Divisão proporcional à renda.
-- Mais dashboards (ex.: evolução mês a mês, gastos por pessoa) depois do Início.
+- Forma de pagamento no lançamento (versão simples: Pix, Débito, Crédito, Dinheiro, Boleto; opcional; padrão nas contas fixas). Falta o usuário responder: a lista basta? Querem saber QUAL cartão (lista editável)? Controle completo de fatura/parcelas do cartão fica para depois, se fizer falta. Terá migração própria.
+- Etapa C: evolução mês a mês (gráfico dos últimos meses no Início).
+- Etapa D: layout para computador usando a tela toda (navegação lateral, conteúdo em colunas). No computador o casal ANALISA; no celular LANÇA no dia a dia.
 - Ajustes finos de visual conforme o uso no celular.
+- Depois: notificação de vencimento no celular (exige push + agendador no servidor).
 
 ## Fora de escopo por enquanto
 

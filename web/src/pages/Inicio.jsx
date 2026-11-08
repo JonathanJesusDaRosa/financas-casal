@@ -1,15 +1,18 @@
 // Início: o resumo do mês (dashboard), seguindo a tela de referência.
-// Saldo do mês (com Entrou e Saiu), gastos por categoria e últimos lançamentos.
+// Saldo do mês (com Entrou e Saiu), contas fixas, gastos por categoria, orçamento
+// e últimos lançamentos.
 import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { PiggyBank, TrendingUp } from 'lucide-react';
 import { api } from '../api.js';
 import { useValoresOcultos } from '../hooks/useValoresOcultos.js';
 import Cabecalho from '../components/Cabecalho.jsx';
+import Icone from '../components/Icone.jsx';
 import ItemLancamento from '../components/ItemLancamento.jsx';
 import SeletorMes from '../components/SeletorMes.jsx';
 import { formatarReais } from '../utils/dinheiro.js';
 import { mesAtual, nomeDoMes } from '../utils/datas.js';
+import { ordenarPendentes, textoVencimento } from '../utils/contas.js';
 
 const CATEGORIAS_NO_RESUMO = 3; // as 3 maiores; "Ver todos" mostra o resto
 
@@ -18,6 +21,7 @@ export default function Inicio() {
   const [parametros, setParametros] = useSearchParams();
   const mes = parametros.get('mes') || mesAtual();
   const [resumo, setResumo] = useState(null);
+  const [contas, setContas] = useState(null); // contas fixas do mês
   const [erro, setErro] = useState('');
   const [todasCategorias, setTodasCategorias] = useState(false);
 
@@ -26,12 +30,16 @@ export default function Inicio() {
     api(`/resumo?mes=${mes}`)
       .then((dados) => !cancelado && setResumo(dados))
       .catch((e) => !cancelado && setErro(e.message));
+    api(`/contas-fixas/mes?mes=${mes}`)
+      .then((dados) => !cancelado && setContas(dados))
+      .catch(() => {}); // se falhar, o card de contas só não aparece
     return () => { cancelado = true; };
   }, [mes]);
 
   function irParaMes(novo) {
     setErro('');
     setResumo(null);
+    setContas(null);
     setTodasCategorias(false);
     setParametros(novo === mesAtual() ? {} : { mes: novo });
   }
@@ -84,6 +92,8 @@ export default function Inicio() {
             )}
           </section>
 
+          {contas && contas.mes === mes && <CardContas dados={contas} />}
+
           {/* Gastos por categoria: card compacto, barras proporcionais à maior */}
           <section className="card secao">
             <div className="secao-topo">
@@ -113,6 +123,8 @@ export default function Inicio() {
             )}
           </section>
 
+          {resumo.orcamento.length > 0 && <CardOrcamento orcamento={resumo.orcamento} />}
+
           {/* Últimos lançamentos: soltos no fundo, sem caixa em volta */}
           <section className="secao">
             <div className="secao-topo">
@@ -134,5 +146,81 @@ export default function Inicio() {
         </>
       )}
     </main>
+  );
+}
+
+// "Contas do mês": quantas já foram pagas, quanto falta e as próximas a vencer.
+const CONTAS_NO_RESUMO = 3;
+
+function CardContas({ dados }) {
+  if (dados.contas.length === 0) return null; // sem contas cadastradas: nada aqui
+  const { resumo } = dados;
+  const proximas = ordenarPendentes(dados.contas).slice(0, CONTAS_NO_RESUMO);
+
+  return (
+    <section className="card secao">
+      <div className="secao-topo">
+        <h2>Contas do mês</h2>
+        <Link to={dados.mes === mesAtual() ? '/contas' : `/contas?mes=${dados.mes}`}>Ver todas</Link>
+      </div>
+      <p className="muted label">
+        {resumo.pagas} de {resumo.quantidade} pagas
+        {resumo.faltaPagarCentavos > 0 && <> · faltam <strong style={{ color: 'var(--ink)' }}>{formatarReais(resumo.faltaPagarCentavos)}</strong></>}
+      </p>
+      {proximas.length === 0 ? (
+        <p style={{ marginTop: 'var(--space-2)' }}>Todas as contas do mês estão pagas.</p>
+      ) : (
+        <ul className="lista">
+          {proximas.map((c) => (
+            <li key={c.id}>
+              <Link to={dados.mes === mesAtual() ? '/contas' : `/contas?mes=${dados.mes}`} className="item item-compacto">
+                <span className="item-icone"><Icone nome={c.categoria?.icone} /></span>
+                <span className="item-textos">
+                  <span className="item-titulo">{c.nome}</span>
+                  <span className={`item-sub ${c.situacao === 'atrasada' ? 'texto-atencao' : ''}`}>{textoVencimento(c)}</span>
+                </span>
+                <span className="valor-lista">{formatarReais(c.valorCentavos)}</span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
+  );
+}
+
+// "Orçamento do mês": categorias com limite. Barra na cor de atenção a partir de 80%.
+// Tom calmo, como pede o guia: "Faltam R$ 200" / "Passou R$ 50 do previsto".
+function CardOrcamento({ orcamento }) {
+  return (
+    <section className="card secao">
+      <div className="secao-topo">
+        <h2>Orçamento do mês</h2>
+        <Link to="/casa/categorias">Ajustar</Link>
+      </div>
+      <ul className="lista-categorias">
+        {orcamento.map((o) => {
+          const atencao = o.percentual >= 80;
+          return (
+            <li key={o.categoria.id}>
+              <div className="linha-categoria">
+                <span>{o.categoria.nome}</span>
+                <span className="caption muted">
+                  <strong className="valor" style={{ color: 'var(--ink)' }}>{formatarReais(o.gastoCentavos)}</strong> de {formatarReais(o.limiteCentavos)}
+                </span>
+              </div>
+              <div className={`barra ${atencao ? 'atencao' : ''}`} role="img" aria-label={`${o.percentual}% do limite`}>
+                <span style={{ width: `${Math.min(Math.max(o.percentual, 2), 100)}%` }} />
+              </div>
+              <p className={`caption ${o.restaCentavos < 0 ? 'texto-atencao' : 'muted'}`} style={{ marginTop: 'var(--space-1)' }}>
+                {o.restaCentavos < 0
+                  ? `Passou ${formatarReais(-o.restaCentavos)} do previsto`
+                  : `Faltam ${formatarReais(o.restaCentavos)}`}
+              </p>
+            </li>
+          );
+        })}
+      </ul>
+    </section>
   );
 }

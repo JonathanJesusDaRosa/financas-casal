@@ -17,12 +17,18 @@ const nome = z
 
 const cor = z.string().regex(/^#[0-9a-fA-F]{6}$/, { error: 'Cor inválida.' });
 
-const criarSchema = z.object({ nome, cor: cor.optional(), icone: iconeSchema });
+// Orçamento: limite de gasto por mês (opcional; null = sem limite)
+const limite = z
+  .number({ error: 'Limite inválido.' })
+  .int({ error: 'Limite inválido.' })
+  .positive({ error: 'O limite precisa ser maior que zero.' })
+  .max(1_000_000_000, { error: 'Limite alto demais.' })
+  .nullable();
+
+const criarSchema = z.object({ nome, cor: cor.optional(), icone: iconeSchema, limiteMensalCentavos: limite.optional() });
 const editarSchema = z
-  .object({ nome: nome.optional(), cor: cor.optional(), icone: iconeSchema.optional() })
-  .refine((d) => d.nome !== undefined || d.cor !== undefined || d.icone !== undefined, {
-    error: 'Nada para alterar.',
-  });
+  .object({ nome: nome.optional(), cor: cor.optional(), icone: iconeSchema.optional(), limiteMensalCentavos: limite.optional() })
+  .refine((d) => Object.values(d).some((v) => v !== undefined), { error: 'Nada para alterar.' });
 
 const NOME_REPETIDO = 'Já existe uma categoria com esse nome.';
 
@@ -31,7 +37,7 @@ router.get('/', async (req, res) => {
   const categorias = await prisma.categoria.findMany({
     where: { casalId: req.casalId },
     orderBy: { nome: 'asc' },
-    select: { id: true, nome: true, cor: true, icone: true, _count: { select: { lancamentos: true } } },
+    select: { id: true, nome: true, cor: true, icone: true, limiteMensalCentavos: true, _count: { select: { lancamentos: true } } },
   });
 
   res.json({
@@ -46,8 +52,14 @@ router.post('/', async (req, res) => {
 
   try {
     const categoria = await prisma.categoria.create({
-      data: { nome: dados.nome, cor: dados.cor ?? null, icone: dados.icone ?? 'etiqueta', casalId: req.casalId },
-      select: { id: true, nome: true, cor: true, icone: true },
+      data: {
+        nome: dados.nome,
+        cor: dados.cor ?? null,
+        icone: dados.icone ?? 'etiqueta',
+        limiteMensalCentavos: dados.limiteMensalCentavos ?? null,
+        casalId: req.casalId,
+      },
+      select: { id: true, nome: true, cor: true, icone: true, limiteMensalCentavos: true },
     });
     res.status(201).json({ categoria });
   } catch (erro) {
@@ -73,7 +85,7 @@ router.patch('/:id', async (req, res) => {
 
     const categoria = await prisma.categoria.findUnique({
       where: { id },
-      select: { id: true, nome: true, cor: true, icone: true },
+      select: { id: true, nome: true, cor: true, icone: true, limiteMensalCentavos: true },
     });
     res.json({ categoria });
   } catch (erro) {
