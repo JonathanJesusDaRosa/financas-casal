@@ -1,0 +1,80 @@
+// Esquema do banco: cada "model" vira uma tabela no PostgreSQL.
+// Dinheiro é sempre guardado em CENTAVOS (Int): R$ 100,50 => 10050.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum TipoLancamento {
+  RECEITA
+  DESPESA
+}
+
+// O "espaço do casal": tudo pertence a um casal.
+model Casal {
+  id          Int          @id @default(autoincrement())
+  nome        String
+  criadoEm    DateTime     @default(now())
+  usuarios    Usuario[]
+  categorias  Categoria[]
+  lancamentos Lancamento[]
+  metas       Meta[]
+}
+
+model Usuario {
+  id                  Int          @id @default(autoincrement())
+  nome                String
+  email               String       @unique
+  senhaHash           String
+  rendaMensalCentavos Int          @default(0) // usada na divisão proporcional
+  criadoEm            DateTime     @default(now())
+  casalId             Int? // opcional: a pessoa pode se cadastrar antes de entrar num casal
+  casal               Casal?       @relation(fields: [casalId], references: [id])
+  lancamentosPagos    Lancamento[]
+}
+
+model Categoria {
+  id          Int          @id @default(autoincrement())
+  nome        String
+  cor         String? // ex.: "#4caf50"
+  casalId     Int
+  casal       Casal        @relation(fields: [casalId], references: [id], onDelete: Cascade)
+  lancamentos Lancamento[]
+
+  @@unique([casalId, nome]) // o mesmo casal não pode ter duas "Mercado"
+}
+
+model Lancamento {
+  id            Int            @id @default(autoincrement())
+  tipo          TipoLancamento
+  valorCentavos Int
+  data          DateTime       @db.Date
+  descricao     String?
+  criadoEm      DateTime       @default(now())
+  atualizadoEm  DateTime       @updatedAt
+
+  casalId     Int
+  casal       Casal      @relation(fields: [casalId], references: [id], onDelete: Cascade)
+  categoriaId Int?
+  categoria   Categoria? @relation(fields: [categoriaId], references: [id], onDelete: SetNull)
+  pagoPorId   Int
+  pagoPor     Usuario    @relation(fields: [pagoPorId], references: [id])
+
+  @@index([casalId, data]) // deixa rápido o "resumo do mês"
+}
+
+model Meta {
+  id                    Int       @id @default(autoincrement())
+  nome                  String
+  valorAlvoCentavos     Int
+  valorGuardadoCentavos Int       @default(0)
+  prazo                 DateTime? @db.Date
+  criadoEm              DateTime  @default(now())
+  casalId               Int
+  casal                 Casal     @relation(fields: [casalId], references: [id], onDelete: Cascade)
+}
