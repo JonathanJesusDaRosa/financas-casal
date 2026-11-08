@@ -57,7 +57,7 @@ export default function Investimentos() {
   }
 
   return (
-    <main className="tela">
+    <main className="tela larga">
       <Cabecalho titulo="Investimentos" />
 
       {dados && (
@@ -78,7 +78,7 @@ export default function Investimentos() {
       {!dados && !erro && <p className="vazio">Carregando…</p>}
 
       {dados && (
-        <div className="secao">
+        <div className="secao grade-cards">
           {dados.investimentos.map((inv) => (
             <section key={inv.id} className="card">
               <div className="cabecalho-investimento">

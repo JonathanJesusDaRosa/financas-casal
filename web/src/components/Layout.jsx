@@ -1,8 +1,10 @@
-// Moldura da área logada: o conteúdo da página + a navegação inferior,
-// com o botão central (pêssego) para lançar rápido. Na Fase 3 ele vira o microfone.
+// Moldura da área logada: o conteúdo da página + a navegação.
+// No celular: barra embaixo com o botão central (pêssego) para lançar rápido
+// (na Fase 3 ele vira o microfone). No computador (1024px ou mais), o MESMO menu
+// vira uma barra lateral à esquerda, só mudando o CSS (ver index.css).
 import { useEffect, useRef } from 'react';
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
-import { House, List, Plus, Target, TrendingUp, Users } from 'lucide-react';
+import { CalendarClock, House, List, Plus, Target, TrendingUp, Users } from 'lucide-react';
 
 // Rótulos curtos para caberem 5 abas + o botão central num celular de 360px.
 const ANTES = [
@@ -12,12 +14,14 @@ const ANTES = [
 const DEPOIS = [
   { para: '/metas', texto: 'Metas', Icone: Target },
   { para: '/investimentos', texto: 'Investir', Icone: TrendingUp },
+  // "Contas" só aparece no computador (no celular não cabe; lá fica no Início e em Casa)
+  { para: '/contas', texto: 'Contas', Icone: CalendarClock, soComputador: true },
   { para: '/casa', texto: 'Casa', Icone: Users },
 ];
 
-function Aba({ para, texto, Icone }) {
+function Aba({ para, texto, Icone, soComputador }) {
   return (
-    <li>
+    <li className={soComputador ? 'so-computador' : undefined}>
       {/* NavLink adiciona a classe "active" quando a página atual é a dele */}
       <NavLink to={para} end={para === '/'}>
         <Icone size={24} strokeWidth={1.75} aria-hidden="true" />
@@ -71,11 +75,17 @@ export default function Layout() {
       </div>
 
       <nav className="navegacao" aria-label="Navegação principal">
+        {/* Logo: só aparece na barra lateral do computador */}
+        <div className="marca-lateral" aria-hidden="true">
+          <img src="/brand/casa-em-conta-mark.svg" alt="" />
+          <span>Casa <em>em</em> Conta</span>
+        </div>
         <ul>
           {ANTES.map((aba) => <Aba key={aba.para} {...aba} />)}
           <li className="central">
             <NavLink to="/lancamentos/novo" className="botao-central" aria-label="Lançar">
               <Plus size={28} strokeWidth={2} aria-hidden="true" />
+              <span className="rotulo-central" aria-hidden="true">Lançar</span>
             </NavLink>
           </li>
           {DEPOIS.map((aba) => <Aba key={aba.para} {...aba} />)}

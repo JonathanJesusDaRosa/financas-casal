@@ -20,6 +20,12 @@
   --expense: #B42318;        /* despesas e erros, sempre com "−" */
   --warning: #9A4A06;        /* orçamento perto do limite */
 
+  /* gráficos (barras de Entrou/Saiu). Validados para daltonismo com o script do
+     guia de visualização: no claro são as próprias income/expense; no escuro,
+     tons próprios (os de texto ficavam parecidos demais para quem tem daltonismo). */
+  --grafico-entrou: #1E7F5C;
+  --grafico-saiu: #B42318;
+
   /* tipografia */
   --font-sans: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
 
@@ -55,6 +61,8 @@
     --income: #5FD3A4;
     --expense: #FF8A80;
     --warning: #F5B451;
+    --grafico-entrou: #28966C;
+    --grafico-saiu: #E05A52;
   }
 }
 

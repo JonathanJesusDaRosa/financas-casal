@@ -976,3 +976,344 @@ body {
 .confirmar-conta {
   margin-bottom: var(--space-3);
 }
+
+/* ---------- Gráfico de evolução ---------- */
+.grafico-evolucao {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.legenda {
+  display: flex;
+  gap: var(--space-4);
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 500;
+  color: var(--ink-muted);
+}
+
+.legenda span,
+.grafico-dica span {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.legenda i,
+.grafico-dica i {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  display: inline-block;
+}
+
+.grafico-area {
+  position: relative;
+}
+
+.grafico-area svg {
+  display: block;
+  overflow: visible;
+}
+
+/* Linhas e textos discretos (a atenção fica nas barras) */
+.grafico-guia {
+  stroke: var(--line);
+  stroke-width: 1;
+}
+
+.grafico-base {
+  stroke: var(--ink-muted);
+  stroke-width: 1;
+}
+
+.grafico-eixo,
+.grafico-mes {
+  fill: var(--ink-muted);
+  font-size: 11px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+.grafico-mes.atual {
+  fill: var(--ink);
+  font-weight: 700;
+}
+
+.grafico-selecionado {
+  fill: var(--indigo-soft);
+  opacity: 0.6;
+}
+
+.grafico-alvo {
+  cursor: pointer;
+  outline: none;
+}
+
+.grafico-alvo:focus-visible {
+  stroke: var(--indigo);
+  stroke-width: 2;
+}
+
+/* Caixinha de detalhes ao passar o mouse / tocar */
+.grafico-dica {
+  position: absolute;
+  top: -8px;
+  width: 160px;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  background: var(--surface-raised);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow-sheet);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 12px;
+  line-height: 18px;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.grafico-dica b {
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+}
+
+.tabela-evolucao {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.tabela-evolucao th,
+.tabela-evolucao td {
+  padding: var(--space-2) 0 var(--space-2) var(--space-2);
+  text-align: right;
+  border-bottom: 1px solid var(--line);
+  white-space: nowrap;
+}
+
+.tabela-evolucao th:first-child,
+.tabela-evolucao td:first-child {
+  text-align: left;
+}
+
+.tabela-evolucao th {
+  font-weight: 500;
+  color: var(--ink-muted);
+  font-size: 12px;
+}
+
+.grafico-evolucao > .link {
+  align-self: flex-start;
+}
+
+/* =====================================================================
+   COMPUTADOR (1024px ou mais): barra lateral + conteúdo usando a tela toda.
+   No celular nada disto vale (o celular é para lançar; o computador, para analisar).
+   ===================================================================== */
+
+/* No celular: escondidos. ".navegacao li.so-computador" precisa ser mais específico
+   que ".navegacao li" (que usa display: flex), senão a aba aparece no celular. */
+.marca-lateral,
+.rotulo-central,
+.navegacao li.so-computador {
+  display: none;
+}
+
+/* Grade de cards (Metas, Investimentos): no celular, um embaixo do outro */
+.grade-cards {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.grade-cards > .card + .card {
+  margin-top: 0;
+}
+
+@media (min-width: 1024px) {
+  /* ---- Moldura: menu à esquerda, conteúdo à direita ---- */
+  .area-logada {
+    flex-direction: row;
+  }
+
+  .navegacao {
+    order: -1; /* vai para a esquerda */
+    width: 248px;
+    flex-shrink: 0;
+    border-top: none;
+    border-right: 1px solid var(--line);
+    padding: var(--space-6) var(--space-4);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6);
+    overflow-y: auto;
+  }
+
+  .marca-lateral {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: 0 var(--space-2);
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+  }
+
+  .marca-lateral img {
+    width: 36px;
+    height: 36px;
+  }
+
+  .marca-lateral em {
+    font-style: normal;
+    font-weight: 500;
+    color: var(--ink-muted);
+  }
+
+  .navegacao ul {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-1);
+    padding: 0;
+    max-width: none;
+    margin: 0;
+  }
+
+  .navegacao li,
+  .navegacao li.so-computador {
+    display: block;
+    flex: none;
+  }
+
+  .navegacao a {
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: var(--space-3);
+    min-height: 44px;
+    padding: 0 var(--space-3);
+    border-radius: var(--radius-md);
+    font-size: 15px;
+    line-height: 20px;
+  }
+
+  .navegacao a:hover {
+    background: var(--surface);
+  }
+
+  .navegacao a.active {
+    background: var(--indigo-soft);
+  }
+
+  /* "Lançar": vira um botão largo no topo do menu */
+  .navegacao .central {
+    order: -1;
+    flex: none;
+    margin-bottom: var(--space-4);
+  }
+
+  .navegacao a.botao-central {
+    width: 100%;
+    height: 48px;
+    margin: 0;
+    flex-direction: row;
+    justify-content: center;
+    gap: var(--space-2);
+    border-radius: var(--radius-md);
+    font-size: 15px;
+    font-weight: 600;
+  }
+
+  .navegacao a.botao-central svg {
+    width: 22px;
+    height: 22px;
+  }
+
+  .rotulo-central {
+    display: inline;
+  }
+
+  .conteudo-rolavel {
+    padding-bottom: var(--space-8);
+  }
+
+  /* ---- Conteúdo ---- */
+  /* Listas e formulários: mais largos, mas com limite para a leitura não cansar */
+  .area-logada .tela {
+    max-width: 880px;
+    padding: var(--space-8) var(--space-8) var(--space-8);
+  }
+
+  /* Painéis (Início, Metas, Investimentos): a tela toda */
+  .area-logada .tela.larga {
+    max-width: 1280px;
+  }
+
+  /* O logo já está no menu lateral */
+  .cabecalho-marca {
+    display: none;
+  }
+
+  .cabecalho-casa {
+    margin-bottom: var(--space-6);
+  }
+
+  /* ---- Início em painel de duas colunas ---- */
+  .painel-inicio {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-areas:
+      "saldo     evolucao"
+      "contas    gastos"
+      "orcamento ultimos";
+    gap: var(--space-6);
+    align-items: stretch; /* cards da mesma linha com a mesma altura */
+  }
+
+  .painel-inicio > * {
+    margin-top: 0 !important; /* o espaço agora vem do "gap" da grade */
+  }
+
+  .area-saldo { grid-area: saldo; }
+  .area-evolucao { grid-area: evolucao; }
+  .area-contas { grid-area: contas; }
+  .area-gastos { grid-area: gastos; }
+  .area-orcamento { grid-area: orcamento; }
+  .area-ultimos { grid-area: ultimos; }
+
+  /* Últimos lançamentos dentro de um card no computador (fica mais organizado no painel) */
+  .area-ultimos {
+    background: var(--surface-raised);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
+    padding: var(--space-4);
+  }
+
+  .card-saldo .valor-grande {
+    font-size: 44px;
+    line-height: 52px;
+  }
+
+  /* ---- Grades de cards ---- */
+  .grade-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: var(--space-4);
+  }
+
+  /* ---- Detalhes ---- */
+  .lista .item:hover,
+  .lista .item-link:hover {
+    background: var(--surface);
+  }
+}
+
+/* Tema escuro: texto da aba ativa em "ink" sobre o índigo suave (exceção de contraste do guia) */
+@media (min-width: 1024px) and (prefers-color-scheme: dark) {
+  .navegacao a.active {
+    color: var(--ink);
+  }
+}

@@ -7,6 +7,7 @@ import { PiggyBank, TrendingUp } from 'lucide-react';
 import { api } from '../api.js';
 import { useValoresOcultos } from '../hooks/useValoresOcultos.js';
 import Cabecalho from '../components/Cabecalho.jsx';
+import GraficoEvolucao from '../components/GraficoEvolucao.jsx';
 import Icone from '../components/Icone.jsx';
 import ItemLancamento from '../components/ItemLancamento.jsx';
 import SeletorMes from '../components/SeletorMes.jsx';
@@ -22,6 +23,7 @@ export default function Inicio() {
   const mes = parametros.get('mes') || mesAtual();
   const [resumo, setResumo] = useState(null);
   const [contas, setContas] = useState(null); // contas fixas do mês
+  const [evolucao, setEvolucao] = useState(null); // últimos 6 meses (gráfico)
   const [erro, setErro] = useState('');
   const [todasCategorias, setTodasCategorias] = useState(false);
 
@@ -33,6 +35,9 @@ export default function Inicio() {
     api(`/contas-fixas/mes?mes=${mes}`)
       .then((dados) => !cancelado && setContas(dados))
       .catch(() => {}); // se falhar, o card de contas só não aparece
+    api(`/resumo/evolucao?ate=${mes}&meses=6`)
+      .then((dados) => !cancelado && setEvolucao({ ate: mes, meses: dados.meses }))
+      .catch(() => {}); // se falhar, o gráfico só não aparece
     return () => { cancelado = true; };
   }, [mes]);
 
@@ -40,6 +45,7 @@ export default function Inicio() {
     setErro('');
     setResumo(null);
     setContas(null);
+    setEvolucao(null);
     setTodasCategorias(false);
     setParametros(novo === mesAtual() ? {} : { mes: novo });
   }
@@ -53,7 +59,7 @@ export default function Inicio() {
   const maiorGasto = resumo?.porCategoria[0]?.totalCentavos ?? 0;
 
   return (
-    <main className="tela">
+    <main className="tela larga">
       <Cabecalho titulo="Início">
         <SeletorMes mes={mes} aoMudar={irParaMes} />
       </Cabecalho>
@@ -62,9 +68,11 @@ export default function Inicio() {
       {!carregado && !erro && <p className="vazio">Carregando…</p>}
 
       {carregado && (
-        <>
+        // painel-inicio: no celular os cards ficam um embaixo do outro; no computador
+        // viram um painel de duas colunas (cada card tem sua "area-..." no index.css)
+        <div className="painel-inicio">
           {/* Card de saldo: saldo grande + mini-cards Entrou e Saiu */}
-          <section className="card-saldo">
+          <section className="card-saldo area-saldo">
             <p className="label">Saldo de {nomeMes}</p>
             <p className={`valor-grande ${t.sobra < 0 ? 'saida' : ''}`}>
               {t.sobra < 0 ? '− ' : ''}{formatarReais(Math.abs(t.sobra))}
@@ -95,7 +103,7 @@ export default function Inicio() {
           {contas && contas.mes === mes && <CardContas dados={contas} />}
 
           {/* Gastos por categoria: card compacto, barras proporcionais à maior */}
-          <section className="card secao">
+          <section className="card secao area-gastos">
             <div className="secao-topo">
               <h2>Gastos por categoria</h2>
               {resumo.porCategoria.length > CATEGORIAS_NO_RESUMO && (
@@ -125,8 +133,18 @@ export default function Inicio() {
 
           {resumo.orcamento.length > 0 && <CardOrcamento orcamento={resumo.orcamento} />}
 
+          {evolucao && evolucao.ate === mes && (
+            <section className="card secao area-evolucao">
+              <div className="secao-topo">
+                <h2>Evolução</h2>
+                <span className="caption muted">Últimos 6 meses</span>
+              </div>
+              <GraficoEvolucao meses={evolucao.meses} mesSelecionado={mes} aoEscolherMes={irParaMes} />
+            </section>
+          )}
+
           {/* Últimos lançamentos: soltos no fundo, sem caixa em volta */}
-          <section className="secao">
+          <section className="secao area-ultimos">
             <div className="secao-topo">
               <h2>Últimos lançamentos</h2>
               {resumo.ultimos.length > 0 && (
@@ -143,7 +161,7 @@ export default function Inicio() {
               </ul>
             )}
           </section>
-        </>
+        </div>
       )}
     </main>
   );
@@ -158,7 +176,7 @@ function CardContas({ dados }) {
   const proximas = ordenarPendentes(dados.contas).slice(0, CONTAS_NO_RESUMO);
 
   return (
-    <section className="card secao">
+    <section className="card secao area-contas">
       <div className="secao-topo">
         <h2>Contas do mês</h2>
         <Link to={dados.mes === mesAtual() ? '/contas' : `/contas?mes=${dados.mes}`}>Ver todas</Link>
@@ -193,7 +211,7 @@ function CardContas({ dados }) {
 // Tom calmo, como pede o guia: "Faltam R$ 200" / "Passou R$ 50 do previsto".
 function CardOrcamento({ orcamento }) {
   return (
-    <section className="card secao">
+    <section className="card secao area-orcamento">
       <div className="secao-topo">
         <h2>Orçamento do mês</h2>
         <Link to="/casa/categorias">Ajustar</Link>

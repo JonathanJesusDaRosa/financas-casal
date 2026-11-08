@@ -27,7 +27,7 @@ export default function Caixinhas() {
   const totalGuardado = ativas.reduce((total, c) => total + c.saldoCentavos, 0);
 
   return (
-    <main className="tela">
+    <main className="tela larga">
       <Cabecalho titulo="Metas">
         <Link to="/metas/nova" className="botao-secundario">
           <Plus size={20} strokeWidth={1.75} aria-hidden="true" /> Nova
@@ -51,7 +51,9 @@ export default function Caixinhas() {
             </p>
           )}
 
-          {ativas.map((c) => <CartaoMeta key={c.id} caixinha={c} />)}
+          <div className="grade-cards">
+            {ativas.map((c) => <CartaoMeta key={c.id} caixinha={c} />)}
+          </div>
 
           {arquivadas.length > 0 && (
             <div className="secao">
@@ -59,7 +61,7 @@ export default function Caixinhas() {
                 {verArquivadas ? 'Esconder' : 'Mostrar'} arquivadas ({arquivadas.length})
               </button>
               {verArquivadas && (
-                <div style={{ opacity: 0.7, marginTop: 'var(--space-3)' }}>
+                <div className="grade-cards" style={{ opacity: 0.7, marginTop: 'var(--space-3)' }}>
                   {arquivadas.map((c) => <CartaoMeta key={c.id} caixinha={c} />)}
                 </div>
               )}

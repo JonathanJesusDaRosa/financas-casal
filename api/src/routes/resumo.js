@@ -8,6 +8,7 @@ import { prisma } from '../lib/prisma.js';
 import { autenticar } from '../middlewares/autenticar.js';
 import { exigirCasal } from '../middlewares/exigirCasal.js';
 import { mesSchema, paraTexto, validar } from '../lib/validar.js';
+import { mesAtualNoBrasil } from '../lib/datas.js';
 
 const router = Router();
 router.use(autenticar, exigirCasal);
@@ -24,6 +25,46 @@ function intervaloDoMes(mes) {
   const [ano, numero] = mes.split('-').map(Number);
   return { inicio: new Date(Date.UTC(ano, numero - 1, 1)), fim: new Date(Date.UTC(ano, numero, 1)) };
 }
+
+// GET /resumo/evolucao?ate=2026-11&meses=6 -> entrou, saiu, guardado e sobra de cada mês,
+// do mais antigo ao mais novo (para o gráfico "Evolução" do Início).
+// Mesmas regras do resumo: entrou = receitas + resgates; sobra = entrou - saiu - guardado.
+router.get('/evolucao', async (req, res) => {
+  const ate = validar(mesSchema, req.query.ate ?? mesAtualNoBrasil(), res);
+  if (!ate) return;
+  const quantidade = Math.min(Math.max(Number(req.query.meses) || 6, 1), 24);
+
+  // Lista de meses: ["2026-06", ..., "2026-11"]
+  const [ano, numero] = ate.split('-').map(Number);
+  const meses = Array.from({ length: quantidade }, (_, i) => {
+    const d = new Date(Date.UTC(ano, numero - quantidade + i, 1));
+    return d.toISOString().slice(0, 7);
+  });
+
+  // Uma consulta só: todos os lançamentos do período, somados por dia e tipo.
+  const lancamentos = await prisma.lancamento.groupBy({
+    by: ['data', 'tipo'],
+    where: {
+      casalId: req.casalId,
+      data: { gte: intervaloDoMes(meses[0]).inicio, lt: intervaloDoMes(ate).fim },
+      tipo: { in: ['RECEITA', 'RESGATE', 'DESPESA', 'GUARDADO'] },
+    },
+    _sum: { valorCentavos: true },
+  });
+
+  const porMes = Object.fromEntries(meses.map((m) => [m, { mes: m, entradas: 0, saidas: 0, guardado: 0 }]));
+  for (const g of lancamentos) {
+    const linha = porMes[paraTexto(g.data).slice(0, 7)];
+    const valor = g._sum.valorCentavos ?? 0;
+    if (g.tipo === 'RECEITA' || g.tipo === 'RESGATE') linha.entradas += valor;
+    if (g.tipo === 'DESPESA') linha.saidas += valor;
+    if (g.tipo === 'GUARDADO') linha.guardado += valor;
+  }
+
+  res.json({
+    meses: meses.map((m) => ({ ...porMes[m], sobra: porMes[m].entradas - porMes[m].saidas - porMes[m].guardado })),
+  });
+});
 
 router.get('/', async (req, res) => {
   const mes = validar(mesSchema, req.query.mes ?? new Date().toISOString().slice(0, 7), res);

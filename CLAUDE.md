@@ -126,12 +126,15 @@ Cada fase só começa quando a anterior está em uso no dia a dia.
 - Orçamento: `Categoria.limiteMensalCentavos` (opcional, o mesmo todo mês). `/resumo` devolve `orcamento`; barra na cor `--warning` a partir de 80%; texto calmo ("Faltam R$ X" / "Passou R$ X do previsto").
 - Telas: `/contas` (dentro da navegação, acesso pelo Início e por Casa → Ajustes), `/contas/nova`, `/contas/:id/editar`. Limite editado em Casa → Categorias.
 
+### Evolução e layout do computador
+
+- Gráfico "Evolução" (Início): `GET /resumo/evolucao?ate=AAAA-MM&meses=6`; SVG feito à mão em `web/src/components/GraficoEvolucao.jsx` (legenda, dica no hover, "Ver em tabela", tocar num mês muda o mês do Início). Cores `--grafico-entrou`/`--grafico-saiu` validadas para daltonismo com o script do guia de dataviz (no escuro usam tons próprios; os de texto falhavam).
+- Computador (>= 1024px): a MESMA navegação vira barra lateral só por CSS (logo, botão "Lançar", abas e "Contas", que só aparece no computador). Início vira painel de 2 colunas por `grid-template-areas` (classes `area-*`), mantendo a ordem do celular. Páginas com `.tela.larga` (Início, Metas, Investimentos) usam até 1280px; as outras até 880px. No computador o casal ANALISA; no celular LANÇA no dia a dia.
+- Ao editar arquivos por script, usar `split/join` em vez de `replace` quando o texto tiver `$` (em `replace`, `$'` e `$&` são códigos especiais).
+
 ## Pendências combinadas
 
-- Forma de pagamento no lançamento (versão simples: Pix, Débito, Crédito, Dinheiro, Boleto; opcional; padrão nas contas fixas). Falta o usuário responder: a lista basta? Querem saber QUAL cartão (lista editável)? Controle completo de fatura/parcelas do cartão fica para depois, se fizer falta. Terá migração própria.
-- Etapa C: evolução mês a mês (gráfico dos últimos meses no Início).
-- Etapa D: layout para computador usando a tela toda (navegação lateral, conteúdo em colunas). No computador o casal ANALISA; no celular LANÇA no dia a dia.
-- Ajustes finos de visual conforme o uso no celular.
+- Ajustes finos de visual conforme o uso (celular e computador).
 - Depois: notificação de vencimento no celular (exige push + agendador no servidor).
 
 ## Fora de escopo por enquanto
