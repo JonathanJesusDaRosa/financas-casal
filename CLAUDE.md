@@ -49,7 +49,7 @@ financas-casal/
 - Datas de lançamento são só o dia (`@db.Date`), trafegam como texto `AAAA-MM-DD` e são convertidas em UTC (`api/src/lib/validar.js`) para evitar erro de fuso.
 - Dinheiro sempre em centavos (`Int`): R$ 100,50 = `10050`.
 - `.env` tem `DATABASE_URL` (pooled, usada pelo app) e `DIRECT_URL` (sem pooler, usada pelas migrações).
-- O cliente gerado (`src/generated/prisma`, fora do Git) é TypeScript; o Node 24 roda direto. Versões do Prisma fixadas em 7.10.1 (o `latest` do CLI era um RC da 8).
+- Gerador clássico `prisma-client-js` (cliente JS em `node_modules/@prisma/client`, import `@prisma/client`). O gerador novo `prisma-client` gera `.ts`, que a Vercel NÃO inclui no deploy (ERR_MODULE_NOT_FOUND). Versões do Prisma fixadas em 7.10.1 (o `latest` do CLI era um RC da 8).
 
 ### Autenticação
 

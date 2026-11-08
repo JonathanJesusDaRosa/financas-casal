@@ -1,9 +1,10 @@
 // Esquema do banco: cada "model" vira uma tabela no PostgreSQL.
 // Dinheiro é sempre guardado em CENTAVOS (Int): R$ 100,50 => 10050.
 
+// Gerador clássico: cria o cliente em JavaScript dentro de node_modules/@prisma/client.
+// (O gerador novo "prisma-client" cria arquivos .ts, que a Vercel não inclui no deploy.)
 generator client {
-  provider = "prisma-client"
-  output   = "../src/generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
