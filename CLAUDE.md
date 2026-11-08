@@ -131,5 +131,5 @@ Conexão direta com bancos (Open Finance), integração com WhatsApp, cotações
 
 ### Detalhes de comportamento do app
 
-- Sem zoom de pinça: `maximum-scale=1, user-scalable=no` no index.html (Android), `touch-action: pan-x pan-y` no CSS e `gesturestart` cancelado em main.jsx (iPhone ignora o meta).
+- Sem zoom de pinça e sem rolar de lado: `maximum-scale=1, user-scalable=no` no index.html (Android), `touch-action: pan-y` + `overflow-x: hidden` no CSS e `gesturestart` cancelado em main.jsx (iPhone ignora o meta).
 - "Olho" no topo (Cabecalho) oculta valores: `formatarReais` devolve `R$ ••••`; escolha salva no aparelho (localStorage). Toda tela que mostra dinheiro chama `useValoresOcultos()` para redesenhar quando o olho muda.

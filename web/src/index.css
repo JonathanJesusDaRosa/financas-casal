@@ -64,6 +64,7 @@ a {
 .conteudo-rolavel {
   flex: 1;
   min-height: 0;
+  overflow-x: hidden; /* nunca rola de lado (nem o "elástico" lateral do iPhone) */
   overflow-y: auto;
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
@@ -920,7 +921,13 @@ body:has(.area-logada) {
   overscroll-behavior: none;
 }
 
-/* Sem zoom de pinça e sem zoom de toque duplo: o dedo só rola a tela */
+/* Sem zoom de pinça, sem zoom de toque duplo e sem arrastar para o lado:
+   o dedo só rola a tela para cima e para baixo (o app não tem nada que role de lado). */
 html {
-  touch-action: pan-x pan-y;
+  touch-action: pan-y;
+}
+
+html,
+body {
+  overflow-x: hidden;
 }
