@@ -4,7 +4,11 @@ import { useAuth } from './auth.jsx';
 import Login from './pages/Login.jsx';
 import Cadastro from './pages/Cadastro.jsx';
 import Espaco from './pages/Espaco.jsx';
-import Inicio from './pages/Inicio.jsx';
+import Layout from './components/Layout.jsx';
+import Lancamentos from './pages/Lancamentos.jsx';
+import FormLancamento from './pages/FormLancamento.jsx';
+import Categorias from './pages/Categorias.jsx';
+import Casal from './pages/Casal.jsx';
 
 // Para quem está logado E já tem casal.
 // Sem login -> login. Logado sem casal -> tela "Seu espaço".
@@ -38,7 +42,16 @@ export default function App() {
 
   return (
     <Routes>
-      <Route path="/" element={<RotaDoCasal><Inicio /></RotaDoCasal>} />
+      {/* Área do casal: todas estas páginas ficam dentro do Layout (barra embaixo) */}
+      <Route element={<RotaDoCasal><Layout /></RotaDoCasal>}>
+        <Route path="/" element={<Lancamentos />} />
+        <Route path="/categorias" element={<Categorias />} />
+        <Route path="/casal" element={<Casal />} />
+      </Route>
+
+      {/* Formulário em tela cheia (sem a barra embaixo, para sobrar espaço ao teclado) */}
+      <Route path="/lancamentos/novo" element={<RotaDoCasal><FormLancamento /></RotaDoCasal>} />
+      <Route path="/lancamentos/:id" element={<RotaDoCasal><FormLancamento /></RotaDoCasal>} />
       <Route path="/espaco" element={<RotaSemCasal><Espaco /></RotaSemCasal>} />
       <Route path="/login" element={<RotaPublica><Login /></RotaPublica>} />
       <Route path="/cadastro" element={<RotaPublica><Cadastro /></RotaPublica>} />

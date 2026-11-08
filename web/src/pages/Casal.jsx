@@ -1,12 +1,11 @@
-// Área do casal. Mostra o espaço, os membros e o convite (se ainda houver vaga).
-// Os lançamentos, resumo e metas vão entrar aqui.
+// Aba "Casal": mostra o espaço, os membros e o convite (se ainda houver vaga).
 import { useEffect, useState } from 'react';
 import { api } from '../api.js';
 import { useAuth } from '../auth.jsx';
 
 const NOMES_DOS_PAPEIS = { TITULAR: 'Titular', DEPENDENTE: 'Dependente' };
 
-export default function Inicio() {
+export default function Casal() {
   const { usuario, sair } = useAuth();
   const [casal, setCasal] = useState(null);
   const [erro, setErro] = useState('');
@@ -19,7 +18,7 @@ export default function Inicio() {
   }, []);
 
   return (
-    <main className="tela-inicio">
+    <main className="pagina">
       <header className="topo">
         <h1>{casal ? casal.nome : 'Finanças do Casal'}</h1>
         <button className="secundario" onClick={sair}>Sair</button>
@@ -43,7 +42,6 @@ export default function Inicio() {
                 </li>
               ))}
             </ul>
-            <p className="dica">Em breve: lançar gastos e ver o resumo do mês.</p>
           </section>
         </>
       )}

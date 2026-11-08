@@ -162,8 +162,8 @@ button.secundario {
   font-size: 0.95rem;
 }
 
-/* ---------- Área logada ---------- */
-.tela-inicio {
+/* ---------- Páginas da área logada ---------- */
+.pagina {
   max-width: 720px;
   margin: 0 auto;
   padding: 1rem;
@@ -187,7 +187,7 @@ h3 {
 }
 
 /* Espaço entre cartões empilhados */
-.tela-inicio .cartao + .cartao {
+.pagina .cartao + .cartao {
   margin-top: 1rem;
 }
 
@@ -312,4 +312,342 @@ a.botao.secundario {
   border-radius: 999px;
   background: var(--fundo);
   color: var(--texto-suave);
+}
+
+/* ---------- Barra de navegação (embaixo, estilo app) ---------- */
+.area-logada {
+  /* espaço para o conteúdo não ficar escondido atrás da barra */
+  padding-bottom: calc(72px + env(safe-area-inset-bottom));
+}
+
+.barra-navegacao {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  justify-content: center;
+  background: var(--cartao);
+  border-top: 1px solid var(--borda);
+  /* env(safe-area-inset-bottom) = espaço da "barrinha" do iPhone */
+  padding-bottom: env(safe-area-inset-bottom);
+  z-index: 10;
+}
+
+.barra-navegacao a {
+  flex: 1;
+  max-width: 160px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+  padding: 0.55rem 0.25rem;
+  font-size: 0.75rem;
+  color: var(--texto-suave);
+  text-decoration: none;
+}
+
+.barra-navegacao a .icone {
+  font-size: 1.3rem;
+  filter: grayscale(1);
+  opacity: 0.7;
+}
+
+.barra-navegacao a.active {
+  color: var(--primaria);
+  font-weight: 600;
+}
+
+.barra-navegacao a.active .icone {
+  filter: none;
+  opacity: 1;
+}
+
+/* ---------- Lançamentos ---------- */
+.seletor-mes {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.seletor-mes h1 {
+  font-size: 1.15rem;
+  text-align: center;
+}
+
+.seletor-mes button {
+  font-size: 1.3rem;
+  line-height: 1;
+  padding: 0.4rem 0.9rem;
+}
+
+.totais {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.totais div {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding: 0.75rem;
+  background: var(--cartao);
+  border: 1px solid var(--borda);
+  border-radius: 12px;
+  min-width: 0;
+}
+
+.totais span {
+  font-size: 0.8rem;
+  color: var(--texto-suave);
+}
+
+.totais strong {
+  font-size: 0.95rem;
+  overflow-wrap: anywhere;
+}
+
+.positivo {
+  color: var(--primaria);
+}
+
+.negativo {
+  color: var(--erro);
+}
+
+.vazio {
+  text-align: center;
+  color: var(--texto-suave);
+  margin: 3rem 0;
+  line-height: 1.6;
+}
+
+.grupo-dia h2 {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--texto-suave);
+  margin: 1rem 0 0.4rem;
+}
+
+.lista-lancamentos {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  background: var(--cartao);
+  border: 1px solid var(--borda);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.lista-lancamentos li + li {
+  border-top: 1px solid var(--borda);
+}
+
+.lista-lancamentos a {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  color: inherit;
+  text-decoration: none;
+}
+
+.lista-lancamentos a:hover {
+  background: var(--fundo);
+}
+
+.bolinha {
+  flex-shrink: 0;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+.lista-lancamentos .textos {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.lista-lancamentos .titulo {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.lista-lancamentos small {
+  color: var(--texto-suave);
+  font-size: 0.8rem;
+}
+
+.lista-lancamentos .valor {
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Botão "+ Novo" flutuando acima da barra de navegação */
+.botao-flutuante {
+  position: fixed;
+  right: max(1rem, calc(50% - 360px + 1rem));
+  bottom: calc(84px + env(safe-area-inset-bottom));
+  padding: 0.9rem 1.3rem;
+  border-radius: 999px;
+  background: var(--primaria);
+  color: #fff;
+  font-weight: 700;
+  text-decoration: none;
+  box-shadow: 0 4px 14px rgb(0 0 0 / 0.25);
+  z-index: 5;
+}
+
+.botao-flutuante:hover {
+  background: var(--primaria-escura);
+}
+
+/* ---------- Formulários ---------- */
+.formulario {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.formulario .abas {
+  margin: 0;
+}
+
+select {
+  font: inherit;
+  font-size: 16px;
+  font-weight: 400;
+  padding: 0.7rem 0.8rem;
+  border: 1px solid var(--borda);
+  border-radius: 8px;
+  background: var(--cartao);
+  color: var(--texto);
+}
+
+.campo-valor {
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.topo h1 {
+  flex: 1;
+}
+
+.topo button + h1 {
+  text-align: center;
+  margin-right: 4.5rem; /* compensa a largura do "‹ Voltar" e centraliza o título */
+  font-size: 1.15rem;
+}
+
+button.perigo {
+  background: transparent;
+  color: var(--erro);
+  border: 1px solid var(--erro);
+}
+
+button.perigo:hover,
+button.perigo-texto:hover {
+  background: var(--erro-fundo);
+}
+
+button.perigo-texto {
+  color: var(--erro);
+}
+
+/* ---------- Categorias ---------- */
+.nova-categoria {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding: 0.75rem;
+}
+
+.nova-categoria input[type='text'] {
+  flex: 1;
+  min-width: 0;
+}
+
+input[type='color'] {
+  flex-shrink: 0;
+  width: 2.6rem;
+  height: 2.6rem;
+  padding: 0.2rem;
+  cursor: pointer;
+}
+
+.lista-categorias {
+  list-style: none;
+  margin: 0;
+  padding: 0.25rem 1rem;
+}
+
+.lista-categorias li {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 0;
+}
+
+.lista-categorias li + li {
+  border-top: 1px solid var(--borda);
+}
+
+.seletor-cor {
+  width: 2rem !important;
+  height: 2rem !important;
+  border-radius: 50%;
+  border: none;
+  padding: 0 !important;
+  background: none;
+}
+
+.seletor-cor::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+.seletor-cor::-webkit-color-swatch {
+  border: none;
+  border-radius: 50%;
+}
+
+.seletor-cor::-moz-color-swatch {
+  border: none;
+  border-radius: 50%;
+}
+
+.lista-categorias .nome {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.lista-categorias .nome small {
+  color: var(--texto-suave);
+  font-size: 0.8rem;
+}
+
+.lista-categorias button {
+  padding: 0.4rem 0.7rem;
+  font-size: 0.85rem;
+}
+
+.renomear {
+  flex: 1;
+  display: flex;
+  gap: 0.4rem;
+}
+
+.renomear input {
+  flex: 1;
+  min-width: 0;
+  padding: 0.45rem 0.6rem;
 }

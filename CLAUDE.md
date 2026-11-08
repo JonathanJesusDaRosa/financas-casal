@@ -43,7 +43,9 @@ financas-casal/
 ### Banco (dentro de `api/`)
 
 - Esquema: `api/prisma/schema.prisma`. Depois de mudar, rodar `npm run db:migrate -- --name descricao` e `npm run db:generate`.
-- `npm run db:seed` cria dados fictícios; `npm run db:studio` abre os dados no navegador.
+- `npm run db:studio` abre os dados no navegador.
+- O banco do Neon é o mesmo usado de verdade pelo casal: NÃO rodar `npm run db:seed` nele (cria o "Casal Exemplo"). Testes automáticos usam e-mails `teste-*@exemplo.com` e apagam tudo no final.
+- Datas de lançamento são só o dia (`@db.Date`), trafegam como texto `AAAA-MM-DD` e são convertidas em UTC (`api/src/lib/validar.js`) para evitar erro de fuso.
 - Dinheiro sempre em centavos (`Int`): R$ 100,50 = `10050`.
 - `.env` tem `DATABASE_URL` (pooled, usada pelo app) e `DIRECT_URL` (sem pooler, usada pelas migrações).
 - O cliente gerado (`src/generated/prisma`, fora do Git) é TypeScript; o Node 24 roda direto. Versões do Prisma fixadas em 7.10.1 (o `latest` do CLI era um RC da 8).
@@ -71,7 +73,9 @@ financas-casal/
 - Categorias editáveis (Mercado, Transporte, Moradia, Lazer...)
 - Resumo do mês: entradas, saídas, saldo e gastos por categoria
 - Divisão proporcional à renda: quanto cada um deveria pagar e quem deve a quem
-- Metas do casal: valor-alvo, prazo e quanto já foi guardado
+- Caixinhas para sonhos (tabela `Meta`): valor-alvo, prazo e quanto já foi guardado; cada caixinha pode apontar para um investimento
+- Guardar dinheiro numa caixinha aparece no mês como "Separado para investir" (não é despesa); o mês mostra entradas, saídas, guardado e sobra
+- Investimentos com registro manual: onde o dinheiro está aplicado (ex.: CDB Nubank) e o saldo, atualizado à mão. Sem cotações automáticas.
 
 **Fases:**
 1. Base (MVP acima)
@@ -90,4 +94,4 @@ Cada fase só começa quando a anterior está em uso no dia a dia.
 
 ## Fora de escopo por enquanto
 
-Conexão direta com bancos (Open Finance), integração com WhatsApp, investimentos, virar produto comercial.
+Conexão direta com bancos (Open Finance), integração com WhatsApp, cotações automáticas de investimentos, virar produto comercial.

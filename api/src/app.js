@@ -3,6 +3,8 @@ import cors from 'cors';
 import { prisma } from './lib/prisma.js';
 import authRoutes from './routes/auth.js';
 import casalRoutes from './routes/casal.js';
+import categoriasRoutes from './routes/categorias.js';
+import lancamentosRoutes from './routes/lancamentos.js';
 
 const app = express();
 
@@ -33,6 +35,10 @@ app.use('/auth', authRoutes);
 
 // Espaço do casal (criar, entrar com código, ver, novo convite)
 app.use('/casal', casalRoutes);
+
+// Categorias e lançamentos (sempre do casal de quem está logado)
+app.use('/categorias', categoriasRoutes);
+app.use('/lancamentos', lancamentosRoutes);
 
 // Rota que não existe
 app.use((req, res) => {
