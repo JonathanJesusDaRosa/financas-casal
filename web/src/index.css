@@ -11,6 +11,7 @@
   --primaria-escura: #17624a;
   --erro: #b3261e;
   --erro-fundo: #fdecea;
+  --guardado: #6a4fb3;
 
   font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   color: var(--texto);
@@ -29,6 +30,7 @@
     --primaria-escura: #5cc39c;
     --erro: #ffb4ab;
     --erro-fundo: #3b1d1a;
+    --guardado: #b9a2f5;
   }
 }
 
@@ -385,7 +387,7 @@ a.botao.secundario {
 
 .totais {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr); /* 2x2 no celular */
   gap: 0.5rem;
   margin-bottom: 1.25rem;
 }
@@ -650,4 +652,340 @@ input[type='color'] {
   flex: 1;
   min-width: 0;
   padding: 0.45rem 0.6rem;
+}
+
+/* Telas maiores: os 4 totais lado a lado */
+@media (min-width: 560px) {
+  .totais {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.guardado {
+  color: var(--guardado);
+}
+
+.linha-rendimento {
+  margin: -0.5rem 0 1rem;
+  padding: 0.6rem 0.8rem;
+  border-radius: 10px;
+  background: var(--cartao);
+  border: 1px dashed var(--borda);
+  font-size: 0.9rem;
+  color: var(--texto-suave);
+}
+
+.icone-item {
+  flex-shrink: 0;
+  width: 12px;
+  display: flex;
+  justify-content: center;
+  font-size: 0.95rem;
+}
+
+.dica.pequena,
+small.pequena {
+  font-size: 0.85rem;
+}
+
+/* Cabeçalho com links que parecem botões (‹ Voltar, Editar) */
+.topo {
+  gap: 0.5rem;
+}
+
+.topo a.botao {
+  padding: 0.5rem 0.9rem;
+  font-weight: 600;
+}
+
+.topo a.botao + h1 {
+  text-align: center;
+  margin-right: 4.5rem;
+  font-size: 1.15rem;
+}
+
+/* Cartão inteiro clicável (ex.: "Categorias" na aba Casal) */
+a.cartao-link {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  color: inherit;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+a.cartao-link small {
+  font-weight: 400;
+  color: var(--texto-suave);
+}
+
+a.cartao-link:hover {
+  border-color: var(--primaria);
+}
+
+/* ---------- Caixinhas ---------- */
+.resumo-caixinhas {
+  margin: 0 0 1rem;
+  color: var(--texto-suave);
+}
+
+.lista-caixinhas {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.lista-caixinhas.arquivadas {
+  margin-top: 0.75rem;
+  opacity: 0.65;
+}
+
+a.cartao-caixinha {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: 1rem 1.1rem;
+  color: inherit;
+  text-decoration: none;
+}
+
+a.cartao-caixinha:hover {
+  border-color: var(--guardado);
+}
+
+.cartao-caixinha .linha,
+.investimento .linha {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.cartao-caixinha .nome {
+  font-weight: 600;
+  font-size: 1.05rem;
+}
+
+.cartao-caixinha .porcento {
+  color: var(--guardado);
+  font-weight: 700;
+}
+
+.cartao-caixinha .valores {
+  font-size: 0.9rem;
+  color: var(--texto-suave);
+}
+
+.cartao-caixinha .valores strong {
+  color: var(--texto);
+}
+
+.progresso {
+  height: 10px;
+  border-radius: 999px;
+  background: var(--fundo);
+  border: 1px solid var(--borda);
+  overflow: hidden;
+}
+
+.progresso > div {
+  height: 100%;
+  background: var(--guardado);
+  border-radius: 999px;
+  transition: width 0.4s ease;
+}
+
+.mostrar-arquivadas {
+  display: block;
+  margin: 1.25rem auto 0;
+}
+
+.destaque-caixinha {
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.destaque-caixinha h1 {
+  font-size: 1.3rem;
+}
+
+.destaque-caixinha .etiqueta {
+  display: inline-block;
+  margin-top: 0.5rem;
+}
+
+.saldo-grande {
+  font-size: 2.2rem;
+  font-weight: 700;
+  margin: 0.75rem 0 0;
+  color: var(--guardado);
+}
+
+.destaque-caixinha .progresso {
+  margin: 0.75rem 0;
+}
+
+.planejamento {
+  margin: 0.5rem 0;
+  font-size: 0.95rem;
+}
+
+.acoes-caixinha {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+/* "Guardar" ocupa a linha toda; Resgatar e Atualizar ficam lado a lado */
+.acoes-caixinha button:first-child {
+  grid-column: 1 / -1;
+}
+
+.acoes-caixinha button.secundario {
+  padding: 0.7rem 0.5rem;
+}
+
+.historico {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.historico li {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.6rem 0;
+}
+
+.historico li + li {
+  border-top: 1px solid var(--borda);
+}
+
+.historico .textos {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.historico small {
+  color: var(--texto-suave);
+  font-size: 0.8rem;
+}
+
+.historico .valor {
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+button.apagar-mov {
+  padding: 0.25rem 0.55rem;
+  font-size: 0.8rem;
+  color: var(--texto-suave);
+}
+
+.rodape-caixinha {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.escolha-icone {
+  border: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.escolha-icone legend {
+  font-weight: 600;
+  font-size: 0.95rem;
+  margin-bottom: 0.4rem;
+}
+
+.escolha-icone button {
+  font-size: 1.4rem;
+  padding: 0.35rem 0.5rem;
+  background: var(--fundo);
+  border: 2px solid transparent;
+}
+
+.escolha-icone button.ativo {
+  border-color: var(--guardado);
+  background: var(--cartao);
+}
+
+/* ---------- Investimentos ---------- */
+.total-investido {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  margin-bottom: 1rem;
+}
+
+.total-investido span {
+  color: var(--texto-suave);
+  font-size: 0.9rem;
+}
+
+.total-investido strong {
+  font-size: 1.8rem;
+  color: var(--guardado);
+}
+
+.total-investido small {
+  color: var(--texto-suave);
+}
+
+.investimento {
+  margin-top: 1rem;
+}
+
+.investimento h2 {
+  margin: 0;
+}
+
+.investimento > .linha strong {
+  font-size: 1.1rem;
+}
+
+.sem-investimento {
+  border-style: dashed;
+}
+
+.caixinhas-do-investimento {
+  list-style: none;
+  margin: 0.75rem 0 0;
+  padding: 0;
+}
+
+.caixinhas-do-investimento a {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+  color: inherit;
+  text-decoration: none;
+  border-top: 1px solid var(--borda);
+}
+
+.caixinhas-do-investimento a:hover {
+  color: var(--primaria);
+}
+
+.botoes-pequenos {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.botoes-pequenos button {
+  padding: 0.4rem 0.8rem;
+  font-size: 0.85rem;
 }

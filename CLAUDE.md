@@ -37,6 +37,7 @@ financas-casal/
 ```
 
 - Rodar o front: `cd web` e `npm run dev`
+- O projeto fica no OneDrive e o Vite às vezes não percebe arquivos alterados (o navegador mostra a versão antiga). Solução: salvar o arquivo de novo (ou `touch`) ou reiniciar o `npm run dev`.
 - Rodar a API: `cd api` e `npm run dev` (nodemon reinicia ao salvar)
 - Teste rápido da API: `GET /health` responde `{"status":"ok"}`; `GET /health/db` testa o banco
 
@@ -65,6 +66,15 @@ financas-casal/
 - Rotas com dados do casal usam `autenticar` + `exigirCasal` e SEMPRE filtram por `req.casalId`.
 - `prisma migrate dev` não funciona quando o Prisma quer confirmar um aviso (terminal não interativo). Alternativa: gerar o SQL com `prisma migrate diff --from-config-datasource --to-schema prisma/schema.prisma --script` numa pasta nova em `prisma/migrations/` e aplicar com `prisma migrate deploy`.
 
+### Caixinhas e investimentos
+
+- Movimentos de caixinha são `Lancamento` com tipo `GUARDADO`, `RESGATE` ou `RENDIMENTO` e `caixinhaId`. Só são criados/apagados pelas rotas de `/caixinhas` (as rotas de `/lancamentos` recusam).
+- Saldo da caixinha = guardado + rendimento − resgatado, sempre calculado (`api/src/lib/saldos.js`), nunca salvo.
+- "Atualizar saldo": a pessoa digita o saldo do banco e a diferença vira `RENDIMENTO` (pode ser negativo).
+- Totais do mês: entradas = receitas + resgates; guardado = GUARDADO; sobra = entradas − saídas − guardado. Rendimento é só informativo e NÃO entra na sobra (decisão do usuário).
+- Saldo de um investimento = soma das caixinhas ligadas a ele (sem saldo próprio).
+- Caixinha com histórico não pode ser apagada; com saldo zero pode ser arquivada.
+
 ## Funcionalidades
 
 **Primeira versão (MVP):**
@@ -91,6 +101,12 @@ Cada fase só começa quando a anterior está em uso no dia a dia.
 - Chaves de API e senhas ficam em `.env` (fora do Git), e as chamadas de IA passam sempre pelo back-end.
 - Senhas com hash (bcrypt ou argon2); cada casal só enxerga os próprios dados.
 - Nunca colocar dados financeiros reais no repositório.
+
+## Pendências combinadas
+
+- Rodada de melhorias visuais (o usuário não gostou de partes do layout): fazer depois de publicar, com o app em uso no celular.
+- Resumo do mês por categoria (com gráfico) e divisão proporcional à renda.
+- Limite de tentativas de login antes de publicar.
 
 ## Fora de escopo por enquanto
 

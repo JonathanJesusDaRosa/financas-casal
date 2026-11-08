@@ -5,6 +5,7 @@ import jwt from 'jsonwebtoken';
 import { z } from 'zod';
 import { prisma } from '../lib/prisma.js';
 import { autenticar } from '../middlewares/autenticar.js';
+import { limiteCadastro, limiteLogin } from '../middlewares/limitarTentativas.js';
 
 const router = Router();
 
@@ -62,7 +63,7 @@ const HASH_FALSO = bcrypt.hashSync('senha-que-nao-existe', 10);
 // ---------- Rotas ----------
 
 // POST /auth/cadastro  { nome, email, senha }
-router.post('/cadastro', async (req, res) => {
+router.post('/cadastro', limiteCadastro, async (req, res) => {
   const dados = validar(cadastroSchema, req, res);
   if (!dados) return;
 
@@ -84,7 +85,7 @@ router.post('/cadastro', async (req, res) => {
 });
 
 // POST /auth/login  { email, senha }
-router.post('/login', async (req, res) => {
+router.post('/login', limiteLogin, async (req, res) => {
   const dados = validar(loginSchema, req, res);
   if (!dados) return;
 

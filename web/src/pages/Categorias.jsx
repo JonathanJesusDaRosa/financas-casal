@@ -1,5 +1,6 @@
 // Categorias do casal: adicionar, renomear, trocar a cor e apagar.
 import { useEffect, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { api } from '../api.js';
 
 export default function Categorias() {
@@ -68,6 +69,7 @@ export default function Categorias() {
   return (
     <main className="pagina">
       <header className="topo">
+        <Link to="/casal" className="botao secundario">‹ Casal</Link>
         <h1>Categorias</h1>
       </header>
 

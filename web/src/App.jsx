@@ -9,6 +9,10 @@ import Lancamentos from './pages/Lancamentos.jsx';
 import FormLancamento from './pages/FormLancamento.jsx';
 import Categorias from './pages/Categorias.jsx';
 import Casal from './pages/Casal.jsx';
+import Caixinhas from './pages/Caixinhas.jsx';
+import CaixinhaDetalhe from './pages/CaixinhaDetalhe.jsx';
+import FormCaixinha from './pages/FormCaixinha.jsx';
+import Investimentos from './pages/Investimentos.jsx';
 
 // Para quem está logado E já tem casal.
 // Sem login -> login. Logado sem casal -> tela "Seu espaço".
@@ -45,9 +49,15 @@ export default function App() {
       {/* Área do casal: todas estas páginas ficam dentro do Layout (barra embaixo) */}
       <Route element={<RotaDoCasal><Layout /></RotaDoCasal>}>
         <Route path="/" element={<Lancamentos />} />
-        <Route path="/categorias" element={<Categorias />} />
+        <Route path="/caixinhas" element={<Caixinhas />} />
+        <Route path="/caixinhas/:id" element={<CaixinhaDetalhe />} />
+        <Route path="/investimentos" element={<Investimentos />} />
         <Route path="/casal" element={<Casal />} />
+        <Route path="/categorias" element={<Categorias />} />
       </Route>
+
+      <Route path="/caixinhas/nova" element={<RotaDoCasal><FormCaixinha /></RotaDoCasal>} />
+      <Route path="/caixinhas/:id/editar" element={<RotaDoCasal><FormCaixinha /></RotaDoCasal>} />
 
       {/* Formulário em tela cheia (sem a barra embaixo, para sobrar espaço ao teclado) */}
       <Route path="/lancamentos/novo" element={<RotaDoCasal><FormLancamento /></RotaDoCasal>} />

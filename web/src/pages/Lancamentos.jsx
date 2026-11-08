@@ -62,12 +62,25 @@ export default function Lancamentos() {
               <strong className="negativo">{formatarReais(resposta.totais.saidas)}</strong>
             </div>
             <div>
-              <span>Saldo</span>
-              <strong className={resposta.totais.saldo < 0 ? 'negativo' : ''}>
-                {formatarReais(resposta.totais.saldo)}
+              <span>🐷 Guardado</span>
+              <strong className="guardado">{formatarReais(resposta.totais.guardado)}</strong>
+            </div>
+            <div>
+              <span>Sobra</span>
+              <strong className={resposta.totais.sobra < 0 ? 'negativo' : ''}>
+                {formatarReais(resposta.totais.sobra)}
               </strong>
             </div>
           </section>
+
+          {/* Juros: só informativo, não entra na sobra */}
+          {resposta.totais.rendimento !== 0 && (
+            <p className="linha-rendimento">
+              📈 {resposta.totais.rendimento > 0
+                ? <>Suas caixinhas renderam <strong>{formatarReais(resposta.totais.rendimento)}</strong> este mês</>
+                : <>Ajuste negativo nas caixinhas este mês: <strong>{formatarReais(resposta.totais.rendimento)}</strong></>}
+            </p>
+          )}
 
           {resposta.lancamentos.length === 0 ? (
             <p className="vazio">Nenhum lançamento neste mês.<br />Toque em <strong>+ Novo</strong> para começar.</p>
@@ -78,17 +91,7 @@ export default function Lancamentos() {
                 <ul className="lista-lancamentos">
                   {itens.map((l) => (
                     <li key={l.id}>
-                      <Link to={`/lancamentos/${l.id}`}>
-                        <span className="bolinha" style={{ background: l.categoria?.cor ?? 'var(--borda)' }} />
-                        <span className="textos">
-                          <span className="titulo">{l.descricao || l.categoria?.nome || 'Sem descrição'}</span>
-                          <small>{l.categoria?.nome ?? 'Sem categoria'} · {l.pagoPor.nome}</small>
-                        </span>
-                        <span className={l.tipo === 'RECEITA' ? 'valor positivo' : 'valor'}>
-                          {l.tipo === 'RECEITA' ? '+ ' : '− '}
-                          {formatarReais(l.valorCentavos)}
-                        </span>
-                      </Link>
+                      {l.caixinha ? <ItemCaixinha l={l} /> : <ItemComum l={l} />}
                     </li>
                   ))}
                 </ul>
@@ -100,5 +103,44 @@ export default function Lancamentos() {
 
       <Link className="botao-flutuante" to="/lancamentos/novo">+ Novo</Link>
     </main>
+  );
+}
+
+// Receita ou despesa: abre o formulário de edição.
+function ItemComum({ l }) {
+  const receita = l.tipo === 'RECEITA';
+  return (
+    <Link to={`/lancamentos/${l.id}`}>
+      <span className="bolinha" style={{ background: l.categoria?.cor ?? 'var(--borda)' }} />
+      <span className="textos">
+        <span className="titulo">{l.descricao || l.categoria?.nome || 'Sem descrição'}</span>
+        <small>{l.categoria?.nome ?? 'Sem categoria'} · {l.pagoPor.nome}</small>
+      </span>
+      <span className={receita ? 'valor positivo' : 'valor'}>
+        {receita ? '+ ' : '− '}
+        {formatarReais(l.valorCentavos)}
+      </span>
+    </Link>
+  );
+}
+
+// Guardado ou resgate de uma caixinha: abre a caixinha.
+function ItemCaixinha({ l }) {
+  const resgate = l.tipo === 'RESGATE';
+  return (
+    <Link to={`/caixinhas/${l.caixinha.id}`}>
+      <span className="icone-item" aria-hidden="true">{resgate ? '↩️' : '🐷'}</span>
+      <span className="textos">
+        <span className="titulo">
+          {resgate ? 'Resgate de ' : 'Guardado em '}
+          {l.caixinha.icone} {l.caixinha.nome}
+        </span>
+        <small>Caixinha · {l.pagoPor.nome}</small>
+      </span>
+      <span className={resgate ? 'valor positivo' : 'valor guardado'}>
+        {resgate ? '+ ' : ''}
+        {formatarReais(l.valorCentavos)}
+      </span>
+    </Link>
   );
 }

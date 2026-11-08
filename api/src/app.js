@@ -5,11 +5,21 @@ import authRoutes from './routes/auth.js';
 import casalRoutes from './routes/casal.js';
 import categoriasRoutes from './routes/categorias.js';
 import lancamentosRoutes from './routes/lancamentos.js';
+import caixinhasRoutes from './routes/caixinhas.js';
+import investimentosRoutes from './routes/investimentos.js';
 
 const app = express();
 
-// Permite que o front-end (localhost:5173) chame esta API.
-app.use(cors({ origin: process.env.WEB_URL || 'http://localhost:5173' }));
+// Na Vercel a API fica atrás de um "proxy". Isto faz o Express enxergar o IP
+// real de quem acessa (necessário para o limite de tentativas funcionar).
+app.set('trust proxy', 1);
+
+// Só estes endereços podem chamar a API pelo navegador.
+// WEB_URL pode ter mais de um, separados por vírgula.
+const origensPermitidas = (process.env.WEB_URL || 'http://localhost:5173')
+  .split(',')
+  .map((url) => url.trim());
+app.use(cors({ origin: origensPermitidas }));
 
 // Faz o Express entender o corpo das requisições em JSON.
 app.use(express.json());
@@ -39,6 +49,10 @@ app.use('/casal', casalRoutes);
 // Categorias e lançamentos (sempre do casal de quem está logado)
 app.use('/categorias', categoriasRoutes);
 app.use('/lancamentos', lancamentosRoutes);
+
+// Caixinhas para sonhos e onde o dinheiro está investido
+app.use('/caixinhas', caixinhasRoutes);
+app.use('/investimentos', investimentosRoutes);
 
 // Rota que não existe
 app.use((req, res) => {

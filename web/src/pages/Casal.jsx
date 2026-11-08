@@ -1,5 +1,6 @@
 // Aba "Casal": mostra o espaço, os membros e o convite (se ainda houver vaga).
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { api } from '../api.js';
 import { useAuth } from '../auth.jsx';
 
@@ -43,6 +44,11 @@ export default function Casal() {
               ))}
             </ul>
           </section>
+
+          <Link to="/categorias" className="cartao cartao-link">
+            <span>🏷️ Categorias</span>
+            <small>Mercado, Transporte, Lazer… criar, renomear e mudar cores</small>
+          </Link>
         </>
       )}
     </main>

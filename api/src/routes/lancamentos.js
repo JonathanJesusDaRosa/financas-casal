@@ -47,7 +47,12 @@ const selecao = {
   descricao: true,
   categoria: { select: { id: true, nome: true, cor: true } },
   pagoPor: { select: { id: true, nome: true } },
+  caixinha: { select: { id: true, nome: true, icone: true } },
 };
+
+// Tipos que pertencem a uma caixinha: só podem ser criados/apagados pelas rotas de /caixinhas.
+const TIPOS_DE_CAIXINHA = ['GUARDADO', 'RESGATE', 'RENDIMENTO'];
+const MENSAGEM_CAIXINHA = 'Este movimento é de uma caixinha. Altere pelo histórico da caixinha.';
 
 // Converte a data para "AAAA-MM-DD" (sem hora, sem fuso).
 const formatar = (lancamento) => ({ ...lancamento, data: paraTexto(lancamento.data) });
@@ -78,26 +83,39 @@ function intervaloDoMes(mes) {
 // ---------- Rotas ----------
 
 // GET /lancamentos?mes=2026-11 -> lançamentos do mês + totais
+//   entradas   = receitas + resgates de caixinhas (dinheiro que ficou disponível)
+//   saidas     = despesas
+//   guardado   = o que foi separado para as caixinhas
+//   sobra      = entradas - saidas - guardado
+//   rendimento = juros das caixinhas no mês (só informativo, NÃO entra na sobra)
 router.get('/', async (req, res) => {
   const mes = validar(mesSchema, req.query.mes ?? new Date().toISOString().slice(0, 7), res);
   if (!mes) return;
   const { inicio, fim } = intervaloDoMes(mes);
 
-  const lancamentos = await prisma.lancamento.findMany({
+  const doMes = await prisma.lancamento.findMany({
     where: { casalId: req.casalId, data: { gte: inicio, lt: fim } },
     orderBy: [{ data: 'desc' }, { id: 'desc' }],
     select: selecao,
   });
 
-  const somar = (tipo) =>
-    lancamentos.filter((l) => l.tipo === tipo).reduce((total, l) => total + l.valorCentavos, 0);
-  const entradas = somar('RECEITA');
+  const somar = (...tipos) =>
+    doMes.filter((l) => tipos.includes(l.tipo)).reduce((total, l) => total + l.valorCentavos, 0);
+  const entradas = somar('RECEITA', 'RESGATE');
   const saidas = somar('DESPESA');
+  const guardado = somar('GUARDADO');
 
   res.json({
     mes,
-    totais: { entradas, saidas, saldo: entradas - saidas },
-    lancamentos: lancamentos.map(formatar),
+    totais: {
+      entradas,
+      saidas,
+      guardado,
+      sobra: entradas - saidas - guardado,
+      rendimento: somar('RENDIMENTO'),
+    },
+    // Rendimentos ficam fora da lista (aparecem no histórico da caixinha).
+    lancamentos: doMes.filter((l) => l.tipo !== 'RENDIMENTO').map(formatar),
   });
 });
 
@@ -136,8 +154,12 @@ router.patch('/:id', async (req, res) => {
   const dados = validar(editarSchema, req.body, res);
   if (!dados) return;
 
-  const existe = await prisma.lancamento.count({ where: { id, casalId: req.casalId } });
-  if (!existe) return res.status(404).json({ erro: 'Lançamento não encontrado.' });
+  const existente = await prisma.lancamento.findFirst({
+    where: { id, casalId: req.casalId },
+    select: { tipo: true },
+  });
+  if (!existente) return res.status(404).json({ erro: 'Lançamento não encontrado.' });
+  if (TIPOS_DE_CAIXINHA.includes(existente.tipo)) return res.status(400).json({ erro: MENSAGEM_CAIXINHA });
 
   const problema = await conferirVinculos(dados, req.casalId);
   if (problema) return res.status(400).json({ erro: problema });
@@ -155,8 +177,16 @@ router.delete('/:id', async (req, res) => {
   const id = validar(idSchema, req.params.id, res);
   if (!id) return;
 
-  const { count } = await prisma.lancamento.deleteMany({ where: { id, casalId: req.casalId } });
-  if (count === 0) return res.status(404).json({ erro: 'Lançamento não encontrado.' });
+  // Só apaga receitas e despesas; movimentos de caixinha têm regra própria (saldo).
+  const { count } = await prisma.lancamento.deleteMany({
+    where: { id, casalId: req.casalId, tipo: { in: ['RECEITA', 'DESPESA'] } },
+  });
+  if (count === 0) {
+    const deCaixinha = await prisma.lancamento.count({ where: { id, casalId: req.casalId } });
+    return deCaixinha
+      ? res.status(400).json({ erro: MENSAGEM_CAIXINHA })
+      : res.status(404).json({ erro: 'Lançamento não encontrado.' });
+  }
   res.status(204).end();
 });
 

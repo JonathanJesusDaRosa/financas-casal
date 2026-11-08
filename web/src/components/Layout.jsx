@@ -3,7 +3,8 @@ import { NavLink, Outlet } from 'react-router-dom';
 
 const ABAS = [
   { para: '/', texto: 'Lançamentos', icone: '📒' },
-  { para: '/categorias', texto: 'Categorias', icone: '🏷️' },
+  { para: '/caixinhas', texto: 'Caixinhas', icone: '🐷' },
+  { para: '/investimentos', texto: 'Investimentos', icone: '📈' },
   { para: '/casal', texto: 'Casal', icone: '💑' },
 ];
 

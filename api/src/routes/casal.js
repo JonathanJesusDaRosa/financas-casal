@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { prisma } from '../lib/prisma.js';
 import { autenticar } from '../middlewares/autenticar.js';
 import { exigirCasal } from '../middlewares/exigirCasal.js';
+import { limiteConvite } from '../middlewares/limitarTentativas.js';
 import { CATEGORIAS_PADRAO } from '../lib/categoriasPadrao.js';
 import { gerarCodigoConvite, normalizarCodigo, novaValidade } from '../lib/convite.js';
 
@@ -115,7 +116,7 @@ router.post('/', async (req, res) => {
 });
 
 // ---------- POST /casal/entrar  { codigo } -> entra num espaço ----------
-router.post('/entrar', async (req, res) => {
+router.post('/entrar', limiteConvite, async (req, res) => {
   const codigo = normalizarCodigo(req.body?.codigo);
   if (codigo.length !== 7) {
     return res.status(400).json({ erro: 'O código tem 6 letras/números, como K7M-4QX.' });

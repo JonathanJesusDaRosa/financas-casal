@@ -10,9 +10,17 @@ datasource db {
   provider = "postgresql"
 }
 
+// RECEITA/DESPESA = dinheiro do dia a dia.
+// GUARDADO/RESGATE/RENDIMENTO = movimentos de uma caixinha (exigem caixinhaId).
+//   GUARDADO   -> colocou dinheiro na caixinha (no mês, conta como "Guardado")
+//   RESGATE    -> tirou dinheiro da caixinha (no mês, conta como "Entrada")
+//   RENDIMENTO -> juros (pode ser negativo); só informativo, não mexe na sobra
 enum TipoLancamento {
   RECEITA
   DESPESA
+  GUARDADO
+  RESGATE
+  RENDIMENTO
 }
 
 // Papel de cada pessoa no espaço do casal.
@@ -24,15 +32,16 @@ enum Papel {
 
 // O "espaço do casal": tudo pertence a um casal.
 model Casal {
-  id              Int          @id @default(autoincrement())
+  id              Int            @id @default(autoincrement())
   nome            String
-  codigoConvite   String?      @unique // ex.: "K7M-4QX"; vira null quando o casal fica completo
+  codigoConvite   String?        @unique // ex.: "K7M-4QX"; vira null quando o casal fica completo
   conviteExpiraEm DateTime?
-  criadoEm        DateTime     @default(now())
+  criadoEm        DateTime       @default(now())
   usuarios        Usuario[]
   categorias      Categoria[]
   lancamentos     Lancamento[]
-  metas           Meta[]
+  caixinhas       Caixinha[]
+  investimentos   Investimento[]
 }
 
 model Usuario {
@@ -74,17 +83,39 @@ model Lancamento {
   categoria   Categoria? @relation(fields: [categoriaId], references: [id], onDelete: SetNull)
   pagoPorId   Int
   pagoPor     Usuario    @relation(fields: [pagoPorId], references: [id])
+  // Só nos movimentos de caixinha. NoAction: o banco não deixa apagar uma caixinha que tem movimentos.
+  caixinhaId  Int?
+  caixinha    Caixinha?  @relation(fields: [caixinhaId], references: [id], onDelete: NoAction)
 
   @@index([casalId, data]) // deixa rápido o "resumo do mês"
+  @@index([caixinhaId])
 }
 
-model Meta {
-  id                    Int       @id @default(autoincrement())
-  nome                  String
-  valorAlvoCentavos     Int
-  valorGuardadoCentavos Int       @default(0)
-  prazo                 DateTime? @db.Date
-  criadoEm              DateTime  @default(now())
-  casalId               Int
-  casal                 Casal     @relation(fields: [casalId], references: [id], onDelete: Cascade)
+// Caixinha para um sonho. O saldo NÃO fica guardado aqui: é calculado somando
+// os lançamentos GUARDADO + RENDIMENTO - RESGATE dela (assim nunca desatualiza).
+model Caixinha {
+  id                Int           @id @default(autoincrement())
+  nome              String
+  icone             String? // emoji, ex.: "🏖️"
+  valorAlvoCentavos Int
+  prazo             DateTime?     @db.Date
+  arquivada         Boolean       @default(false) // sonho realizado/desistido, com saldo zerado
+  criadoEm          DateTime      @default(now())
+  casalId           Int
+  casal             Casal         @relation(fields: [casalId], references: [id], onDelete: Cascade)
+  investimentoId    Int? // onde o dinheiro está aplicado
+  investimento      Investimento? @relation(fields: [investimentoId], references: [id], onDelete: SetNull)
+  movimentos        Lancamento[]
+}
+
+// Onde o dinheiro está aplicado (ex.: "CDB Nubank"). O saldo é a soma das caixinhas dele.
+model Investimento {
+  id        Int        @id @default(autoincrement())
+  nome      String
+  criadoEm  DateTime   @default(now())
+  casalId   Int
+  casal     Casal      @relation(fields: [casalId], references: [id], onDelete: Cascade)
+  caixinhas Caixinha[]
+
+  @@unique([casalId, nome])
 }
