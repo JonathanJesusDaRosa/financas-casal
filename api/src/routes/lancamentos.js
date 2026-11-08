@@ -45,14 +45,14 @@ const selecao = {
   valorCentavos: true,
   data: true,
   descricao: true,
-  categoria: { select: { id: true, nome: true, cor: true } },
+  categoria: { select: { id: true, nome: true, cor: true, icone: true } },
   pagoPor: { select: { id: true, nome: true } },
   caixinha: { select: { id: true, nome: true, icone: true } },
 };
 
 // Tipos que pertencem a uma caixinha: só podem ser criados/apagados pelas rotas de /caixinhas.
 const TIPOS_DE_CAIXINHA = ['GUARDADO', 'RESGATE', 'RENDIMENTO'];
-const MENSAGEM_CAIXINHA = 'Este movimento é de uma caixinha. Altere pelo histórico da caixinha.';
+const MENSAGEM_CAIXINHA = 'Este movimento é de uma meta. Altere pelo histórico da meta.';
 
 // Converte a data para "AAAA-MM-DD" (sem hora, sem fuso).
 const formatar = (lancamento) => ({ ...lancamento, data: paraTexto(lancamento.data) });
@@ -66,7 +66,7 @@ async function conferirVinculos({ categoriaId, pagoPorId }, casalId) {
   }
   if (pagoPorId) {
     const ok = await prisma.usuario.count({ where: { id: pagoPorId, casalId } });
-    if (!ok) return 'A pessoa que pagou não faz parte do casal.';
+    if (!ok) return 'A pessoa que pagou não faz parte da casa.';
   }
   return null;
 }

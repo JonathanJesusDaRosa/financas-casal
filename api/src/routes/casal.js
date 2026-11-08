@@ -73,7 +73,7 @@ async function comCodigoUnico(acao) {
 // ---------- POST /casal  { nome } -> cria o espaço ----------
 const criarSchema = z.object({
   nome: z
-    .string({ error: 'Dê um nome para o espaço.' })
+    .string({ error: 'Dê um nome para a casa.' })
     .trim()
     .min(2, { error: 'O nome precisa ter pelo menos 2 letras.' })
     .max(60, { error: 'Nome muito longo.' }),
@@ -103,7 +103,7 @@ router.post('/', async (req, res) => {
           where: { id: req.usuarioId, casalId: null },
           data: { casalId: novo.id, papel: 'TITULAR' },
         });
-        if (count === 0) throw new ErroDeRegra(409, 'Você já faz parte de um espaço.');
+        if (count === 0) throw new ErroDeRegra(409, 'Você já faz parte de uma casa.');
 
         return novo;
       }),
@@ -131,14 +131,14 @@ router.post('/entrar', limiteConvite, async (req, res) => {
 
       const titulares = await tx.usuario.count({ where: { casalId: casal.id, papel: 'TITULAR' } });
       if (titulares >= MAX_TITULARES) {
-        throw new ErroDeRegra(409, 'Este espaço já está completo.');
+        throw new ErroDeRegra(409, 'Esta casa já está completa.');
       }
 
       const { count } = await tx.usuario.updateMany({
         where: { id: req.usuarioId, casalId: null },
         data: { casalId: casal.id, papel: 'TITULAR' },
       });
-      if (count === 0) throw new ErroDeRegra(409, 'Você já faz parte de um espaço.');
+      if (count === 0) throw new ErroDeRegra(409, 'Você já faz parte de uma casa.');
 
       // Casal completo: o código deixa de funcionar.
       if (titulares + 1 >= MAX_TITULARES) {
@@ -165,7 +165,7 @@ router.get('/', exigirCasal, async (req, res) => {
 router.post('/convite', exigirCasal, async (req, res) => {
   const atual = await montarCasal(req.casalId, req.papel);
   if (!atual.podeConvidar) {
-    return res.status(409).json({ erro: 'O espaço já está completo.' });
+    return res.status(409).json({ erro: 'Esta casa já está completa.' });
   }
 
   await comCodigoUnico((codigo) =>

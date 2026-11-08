@@ -61,7 +61,8 @@ model Usuario {
 model Categoria {
   id          Int          @id @default(autoincrement())
   nome        String
-  cor         String? // ex.: "#4caf50"
+  cor         String? // ex.: "#4caf50" (não usado na interface nova)
+  icone       String? // nome do ícone Lucide, ex.: "carrinho" (ver web/src/components/Icone.jsx)
   casalId     Int
   casal       Casal        @relation(fields: [casalId], references: [id], onDelete: Cascade)
   lancamentos Lancamento[]
@@ -97,7 +98,7 @@ model Lancamento {
 model Caixinha {
   id                Int           @id @default(autoincrement())
   nome              String
-  icone             String? // emoji, ex.: "🏖️"
+  icone             String? // nome do ícone, ex.: "praia" (ver web/src/components/Icone.jsx)
   valorAlvoCentavos Int
   prazo             DateTime?     @db.Date
   arquivada         Boolean       @default(false) // sonho realizado/desistido, com saldo zerado

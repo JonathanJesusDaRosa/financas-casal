@@ -26,6 +26,14 @@ export const dataSchema = z
     error: 'Data inválida.',
   });
 
+// Nome de ícone (ex.: "carrinho"). A lista de ícones existentes fica no front;
+// aqui só garantimos um texto curto e simples.
+export const iconeSchema = z
+  .string()
+  .regex(/^[a-z0-9-]{1,30}$/, { error: 'Ícone inválido.' })
+  .nullish()
+  .transform((t) => t || null);
+
 // Mês no formato "AAAA-MM".
 export const mesSchema = z
   .string()

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../auth.jsx';
+import Marca from '../components/Marca.jsx';
 
 export default function Login() {
   const { entrar } = useAuth();
@@ -22,18 +23,17 @@ export default function Login() {
   }
 
   return (
-    <main className="tela-auth">
-      <h1>Finanças do Casal</h1>
-      <form className="cartao" onSubmit={aoEnviar}>
-        <h2>Entrar</h2>
+    <main className="tela-entrada">
+      <Marca />
 
-        <label>
+      <form className="formulario" onSubmit={aoEnviar}>
+        <label className="campo">
           E-mail
           <input type="email" autoComplete="email" required
             value={email} onChange={(e) => setEmail(e.target.value)} />
         </label>
 
-        <label>
+        <label className="campo">
           Senha
           <input type="password" autoComplete="current-password" required
             value={senha} onChange={(e) => setSenha(e.target.value)} />
@@ -41,14 +41,14 @@ export default function Login() {
 
         {erro && <p className="erro" role="alert">{erro}</p>}
 
-        <button type="submit" disabled={enviando}>
+        <button type="submit" className="botao" disabled={enviando}>
           {enviando ? 'Entrando…' : 'Entrar'}
         </button>
-
-        <p className="rodape">
-          Ainda não tem conta? <Link to="/cadastro">Cadastre-se</Link>
-        </p>
       </form>
+
+      <p className="rodape-entrada">
+        Ainda não tem conta? <Link to="/cadastro">Criar conta</Link>
+      </p>
     </main>
   );
 }

@@ -14,26 +14,26 @@ export default defineConfig({
 
       // O "manifesto": nome, ícones e cores que o celular usa ao instalar.
       manifest: {
-        name: 'Finanças do Casal',
-        short_name: 'Finanças',
-        description: 'Organizem o dinheiro juntos: lançamentos, caixinhas e investimentos.',
+        name: 'Casa em Conta',
+        short_name: 'Casa em Conta',
+        description: 'As contas da casa, em dia e sem briga.',
         lang: 'pt-BR',
         start_url: '/',
         display: 'standalone', // abre em tela cheia, sem a barra do navegador
-        background_color: '#f4f6f5',
-        theme_color: '#1f7a5a',
+        background_color: '#F8F7FC',
+        theme_color: '#3D3A8C',
         icons: [
-          { src: 'pwa-64x64.png', sizes: '64x64', type: 'image/png' },
-          { src: 'pwa-192x192.png', sizes: '192x192', type: 'image/png' },
-          { src: 'pwa-512x512.png', sizes: '512x512', type: 'image/png' },
-          { src: 'maskable-icon-512x512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+          { src: 'brand/pwa-64x64.png', sizes: '64x64', type: 'image/png' },
+          { src: 'brand/pwa-192x192.png', sizes: '192x192', type: 'image/png' },
+          { src: 'brand/pwa-512x512.png', sizes: '512x512', type: 'image/png' },
+          { src: 'brand/maskable-icon-512x512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
         ],
       },
 
       // Service worker: guarda os arquivos do app (HTML, JS, CSS, ícones) no
       // celular para abrir rápido. Os DADOS continuam vindo sempre da API.
       workbox: {
-        globPatterns: ['**/*.{js,css,html,svg,png,ico}'],
+        globPatterns: ['**/*.{js,css,html,svg,png,ico,woff2}'],
         navigateFallback: '/index.html',
       },
     }),

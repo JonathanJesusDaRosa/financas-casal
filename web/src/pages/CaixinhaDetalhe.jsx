@@ -1,24 +1,26 @@
-// Uma caixinha: saldo, progresso, botões Guardar / Resgatar / Atualizar saldo e histórico.
+// Uma meta: saldo, progresso, botões Guardar / Resgatar / Atualizar saldo e histórico.
 import { useCallback, useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
+import { ChevronLeft, PiggyBank, RefreshCw, TrendingUp, Undo2, X } from 'lucide-react';
 import { api } from '../api.js';
 import { useAuth } from '../auth.jsx';
-import { formatarReais, textoParaCentavos } from '../utils/dinheiro.js';
-import { hoje } from '../utils/datas.js';
+import Icone from '../components/Icone.jsx';
 import Progresso from '../components/Progresso.jsx';
+import { formatarReais, textoParaCentavos } from '../utils/dinheiro.js';
+import { dataCurta, hoje } from '../utils/datas.js';
 import { planejamento, porcentagem } from '../utils/caixinhas.js';
 
 // Textos de cada ação
 const ACOES = {
-  guardar: { botao: '🐷 Guardar', titulo: 'Guardar na caixinha', campo: 'Quanto vocês separaram? (R$)', rota: 'guardar' },
-  resgatar: { botao: '↩️ Resgatar', titulo: 'Resgatar da caixinha', campo: 'Quanto vão tirar? (R$)', rota: 'resgatar' },
-  atualizar: { botao: '📈 Atualizar saldo', titulo: 'Atualizar com o saldo do banco', campo: 'Saldo que o banco mostra hoje (R$)', rota: 'atualizar-saldo' },
+  guardar: { titulo: 'Guardar na meta', campo: 'Quanto vocês separaram? (R$)', rota: 'guardar' },
+  resgatar: { titulo: 'Resgatar da meta', campo: 'Quanto vão tirar? (R$)', rota: 'resgatar' },
+  atualizar: { titulo: 'Atualizar com o saldo do banco', campo: 'Saldo que o banco mostra hoje (R$)', rota: 'atualizar-saldo' },
 };
 
-const NOMES_MOVIMENTO = {
-  GUARDADO: { icone: '🐷', texto: 'Guardou' },
-  RESGATE: { icone: '↩️', texto: 'Resgatou' },
-  RENDIMENTO: { icone: '📈', texto: 'Rendimento' },
+const MOVIMENTOS = {
+  GUARDADO: { Icone: PiggyBank, texto: 'Guardou' },
+  RESGATE: { Icone: Undo2, texto: 'Resgatou' },
+  RENDIMENTO: { Icone: TrendingUp, texto: 'Rendimento' },
 };
 
 export default function CaixinhaDetalhe() {
@@ -45,33 +47,27 @@ export default function CaixinhaDetalhe() {
     api('/casal').then((dados) => setMembros(dados.casal.membros)).catch(() => {});
   }, [carregar]);
 
-  async function apagarMovimento(m) {
-    const nome = NOMES_MOVIMENTO[m.tipo].texto.toLowerCase();
-    if (!window.confirm(`Apagar "${nome} ${formatarReais(m.valorCentavos)}" de ${m.data.split('-').reverse().join('/')}?`)) return;
+  async function executar(acaoNaApi) {
     setErro('');
     try {
-      await api(`/caixinhas/${id}/movimentos/${m.id}`, { metodo: 'DELETE' });
+      await acaoNaApi();
       await carregar();
     } catch (e) {
       setErro(e.message);
     }
   }
 
-  async function arquivar(arquivada) {
-    setErro('');
-    try {
-      await api(`/caixinhas/${id}`, { metodo: 'PATCH', corpo: { arquivada } });
-      await carregar();
-    } catch (e) {
-      setErro(e.message);
-    }
+  function apagarMovimento(m) {
+    const nome = MOVIMENTOS[m.tipo].texto.toLowerCase();
+    if (!window.confirm(`Apagar "${nome} ${formatarReais(m.valorCentavos)}" de ${dataCurta(m.data)}?`)) return;
+    executar(() => api(`/caixinhas/${id}/movimentos/${m.id}`, { metodo: 'DELETE' }));
   }
 
-  async function apagarCaixinha() {
-    if (!window.confirm(`Apagar a caixinha "${caixinha.nome}"?`)) return;
+  async function apagarMeta() {
+    if (!window.confirm(`Apagar a meta "${caixinha.nome}"?`)) return;
     try {
       await api(`/caixinhas/${id}`, { metodo: 'DELETE' });
-      navegar('/caixinhas');
+      navegar('/metas');
     } catch (e) {
       setErro(e.message);
     }
@@ -79,33 +75,36 @@ export default function CaixinhaDetalhe() {
 
   if (!caixinha) {
     return (
-      <main className="pagina">
-        {erro ? <p className="erro" role="alert">{erro}</p> : <p className="dica">Carregando…</p>}
+      <main className="tela">
+        {erro ? <p className="erro" role="alert">{erro}</p> : <p className="vazio">Carregando…</p>}
       </main>
     );
   }
 
   return (
-    <main className="pagina">
-      <header className="topo">
-        <Link to="/caixinhas" className="botao secundario">‹ Caixinhas</Link>
-        <Link to={`/caixinhas/${id}/editar`} className="botao secundario">Editar</Link>
+    <main className="tela">
+      <header className="cabecalho">
+        <Link to="/metas" className="botao-icone" aria-label="Voltar para Metas">
+          <ChevronLeft size={24} strokeWidth={1.75} />
+        </Link>
+        <h1 className="item-titulo">{caixinha.nome}</h1>
+        <Link to={`/metas/${id}/editar`} className="botao-quieto">Editar</Link>
       </header>
 
-      <section className="cartao destaque-caixinha">
-        <h1>{caixinha.icone} {caixinha.nome}</h1>
-        {caixinha.arquivada && <span className="etiqueta">Arquivada</span>}
-        <p className="saldo-grande">{formatarReais(caixinha.saldoCentavos)}</p>
-        <p className="dica">de {formatarReais(caixinha.valorAlvoCentavos)} · {porcentagem(caixinha)}%</p>
+      <section className="card destaque-meta">
+        <span className="item-icone meta"><Icone nome={caixinha.icone} tamanho={28} /></span>
+        {caixinha.arquivada && <p><span className="etiqueta">Arquivada</span></p>}
+        <p className="valor-grande">{formatarReais(caixinha.saldoCentavos)}</p>
+        <p className="muted">de {formatarReais(caixinha.valorAlvoCentavos)} · {porcentagem(caixinha)}%</p>
         <Progresso caixinha={caixinha} />
-        {!caixinha.arquivada && <p className="planejamento">{planejamento(caixinha)}</p>}
-        <p className="dica pequena">
-          {caixinha.investimento ? `Aplicado em: ${caixinha.investimento.nome}` : 'Sem investimento definido'}
-          {caixinha.rendimentoCentavos !== 0 && ` · Já rendeu ${formatarReais(caixinha.rendimentoCentavos)}`}
+        {!caixinha.arquivada && <p>{planejamento(caixinha)}</p>}
+        <p className="caption muted" style={{ marginTop: 'var(--space-2)' }}>
+          {caixinha.investimento ? `Aplicado em ${caixinha.investimento.nome}` : 'Sem investimento definido'}
+          {caixinha.rendimentoCentavos !== 0 && ` · Rendeu ${formatarReais(caixinha.rendimentoCentavos)}`}
         </p>
       </section>
 
-      {erro && <p className="erro" role="alert">{erro}</p>}
+      {erro && <p className="erro" role="alert" style={{ marginTop: 'var(--space-3)' }}>{erro}</p>}
 
       {!caixinha.arquivada && (
         acao ? (
@@ -118,51 +117,64 @@ export default function CaixinhaDetalhe() {
             aoCancelar={() => setAcao(null)}
           />
         ) : (
-          <div className="acoes-caixinha">
-            {Object.entries(ACOES).map(([chave, a]) => (
-              <button key={chave} className={chave === 'guardar' ? '' : 'secundario'} onClick={() => { setErro(''); setAcao(chave); }}
-                disabled={chave === 'resgatar' && caixinha.saldoCentavos === 0}>
-                {a.botao}
-              </button>
-            ))}
+          <div className="acoes-meta">
+            <button className="botao" onClick={() => { setErro(''); setAcao('guardar'); }}>
+              <PiggyBank size={20} strokeWidth={1.75} aria-hidden="true" /> Guardar
+            </button>
+            <button className="botao-secundario" disabled={caixinha.saldoCentavos === 0}
+              onClick={() => { setErro(''); setAcao('resgatar'); }}>
+              <Undo2 size={20} strokeWidth={1.75} aria-hidden="true" /> Resgatar
+            </button>
+            <button className="botao-secundario" onClick={() => { setErro(''); setAcao('atualizar'); }}>
+              <RefreshCw size={20} strokeWidth={1.75} aria-hidden="true" /> Atualizar saldo
+            </button>
           </div>
         )
       )}
 
-      <section className="cartao">
-        <h2>Histórico</h2>
+      <section className="secao">
+        <div className="secao-topo"><h2>Histórico</h2></div>
         {movimentos.length === 0 ? (
-          <p className="dica">Nenhum movimento ainda. Toque em <strong>Guardar</strong> para começar.</p>
+          <p className="card muted">Nenhum movimento ainda. Toque em Guardar para começar.</p>
         ) : (
-          <ul className="historico">
-            {movimentos.map((m) => (
-              <li key={m.id}>
-                <span aria-hidden="true">{NOMES_MOVIMENTO[m.tipo].icone}</span>
-                <span className="textos">
-                  {NOMES_MOVIMENTO[m.tipo].texto}
-                  <small>{m.data.split('-').reverse().join('/')} · {m.pagoPor.nome}</small>
-                </span>
-                <span className={m.tipo === 'RESGATE' || m.valorCentavos < 0 ? 'valor negativo' : 'valor positivo'}>
-                  {m.tipo === 'RESGATE' ? '− ' : m.valorCentavos > 0 ? '+ ' : ''}
-                  {formatarReais(m.valorCentavos)}
-                </span>
-                <button className="secundario apagar-mov" aria-label="Apagar movimento" onClick={() => apagarMovimento(m)}>✕</button>
-              </li>
-            ))}
+          <ul className="card lista">
+            {movimentos.map((m) => {
+              const { Icone: IconeMov, texto } = MOVIMENTOS[m.tipo];
+              const tira = m.tipo === 'RESGATE' || m.valorCentavos < 0;
+              return (
+                <li key={m.id} className="item">
+                  <span className="item-icone meta"><IconeMov size={20} strokeWidth={1.75} aria-hidden="true" /></span>
+                  <span className="item-textos">
+                    <span className="item-titulo">{texto}</span>
+                    <span className="item-sub">{m.pagoPor.nome} · {dataCurta(m.data)}</span>
+                  </span>
+                  <span className={tira ? 'valor-lista saida' : 'valor-lista entrada'}>
+                    {tira ? '− ' : '+ '}{formatarReais(Math.abs(m.valorCentavos))}
+                  </span>
+                  <button className="botao-apagar-mov" aria-label="Apagar movimento" onClick={() => apagarMovimento(m)}>
+                    <X size={18} strokeWidth={1.75} />
+                  </button>
+                </li>
+              );
+            })}
           </ul>
         )}
       </section>
 
-      <div className="rodape-caixinha">
+      <div className="secao" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
         {caixinha.arquivada ? (
-          <button className="secundario" onClick={() => arquivar(false)}>Reativar caixinha</button>
+          <button className="botao-secundario" onClick={() => executar(() => api(`/caixinhas/${id}`, { metodo: 'PATCH', corpo: { arquivada: false } }))}>
+            Reativar meta
+          </button>
         ) : (
           caixinha.saldoCentavos === 0 && movimentos.length > 0 && (
-            <button className="secundario" onClick={() => arquivar(true)}>Arquivar (sonho realizado)</button>
+            <button className="botao-secundario" onClick={() => executar(() => api(`/caixinhas/${id}`, { metodo: 'PATCH', corpo: { arquivada: true } }))}>
+              Arquivar meta
+            </button>
           )
         )}
         {movimentos.length === 0 && (
-          <button className="perigo" onClick={apagarCaixinha}>Apagar caixinha</button>
+          <button className="botao-perigo" onClick={apagarMeta}>Apagar meta</button>
         )}
       </div>
     </main>
@@ -175,7 +187,7 @@ function FormMovimento({ acao, caixinhaId, saldoCentavos, membros, aoTerminar, a
   const textos = ACOES[acao];
   const [valor, setValor] = useState('');
   const [data, setData] = useState(hoje());
-  const [pagoPorId, setPagoPorId] = useState(String(usuario.id));
+  const [pagoPorId, setPagoPorId] = useState(usuario.id);
   const [erro, setErro] = useState('');
   const [enviando, setEnviando] = useState(false);
 
@@ -191,10 +203,9 @@ function FormMovimento({ acao, caixinhaId, saldoCentavos, membros, aoTerminar, a
       setErro('Valor inválido. Exemplos: 300 ou 1.250,90');
       return;
     }
-
     const corpo = acao === 'atualizar'
       ? { saldoAtualCentavos: centavos, data }
-      : { valorCentavos: centavos, data, pagoPorId: Number(pagoPorId) };
+      : { valorCentavos: centavos, data, pagoPorId };
 
     setEnviando(true);
     try {
@@ -207,47 +218,50 @@ function FormMovimento({ acao, caixinhaId, saldoCentavos, membros, aoTerminar, a
   }
 
   return (
-    <form className="cartao formulario" onSubmit={aoEnviar}>
+    <form className="card formulario" style={{ marginTop: 'var(--space-3)' }} onSubmit={aoEnviar}>
       <h2>{textos.titulo}</h2>
 
-      <label>
+      <label className="campo">
         {textos.campo}
         <input type="text" inputMode="decimal" required autoFocus placeholder="0,00"
           className="campo-valor" value={valor} onChange={(e) => setValor(e.target.value)} />
       </label>
 
       {acao === 'atualizar' && (
-        <p className="dica">
-          Saldo no app: {formatarReais(saldoCentavos)}.
+        <p className="aviso">
+          No app: {formatarReais(saldoCentavos)}.
           {diferenca !== null && diferenca !== 0 && (
-            <> A diferença de <strong className={diferenca > 0 ? 'positivo' : 'negativo'}>{formatarReais(diferenca)}</strong> será registrada como rendimento.</>
+            <> A diferença de <strong>{formatarReais(diferenca)}</strong> será registrada como rendimento.</>
           )}
         </p>
       )}
-      {acao === 'resgatar' && <p className="dica">Disponível: {formatarReais(saldoCentavos)}. O valor resgatado entra como entrada no mês.</p>}
-      {acao === 'guardar' && <p className="dica">Aparece no mês como "Guardado". Depois é só aplicar no banco.</p>}
+      {acao === 'resgatar' && <p className="aviso">Disponível: {formatarReais(saldoCentavos)}. O valor resgatado conta como entrada no mês.</p>}
+      {acao === 'guardar' && <p className="aviso">Conta no mês como "Guardado". Depois é só aplicar no banco.</p>}
 
-      <label>
+      <label className="campo">
         Data
         <input type="date" required value={data} onChange={(e) => setData(e.target.value)} />
       </label>
 
       {acao !== 'atualizar' && membros.length > 1 && (
-        <label>
-          Quem fez
-          <select value={pagoPorId} onChange={(e) => setPagoPorId(e.target.value)}>
+        <fieldset className="campo" style={{ border: 'none', padding: 0, margin: 0 }}>
+          <legend style={{ marginBottom: 'var(--space-2)' }}>Quem fez</legend>
+          <div className="chips">
             {membros.map((m) => (
-              <option key={m.id} value={m.id}>{m.id === usuario.id ? `${m.nome} (você)` : m.nome}</option>
+              <button key={m.id} type="button" aria-pressed={pagoPorId === m.id}
+                className={pagoPorId === m.id ? 'ativo' : ''} onClick={() => setPagoPorId(m.id)}>
+                {m.id === usuario.id ? 'Você' : m.nome}
+              </button>
             ))}
-          </select>
-        </label>
+          </div>
+        </fieldset>
       )}
 
       {erro && <p className="erro" role="alert">{erro}</p>}
 
       <div className="botoes">
-        <button type="button" className="secundario" onClick={aoCancelar}>Cancelar</button>
-        <button type="submit" disabled={enviando}>{enviando ? 'Salvando…' : 'Confirmar'}</button>
+        <button type="button" className="botao-secundario" onClick={aoCancelar}>Cancelar</button>
+        <button type="submit" className="botao" disabled={enviando}>{enviando ? 'Salvando…' : 'Confirmar'}</button>
       </div>
     </form>
   );

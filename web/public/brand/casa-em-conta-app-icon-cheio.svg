@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Casa em Conta">
+  <!-- Variante do casa-em-conta-app-icon.svg para gerar os PNGs da PWA:
+       fundo índigo de ponta a ponta (o celular recorta no formato dele) e o desenho
+       reduzido para 85% em volta do centro, para caber na área segura do Android. -->
+  <rect width="512" height="512" fill="#3D3A8C"></rect>
+  <g transform="translate(256 256) scale(0.85) translate(-256 -256)">
+    <path d="M256 104 L400 220 L400 380 Q400 404 376 404 L136 404 Q112 404 112 380 L112 220 Z" fill="#F8F7FC" stroke="#F8F7FC" stroke-width="20" stroke-linejoin="round"></path>
+    <circle cx="256" cy="300" r="68" fill="#FFB38A"></circle>
+    <circle cx="256" cy="300" r="40" fill="none" stroke="#3D3A8C" stroke-opacity="0.35" stroke-width="14"></circle>
+  </g>
+</svg>

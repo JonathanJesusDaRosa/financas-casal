@@ -1,991 +1,898 @@
-/* Estilos do app inteiro. Simples e pensado primeiro para o celular. */
-
-/* Cores em variáveis: muda aqui e muda no app todo. */
-:root {
-  --fundo: #f4f6f5;
-  --cartao: #ffffff;
-  --texto: #1d2420;
-  --texto-suave: #5f6b65;
-  --borda: #d5dcd8;
-  --primaria: #1f7a5a;
-  --primaria-escura: #17624a;
-  --erro: #b3261e;
-  --erro-fundo: #fdecea;
-  --guardado: #6a4fb3;
-
-  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-  color: var(--texto);
-  background: var(--fundo);
-}
-
-/* Modo escuro automático (segue a configuração do celular/computador) */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --fundo: #121614;
-    --cartao: #1c221f;
-    --texto: #e6ece9;
-    --texto-suave: #9aa7a0;
-    --borda: #34403a;
-    --primaria: #3fae86;
-    --primaria-escura: #5cc39c;
-    --erro: #ffb4ab;
-    --erro-fundo: #3b1d1a;
-    --guardado: #b9a2f5;
-  }
-}
+/* Estilos do app "Casa em Conta", seguindo o DESIGN.md.
+   Cores, espaços e cantos vêm SEMPRE dos tokens (styles/tokens.css): nada de cor fixa aqui. */
 
 * {
   box-sizing: border-box;
 }
 
 body {
-  margin: 0;
   min-height: 100vh;
-  background: var(--fundo);
+  -webkit-tap-highlight-color: transparent;
 }
 
-h1 {
-  font-size: 1.4rem;
+h1, h2, h3, p {
   margin: 0;
-}
-
-h2 {
-  font-size: 1.2rem;
-  margin: 0 0 1rem;
 }
 
 a {
-  color: var(--primaria);
+  color: var(--indigo);
 }
 
-.carregando {
-  text-align: center;
-  margin-top: 40vh;
-  color: var(--texto-suave);
+/* Foco do teclado: anel índigo com folga (guia) */
+:focus-visible {
+  outline: 2px solid var(--indigo);
+  outline-offset: 2px;
 }
 
-/* ---------- Cartão (caixa branca) ---------- */
-.cartao {
-  background: var(--cartao);
-  border: 1px solid var(--borda);
-  border-radius: 12px;
-  padding: 1.5rem;
-}
+/* ---------- Tipografia (escala do guia) ---------- */
+.display { font-size: 32px; line-height: 40px; font-weight: 700; }
+.titulo, h1 { font-size: 22px; line-height: 28px; font-weight: 700; }
+.heading, h2 { font-size: 17px; line-height: 24px; font-weight: 600; }
+.label { font-size: 13px; line-height: 18px; font-weight: 500; }
+.caption { font-size: 12px; line-height: 16px; font-weight: 500; }
+.muted { color: var(--ink-muted); }
 
-/* ---------- Telas de login e cadastro ---------- */
-.tela-auth {
-  max-width: 400px;
+/* Valores: números tabulares para alinhar na coluna */
+.valor, .valor-grande, .valor-lista {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.valor-grande { font-size: 36px; line-height: 44px; font-weight: 700; }
+.valor-lista { font-size: 17px; line-height: 24px; font-weight: 600; }
+.entrada { color: var(--income); }
+.saida { color: var(--expense); }
+
+/* ---------- Estrutura das telas ---------- */
+.tela {
+  max-width: 480px;
   margin: 0 auto;
-  padding: 3rem 1rem;
+  padding: var(--space-4);
+  padding-top: max(var(--space-4), env(safe-area-inset-top));
 }
 
-.tela-auth h1 {
-  text-align: center;
-  margin-bottom: 1.5rem;
-  color: var(--primaria);
-}
-
-.tela-auth form {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-label {
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-  font-weight: 600;
-  font-size: 0.95rem;
-}
-
-label small {
-  font-weight: 400;
-  color: var(--texto-suave);
-}
-
-/* font-size 16px evita o zoom automático do iPhone ao tocar no campo */
-input {
-  font: inherit;
-  font-size: 16px;
-  font-weight: 400;
-  padding: 0.7rem 0.8rem;
-  border: 1px solid var(--borda);
-  border-radius: 8px;
-  background: var(--cartao);
-  color: var(--texto);
-}
-
-input:focus {
-  outline: 2px solid var(--primaria);
-  outline-offset: 1px;
-}
-
-button {
-  font: inherit;
-  font-weight: 600;
-  padding: 0.8rem 1rem;
-  border: none;
-  border-radius: 8px;
-  background: var(--primaria);
-  color: #fff;
-  cursor: pointer;
-}
-
-button:hover {
-  background: var(--primaria-escura);
-}
-
-button:disabled {
-  opacity: 0.6;
-  cursor: wait;
-}
-
-button.secundario {
-  background: transparent;
-  color: var(--primaria);
-  border: 1px solid var(--borda);
-  padding: 0.5rem 0.9rem;
-}
-
-.erro {
-  margin: 0;
-  padding: 0.6rem 0.8rem;
-  border-radius: 8px;
-  background: var(--erro-fundo);
-  color: var(--erro);
-  font-size: 0.95rem;
-}
-
-.rodape {
-  margin: 0;
-  text-align: center;
-  color: var(--texto-suave);
-  font-size: 0.95rem;
-}
-
-/* ---------- Páginas da área logada ---------- */
-.pagina {
-  max-width: 720px;
-  margin: 0 auto;
-  padding: 1rem;
-}
-
-.topo {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 1rem;
-}
-
-.dica {
-  color: var(--texto-suave);
-  margin-bottom: 0;
-}
-
-h3 {
-  font-size: 1rem;
-  margin: 1rem 0 0.5rem;
-}
-
-/* Espaço entre cartões empilhados */
-.pagina .cartao + .cartao {
-  margin-top: 1rem;
-}
-
-/* ---------- Tela "Seu espaço" ---------- */
-.abas {
-  display: flex;
-  gap: 0.25rem;
-  margin: 1.25rem 0 1rem;
-  padding: 0.25rem;
-  border-radius: 10px;
-  background: var(--fundo);
-}
-
-.abas button {
-  flex: 1;
-  background: transparent;
-  color: var(--texto-suave);
-  padding: 0.6rem 0.5rem;
-}
-
-.abas button.ativa {
-  background: var(--cartao);
-  color: var(--texto);
-  box-shadow: 0 1px 3px rgb(0 0 0 / 0.12);
-}
-
-.campo-codigo {
-  text-transform: uppercase;
-  letter-spacing: 0.15em;
-  text-align: center;
-  font-size: 1.25rem;
-}
-
-/* Botão com aparência de link (ex.: "Sair da conta") */
-button.link {
-  background: none;
-  color: var(--primaria);
-  padding: 0;
-  font-weight: 400;
-  text-decoration: underline;
-}
-
-/* ---------- Convite ---------- */
-.convite {
-  border-color: var(--primaria);
-}
-
-.convite .codigo {
-  font-size: 2rem;
-  font-weight: 700;
-  letter-spacing: 0.15em;
-  text-align: center;
-  margin: 0.75rem 0 0.25rem;
-  color: var(--primaria);
-  user-select: all; /* um toque seleciona o código inteiro */
-}
-
-.convite .dica {
-  text-align: center;
-}
-
-.botoes {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-top: 1rem;
-}
-
-.botoes > * {
-  flex: 1 1 160px;
-  text-align: center;
-}
-
-/* Link com aparência de botão (ex.: "Enviar pelo WhatsApp") */
-a.botao {
-  display: inline-block;
-  font-weight: 600;
-  padding: 0.8rem 1rem;
-  border-radius: 8px;
-  text-decoration: none;
-}
-
-a.botao.secundario {
-  color: var(--primaria);
-  border: 1px solid var(--borda);
-}
-
-.aviso {
-  margin: 0.75rem 0 0;
-  text-align: center;
-  color: var(--texto-suave);
-  font-size: 0.95rem;
-}
-
-/* ---------- Lista de membros ---------- */
-.membros {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.membros li {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  padding: 0.6rem 0;
-  border-bottom: 1px solid var(--borda);
-}
-
-.membros li:last-child {
-  border-bottom: none;
-}
-
-.membros small {
-  color: var(--texto-suave);
-}
-
-.etiqueta {
-  margin-left: auto;
-  font-size: 0.8rem;
-  padding: 0.15rem 0.5rem;
-  border-radius: 999px;
-  background: var(--fundo);
-  color: var(--texto-suave);
-}
-
-/* ---------- Barra de navegação (embaixo, estilo app) ---------- */
+/* Área logada: espaço embaixo para a barra de navegação não cobrir o conteúdo */
 .area-logada {
-  /* espaço para o conteúdo não ficar escondido atrás da barra */
-  padding-bottom: calc(72px + env(safe-area-inset-bottom));
+  padding-bottom: calc(96px + env(safe-area-inset-bottom));
 }
 
-.barra-navegacao {
-  position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 0;
+.cabecalho {
   display: flex;
-  justify-content: center;
-  background: var(--cartao);
-  border-top: 1px solid var(--borda);
-  /* env(safe-area-inset-bottom) = espaço da "barrinha" do iPhone */
-  padding-bottom: env(safe-area-inset-bottom);
-  z-index: 10;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: 44px;
+  margin-bottom: var(--space-4);
 }
 
-.barra-navegacao a {
+.cabecalho h1 {
   flex: 1;
-  max-width: 160px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.15rem;
-  padding: 0.55rem 0.25rem;
-  font-size: 0.75rem;
-  color: var(--texto-suave);
-  text-decoration: none;
-}
-
-.barra-navegacao a .icone {
-  font-size: 1.3rem;
-  filter: grayscale(1);
-  opacity: 0.7;
-}
-
-.barra-navegacao a.active {
-  color: var(--primaria);
-  font-weight: 600;
-}
-
-.barra-navegacao a.active .icone {
-  filter: none;
-  opacity: 1;
-}
-
-/* ---------- Lançamentos ---------- */
-.seletor-mes {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
-}
-
-.seletor-mes h1 {
-  font-size: 1.15rem;
-  text-align: center;
-}
-
-.seletor-mes button {
-  font-size: 1.3rem;
-  line-height: 1;
-  padding: 0.4rem 0.9rem;
-}
-
-.totais {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr); /* 2x2 no celular */
-  gap: 0.5rem;
-  margin-bottom: 1.25rem;
-}
-
-.totais div {
-  display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
-  padding: 0.75rem;
-  background: var(--cartao);
-  border: 1px solid var(--borda);
-  border-radius: 12px;
   min-width: 0;
 }
 
-.totais span {
-  font-size: 0.8rem;
-  color: var(--texto-suave);
+.secao {
+  margin-top: var(--space-6);
 }
 
-.totais strong {
-  font-size: 0.95rem;
-  overflow-wrap: anywhere;
-}
-
-.positivo {
-  color: var(--primaria);
-}
-
-.negativo {
-  color: var(--erro);
-}
-
-.vazio {
-  text-align: center;
-  color: var(--texto-suave);
-  margin: 3rem 0;
-  line-height: 1.6;
-}
-
-.grupo-dia h2 {
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: var(--texto-suave);
-  margin: 1rem 0 0.4rem;
-}
-
-.lista-lancamentos {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  background: var(--cartao);
-  border: 1px solid var(--borda);
-  border-radius: 12px;
-  overflow: hidden;
-}
-
-.lista-lancamentos li + li {
-  border-top: 1px solid var(--borda);
-}
-
-.lista-lancamentos a {
+.secao-topo {
   display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.75rem 1rem;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+.secao-topo a {
+  font-size: 13px;
+  line-height: 18px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+/* ---------- Card ---------- */
+.card {
+  background: var(--surface-raised);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+}
+
+.card + .card {
+  margin-top: var(--space-3);
+}
+
+a.card {
+  display: block;
   color: inherit;
   text-decoration: none;
 }
 
-.lista-lancamentos a:hover {
-  background: var(--fundo);
-}
-
-.bolinha {
-  flex-shrink: 0;
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-}
-
-.lista-lancamentos .textos {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-}
-
-.lista-lancamentos .titulo {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.lista-lancamentos small {
-  color: var(--texto-suave);
-  font-size: 0.8rem;
-}
-
-.lista-lancamentos .valor {
+/* ---------- Botões (mínimo 44px de altura) ---------- */
+button,
+.botao,
+.botao-secundario,
+.botao-quieto,
+.botao-perigo {
+  font: inherit;
+  font-size: 15px;
+  line-height: 20px;
   font-weight: 600;
-  white-space: nowrap;
-}
-
-/* Botão "+ Novo" flutuando acima da barra de navegação */
-.botao-flutuante {
-  position: fixed;
-  right: max(1rem, calc(50% - 360px + 1rem));
-  bottom: calc(84px + env(safe-area-inset-bottom));
-  padding: 0.9rem 1.3rem;
-  border-radius: 999px;
-  background: var(--primaria);
-  color: #fff;
-  font-weight: 700;
+  min-height: 44px;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  border: 1px solid transparent;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
   text-decoration: none;
-  box-shadow: 0 4px 14px rgb(0 0 0 / 0.25);
-  z-index: 5;
+  background: none;
+  color: var(--ink);
 }
 
-.botao-flutuante:hover {
-  background: var(--primaria-escura);
+button:disabled {
+  opacity: 0.55;
+  cursor: wait;
+}
+
+.botao {
+  background: var(--indigo);
+  color: var(--on-indigo);
+}
+
+.botao-secundario {
+  background: var(--surface-raised);
+  color: var(--ink);
+  border-color: var(--ink-muted);
+}
+
+.botao-quieto {
+  color: var(--indigo);
+  padding-left: var(--space-2);
+  padding-right: var(--space-2);
+}
+
+.botao-perigo {
+  color: var(--expense);
+  border-color: var(--line);
+  background: var(--surface-raised);
+}
+
+/* Botão só com ícone (voltar, fechar...) */
+.botao-icone {
+  width: 44px;
+  padding: 0;
+  flex-shrink: 0;
+  color: var(--ink);
+}
+
+.bloco {
+  width: 100%;
 }
 
 /* ---------- Formulários ---------- */
 .formulario {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: var(--space-4);
 }
 
-.formulario .abas {
-  margin: 0;
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  font-size: 13px;
+  line-height: 18px;
+  font-weight: 500;
 }
 
+.campo small {
+  color: var(--ink-muted);
+  font-weight: 400;
+  margin-left: var(--space-1);
+}
+
+/* Rótulo + observação na mesma linha: <span>Descrição <small>Opcional</small></span> */
+.campo > span {
+  display: block;
+}
+
+/* 16px nos campos evita o zoom automático do iPhone ao tocar */
+input,
 select {
   font: inherit;
   font-size: 16px;
-  font-weight: 400;
-  padding: 0.7rem 0.8rem;
-  border: 1px solid var(--borda);
-  border-radius: 8px;
-  background: var(--cartao);
-  color: var(--texto);
+  line-height: 22px;
+  min-height: 44px;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--ink-muted);
+  border-radius: var(--radius-sm);
+  background: var(--surface-raised);
+  color: var(--ink);
+  width: 100%;
+}
+
+input:focus,
+select:focus {
+  outline: 2px solid var(--indigo);
+  outline-offset: 0;
+  border-color: var(--indigo);
 }
 
 .campo-valor {
-  font-size: 1.5rem;
-  font-weight: 600;
-}
-
-.topo h1 {
-  flex: 1;
-}
-
-.topo button + h1 {
-  text-align: center;
-  margin-right: 4.5rem; /* compensa a largura do "‹ Voltar" e centraliza o título */
-  font-size: 1.15rem;
-}
-
-button.perigo {
-  background: transparent;
-  color: var(--erro);
-  border: 1px solid var(--erro);
-}
-
-button.perigo:hover,
-button.perigo-texto:hover {
-  background: var(--erro-fundo);
-}
-
-button.perigo-texto {
-  color: var(--erro);
-}
-
-/* ---------- Categorias ---------- */
-.nova-categoria {
-  display: flex;
-  gap: 0.5rem;
-  align-items: center;
-  margin-bottom: 1rem;
-  padding: 0.75rem;
-}
-
-.nova-categoria input[type='text'] {
-  flex: 1;
-  min-width: 0;
-}
-
-input[type='color'] {
-  flex-shrink: 0;
-  width: 2.6rem;
-  height: 2.6rem;
-  padding: 0.2rem;
-  cursor: pointer;
-}
-
-.lista-categorias {
-  list-style: none;
-  margin: 0;
-  padding: 0.25rem 1rem;
-}
-
-.lista-categorias li {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.6rem 0;
-}
-
-.lista-categorias li + li {
-  border-top: 1px solid var(--borda);
-}
-
-.seletor-cor {
-  width: 2rem !important;
-  height: 2rem !important;
-  border-radius: 50%;
-  border: none;
-  padding: 0 !important;
-  background: none;
-}
-
-.seletor-cor::-webkit-color-swatch-wrapper {
-  padding: 0;
-}
-
-.seletor-cor::-webkit-color-swatch {
-  border: none;
-  border-radius: 50%;
-}
-
-.seletor-cor::-moz-color-swatch {
-  border: none;
-  border-radius: 50%;
-}
-
-.lista-categorias .nome {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-}
-
-.lista-categorias .nome small {
-  color: var(--texto-suave);
-  font-size: 0.8rem;
-}
-
-.lista-categorias button {
-  padding: 0.4rem 0.7rem;
-  font-size: 0.85rem;
-}
-
-.renomear {
-  flex: 1;
-  display: flex;
-  gap: 0.4rem;
-}
-
-.renomear input {
-  flex: 1;
-  min-width: 0;
-  padding: 0.45rem 0.6rem;
-}
-
-/* Telas maiores: os 4 totais lado a lado */
-@media (min-width: 560px) {
-  .totais {
-    grid-template-columns: repeat(4, 1fr);
-  }
-}
-
-.guardado {
-  color: var(--guardado);
-}
-
-.linha-rendimento {
-  margin: -0.5rem 0 1rem;
-  padding: 0.6rem 0.8rem;
-  border-radius: 10px;
-  background: var(--cartao);
-  border: 1px dashed var(--borda);
-  font-size: 0.9rem;
-  color: var(--texto-suave);
-}
-
-.icone-item {
-  flex-shrink: 0;
-  width: 12px;
-  display: flex;
-  justify-content: center;
-  font-size: 0.95rem;
-}
-
-.dica.pequena,
-small.pequena {
-  font-size: 0.85rem;
-}
-
-/* Cabeçalho com links que parecem botões (‹ Voltar, Editar) */
-.topo {
-  gap: 0.5rem;
-}
-
-.topo a.botao {
-  padding: 0.5rem 0.9rem;
-  font-weight: 600;
-}
-
-.topo a.botao + h1 {
-  text-align: center;
-  margin-right: 4.5rem;
-  font-size: 1.15rem;
-}
-
-/* Cartão inteiro clicável (ex.: "Categorias" na aba Casal) */
-a.cartao-link {
-  display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
-  color: inherit;
-  text-decoration: none;
-  font-weight: 600;
-}
-
-a.cartao-link small {
-  font-weight: 400;
-  color: var(--texto-suave);
-}
-
-a.cartao-link:hover {
-  border-color: var(--primaria);
-}
-
-/* ---------- Caixinhas ---------- */
-.resumo-caixinhas {
-  margin: 0 0 1rem;
-  color: var(--texto-suave);
-}
-
-.lista-caixinhas {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.lista-caixinhas.arquivadas {
-  margin-top: 0.75rem;
-  opacity: 0.65;
-}
-
-a.cartao-caixinha {
-  display: flex;
-  flex-direction: column;
-  gap: 0.6rem;
-  padding: 1rem 1.1rem;
-  color: inherit;
-  text-decoration: none;
-}
-
-a.cartao-caixinha:hover {
-  border-color: var(--guardado);
-}
-
-.cartao-caixinha .linha,
-.investimento .linha {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 0.5rem;
-}
-
-.cartao-caixinha .nome {
-  font-weight: 600;
-  font-size: 1.05rem;
-}
-
-.cartao-caixinha .porcento {
-  color: var(--guardado);
+  font-size: 28px;
+  line-height: 36px;
   font-weight: 700;
+  font-variant-numeric: tabular-nums;
 }
 
-.cartao-caixinha .valores {
-  font-size: 0.9rem;
-  color: var(--texto-suave);
+/* Troca de opções (Saiu/Entrou, Criar/Tenho código...) */
+.segmentado {
+  display: flex;
+  gap: var(--space-1);
+  padding: var(--space-1);
+  border-radius: var(--radius-md);
+  background: var(--indigo-soft);
 }
 
-.cartao-caixinha .valores strong {
-  color: var(--texto);
+.segmentado button {
+  flex: 1;
+  min-height: 40px;
+  padding: var(--space-2);
+  font-size: 13px;
+  border-radius: var(--radius-sm);
+  color: var(--ink);
 }
 
-.progresso {
-  height: 10px;
-  border-radius: 999px;
-  background: var(--fundo);
-  border: 1px solid var(--borda);
-  overflow: hidden;
+.segmentado button.ativo {
+  background: var(--surface-raised);
+  color: var(--indigo);
 }
 
-.progresso > div {
-  height: 100%;
-  background: var(--guardado);
-  border-radius: 999px;
-  transition: width 0.4s ease;
+/* Chips de escolha (categoria, ícone) */
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
 }
 
-.mostrar-arquivadas {
-  display: block;
-  margin: 1.25rem auto 0;
+.chips button {
+  min-height: 40px;
+  padding: var(--space-2) var(--space-3);
+  font-size: 13px;
+  font-weight: 500;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: var(--indigo-soft);
+  color: var(--ink);
 }
 
-.destaque-caixinha {
-  text-align: center;
-  margin-bottom: 1rem;
+.chips button.ativo {
+  background: var(--indigo);
+  color: var(--on-indigo);
+  font-weight: 600;
 }
 
-.destaque-caixinha h1 {
-  font-size: 1.3rem;
-}
-
-.destaque-caixinha .etiqueta {
-  display: inline-block;
-  margin-top: 0.5rem;
-}
-
-.saldo-grande {
-  font-size: 2.2rem;
-  font-weight: 700;
-  margin: 0.75rem 0 0;
-  color: var(--guardado);
-}
-
-.destaque-caixinha .progresso {
-  margin: 0.75rem 0;
-}
-
-.planejamento {
-  margin: 0.5rem 0;
-  font-size: 0.95rem;
-}
-
-.acoes-caixinha {
+.grade-icones {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
+  grid-template-columns: repeat(auto-fill, minmax(44px, 1fr));
+  gap: var(--space-2);
 }
 
-/* "Guardar" ocupa a linha toda; Resgatar e Atualizar ficam lado a lado */
-.acoes-caixinha button:first-child {
-  grid-column: 1 / -1;
+.grade-icones button {
+  padding: 0;
+  border: 1px solid var(--line);
+  background: var(--surface-raised);
+  border-radius: var(--radius-sm);
 }
 
-.acoes-caixinha button.secundario {
-  padding: 0.7rem 0.5rem;
+.grade-icones button.ativo {
+  background: var(--indigo-soft);
+  border-color: var(--indigo);
+  color: var(--indigo);
 }
 
-.historico {
+/* ---------- Mensagens ---------- */
+.erro {
+  padding: var(--space-3);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--expense);
+  color: var(--expense);
+  background: var(--surface-raised);
+  font-size: 13px;
+  line-height: 18px;
+}
+
+.aviso {
+  padding: var(--space-3);
+  border-radius: var(--radius-sm);
+  background: var(--peach-soft);
+  color: var(--ink);
+  font-size: 13px;
+  line-height: 18px;
+}
+
+.vazio {
+  text-align: center;
+  color: var(--ink-muted);
+  padding: var(--space-8) var(--space-4);
+}
+
+.carregando {
+  text-align: center;
+  color: var(--ink-muted);
+  margin-top: 40vh;
+}
+
+/* ---------- Telas de entrada (login, cadastro, criar casa) ---------- */
+.tela-entrada {
+  max-width: 400px;
+  margin: 0 auto;
+  padding: var(--space-8) var(--space-4);
+  padding-top: max(var(--space-8), env(safe-area-inset-top));
+}
+
+.marca {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-8);
+  text-align: center;
+}
+
+.marca img {
+  width: 64px;
+  height: 64px;
+}
+
+.marca .nome {
+  font-size: 28px;
+  line-height: 34px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+
+.marca .nome span {
+  font-weight: 500;
+  color: var(--ink-muted);
+}
+
+.rodape-entrada {
+  text-align: center;
+  color: var(--ink-muted);
+  margin-top: var(--space-6);
+  font-size: 13px;
+}
+
+/* ---------- Lista e item de lançamento ---------- */
+.lista {
   list-style: none;
   margin: 0;
   padding: 0;
 }
 
-.historico li {
+.card.lista {
+  padding: 0 var(--space-4);
+}
+
+.lista > li + li {
+  border-top: 1px solid var(--line);
+}
+
+.item {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
-  padding: 0.6rem 0;
+  gap: var(--space-3);
+  min-height: 64px;
+  padding: var(--space-3) 0;
+  color: inherit;
+  text-decoration: none;
 }
 
-.historico li + li {
-  border-top: 1px solid var(--borda);
+/* Ícone da categoria: quadrado de 40px, fundo índigo suave */
+.item-icone {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-sm);
+  background: var(--indigo-soft);
+  color: var(--indigo);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.historico .textos {
+/* Metas usam o pêssego */
+.item-icone.meta {
+  background: var(--peach-soft);
+  color: var(--ink);
+}
+
+.item-textos {
   flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
 }
 
-.historico small {
-  color: var(--texto-suave);
-  font-size: 0.8rem;
+.item-titulo {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.historico .valor {
+.item-sub {
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 500;
+  color: var(--ink-muted);
+}
+
+.grupo-dia {
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 600;
+  color: var(--ink-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  margin: var(--space-6) 0 var(--space-2);
+}
+
+/* ---------- Seletor de mês ---------- */
+.seletor-mes {
+  position: relative;
+  display: inline-flex;
+  flex-shrink: 0;
+}
+
+.seletor-mes-texto {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: 44px;
+  padding: 0 var(--space-3);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--surface-raised);
+  font-size: 15px;
   font-weight: 600;
   white-space: nowrap;
 }
 
-button.apagar-mov {
-  padding: 0.25rem 0.55rem;
-  font-size: 0.8rem;
-  color: var(--texto-suave);
+/* O select fica por cima, invisível: o toque abre a lista de meses do sistema */
+.seletor-mes select {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+  min-height: 0;
 }
 
-.rodape-caixinha {
+.seletor-mes:focus-within .seletor-mes-texto {
+  outline: 2px solid var(--indigo);
+  outline-offset: 2px;
+}
+
+/* Texto só para leitores de tela */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* ---------- Topo das abas (logo + "Nossa casa" + título) ---------- */
+.cabecalho-casa {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: 48px;
+  margin-bottom: var(--space-4);
+}
+
+.cabecalho-marca {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+}
+
+.cabecalho-textos {
+  flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
-  margin-top: 1rem;
 }
 
-.escolha-icone {
-  border: none;
+.cabecalho-textos h1 {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cabecalho-direita {
+  flex-shrink: 0;
+}
+
+/* Botão com cara de link ("Ver todos") */
+button.link {
+  min-height: 0;
+  padding: 0;
+  font-size: 13px;
+  line-height: 18px;
+  font-weight: 600;
+  color: var(--indigo);
+}
+
+/* ---------- Card de saldo (Início) ---------- */
+.card-saldo {
+  background: var(--indigo-soft);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6) var(--space-4);
+  color: var(--ink); /* tema escuro: texto em ink sobre indigo-soft (guia) */
+}
+
+.card-saldo > .label {
+  color: var(--indigo);
+}
+
+.card-saldo .valor-grande {
+  margin: var(--space-1) 0 var(--space-4);
+}
+
+/* Entrou e Saiu em dois mini-cards brancos dentro do card de saldo */
+.mini-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+}
+
+.mini-cards div {
+  background: var(--surface-raised);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.mini-cards strong {
+  font-size: 17px;
+  line-height: 24px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.notas-saldo {
+  margin-top: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  font-size: 13px;
+  line-height: 18px;
+}
+
+.notas-saldo p {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* Entrou / Saiu / Guardado: uma linha cada, nome à esquerda e valor à direita
+   (cabe em qualquer largura, sem quebrar o número no meio) */
+.linhas-saldo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.linhas-saldo div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.linhas-saldo strong {
+  font-size: 15px;
+  line-height: 22px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.nota-rendimento {
+  margin-top: var(--space-4);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--line);
+  font-size: 13px;
+  line-height: 18px;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* Totais compactos (Lançamentos) */
+.resumo-mes {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-2);
+  margin: var(--space-4) 0 var(--space-2);
+}
+
+.resumo-mes div {
+  background: var(--surface-raised);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.resumo-mes strong {
+  font-size: 17px;
+  line-height: 24px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+/* ---------- Gastos por categoria (card compacto) ---------- */
+.lista-categorias {
+  list-style: none;
   margin: 0;
   padding: 0;
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.4rem;
+  flex-direction: column;
+  gap: var(--space-3);
 }
 
-.escolha-icone legend {
+.linha-categoria {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--space-2);
+  margin-bottom: var(--space-1);
+}
+
+.linha-categoria strong {
+  font-size: 13px;
   font-weight: 600;
-  font-size: 0.95rem;
-  margin-bottom: 0.4rem;
 }
 
-.escolha-icone button {
-  font-size: 1.4rem;
-  padding: 0.35rem 0.5rem;
-  background: var(--fundo);
-  border: 2px solid transparent;
+.barra {
+  height: 8px;
+  border-radius: var(--radius-full);
+  background: var(--indigo-soft);
+  overflow: hidden;
 }
 
-.escolha-icone button.ativo {
-  border-color: var(--guardado);
-  background: var(--cartao);
+.barra > span {
+  display: block;
+  height: 100%;
+  border-radius: var(--radius-full);
+  background: var(--indigo);
+}
+
+/* ---------- Metas ---------- */
+.progresso {
+  height: 8px;
+  border-radius: var(--radius-full);
+  background: var(--peach-soft);
+  overflow: hidden;
+}
+
+.progresso > span {
+  display: block;
+  height: 100%;
+  border-radius: var(--radius-full);
+  background: var(--peach);
+  transition: width 0.4s ease;
+}
+
+/* a.card-meta: precisa ser mais específico que "a.card" (que usa display: block) */
+a.card-meta,
+.card-meta {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.card-meta .item {
+  min-height: 0;
+  padding: 0;
+}
+
+.destaque-meta {
+  text-align: center;
+}
+
+.destaque-meta .item-icone {
+  width: 56px;
+  height: 56px;
+  margin: 0 auto var(--space-3);
+  border-radius: var(--radius-md);
+}
+
+.destaque-meta .progresso {
+  margin: var(--space-4) 0 var(--space-3);
+}
+
+.acoes-meta {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
+}
+
+.acoes-meta .botao {
+  grid-column: 1 / -1;
+}
+
+.botao-apagar-mov {
+  min-height: 36px;
+  width: 36px;
+  padding: 0;
+  color: var(--ink-muted);
 }
 
 /* ---------- Investimentos ---------- */
 .total-investido {
+  background: var(--peach-soft);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6) var(--space-4);
+}
+
+.cabecalho-investimento {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.cabecalho-investimento h2 {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Formulário em linha (campo + botão) */
+.linha-form {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.linha-form input {
+  flex: 1;
+  min-width: 0;
+}
+
+/* ---------- Casa ---------- */
+.convite-codigo {
+  font-size: 32px;
+  line-height: 40px;
+  font-weight: 700;
+  letter-spacing: 4px;
+  text-align: center;
+  margin: var(--space-3) 0;
+  user-select: all;
+  font-variant-numeric: tabular-nums;
+}
+
+.avatar {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-full);
+  background: var(--indigo-soft);
+  color: var(--indigo);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+}
+
+.etiqueta {
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 500;
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-full);
+  background: var(--indigo-soft);
+  color: var(--ink);
+}
+
+.botoes {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.botoes > * {
+  flex: 1 1 140px;
+}
+
+/* ---------- Navegação inferior ---------- */
+.navegacao {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 10;
+  background: var(--surface-raised);
+  border-top: 1px solid var(--line);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.navegacao ul {
+  list-style: none;
+  margin: 0 auto;
+  padding: 0 var(--space-1);
+  max-width: 480px;
+  display: flex;
+  align-items: flex-end;
+}
+
+.navegacao li {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  justify-content: center;
+}
+
+.navegacao a {
+  width: 100%;
+  min-height: 56px;
   display: flex;
   flex-direction: column;
-  gap: 0.2rem;
-  margin-bottom: 1rem;
-}
-
-.total-investido span {
-  color: var(--texto-suave);
-  font-size: 0.9rem;
-}
-
-.total-investido strong {
-  font-size: 1.8rem;
-  color: var(--guardado);
-}
-
-.total-investido small {
-  color: var(--texto-suave);
-}
-
-.investimento {
-  margin-top: 1rem;
-}
-
-.investimento h2 {
-  margin: 0;
-}
-
-.investimento > .linha strong {
-  font-size: 1.1rem;
-}
-
-.sem-investimento {
-  border-style: dashed;
-}
-
-.caixinhas-do-investimento {
-  list-style: none;
-  margin: 0.75rem 0 0;
-  padding: 0;
-}
-
-.caixinhas-do-investimento a {
-  display: flex;
-  justify-content: space-between;
-  padding: 0.5rem 0;
-  color: inherit;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  font-size: 11px;
+  line-height: 14px;
+  font-weight: 500;
+  color: var(--ink-muted);
   text-decoration: none;
-  border-top: 1px solid var(--borda);
+  white-space: nowrap;
 }
 
-.caixinhas-do-investimento a:hover {
-  color: var(--primaria);
+.navegacao a.active {
+  color: var(--indigo);
+  font-weight: 600;
 }
 
-.botoes-pequenos {
+/* Botão central: círculo pêssego de 64px, sobreposto à barra.
+   ".navegacao a.botao-central" é mais específico que ".navegacao a",
+   então a cor e a largura daqui ganham das regras dos outros links. */
+.navegacao .central {
+  flex: 0 0 72px;
+}
+
+.navegacao a.botao-central {
+  flex: 0 0 64px;
+  min-height: 0;
+  width: 64px;
+  height: 64px;
+  margin-top: -24px;
+  margin-bottom: var(--space-2);
+  border-radius: var(--radius-full);
+  background: var(--peach);
+  color: var(--on-peach);
+  box-shadow: var(--shadow-sheet);
   display: flex;
-  gap: 0.5rem;
-  margin-top: 0.75rem;
+  align-items: center;
+  justify-content: center;
 }
 
-.botoes-pequenos button {
-  padding: 0.4rem 0.8rem;
-  font-size: 0.85rem;
+/* Card que também é seção (ex.: Gastos por categoria) */
+.card.secao {
+  margin-top: var(--space-6);
+}
+
+/* Tema escuro: texto sobre índigo suave usa "ink" (exceção de contraste do guia) */
+@media (prefers-color-scheme: dark) {
+  .card-saldo > .label {
+    color: var(--ink);
+  }
 }

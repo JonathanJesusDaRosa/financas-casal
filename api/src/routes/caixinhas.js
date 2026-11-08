@@ -5,7 +5,7 @@ import { prisma } from '../lib/prisma.js';
 import { autenticar } from '../middlewares/autenticar.js';
 import { exigirCasal } from '../middlewares/exigirCasal.js';
 import { calcularSaldos, efeitoNoSaldo } from '../lib/saldos.js';
-import { dataSchema, idSchema, paraData, paraTexto, validar } from '../lib/validar.js';
+import { dataSchema, iconeSchema, idSchema, paraData, paraTexto, validar } from '../lib/validar.js';
 
 const router = Router();
 router.use(autenticar, exigirCasal);
@@ -20,11 +20,11 @@ const valorPositivo = z
 
 const camposCaixinha = {
   nome: z
-    .string({ error: 'Dê um nome para a caixinha.' })
+    .string({ error: 'Dê um nome para a meta.' })
     .trim()
-    .min(1, { error: 'Dê um nome para a caixinha.' })
+    .min(1, { error: 'Dê um nome para a meta.' })
     .max(40, { error: 'Nome muito longo (máximo 40 letras).' }),
-  icone: z.string().trim().max(16).nullish().transform((t) => t || null),
+  icone: iconeSchema,
   valorAlvoCentavos: valorPositivo,
   prazo: dataSchema.nullish(),
   investimentoId: idSchema.nullish(),
@@ -98,7 +98,7 @@ function formatarCaixinha(caixinha, saldoDe) {
 // Busca a caixinha DESTE casal (ou dá 404).
 async function buscarCaixinha(id, casalId, cliente = prisma) {
   const caixinha = await cliente.caixinha.findFirst({ where: { id, casalId }, select: selecaoCaixinha });
-  if (!caixinha) throw new ErroDeRegra(404, 'Caixinha não encontrada.');
+  if (!caixinha) throw new ErroDeRegra(404, 'Meta não encontrada.');
   return caixinha;
 }
 
@@ -110,7 +110,7 @@ async function conferirInvestimento(investimentoId, casalId) {
 
 async function conferirMembro(usuarioId, casalId) {
   const ok = await prisma.usuario.count({ where: { id: usuarioId, casalId } });
-  if (!ok) throw new ErroDeRegra(400, 'Essa pessoa não faz parte do casal.');
+  if (!ok) throw new ErroDeRegra(400, 'Essa pessoa não faz parte da casa.');
 }
 
 // Devolve a caixinha atualizada (com saldo) para a resposta.
@@ -179,7 +179,7 @@ router.patch('/:id', async (req, res) => {
     await conferirInvestimento(dados.investimentoId, req.casalId);
 
     if (dados.arquivada === true && atual.saldoCentavos !== 0) {
-      throw new ErroDeRegra(409, 'Para arquivar, resgate todo o saldo da caixinha antes.');
+      throw new ErroDeRegra(409, 'Para arquivar, resgate todo o saldo da meta antes.');
     }
 
     const { prazo, ...resto } = dados;
@@ -200,7 +200,7 @@ router.delete('/:id', async (req, res) => {
     await buscarCaixinha(id, req.casalId);
     const movimentos = await prisma.lancamento.count({ where: { caixinhaId: id } });
     if (movimentos > 0) {
-      throw new ErroDeRegra(409, 'Esta caixinha tem histórico. Resgate o saldo e arquive em vez de apagar.');
+      throw new ErroDeRegra(409, 'Esta meta tem histórico. Resgate o saldo e arquive em vez de apagar.');
     }
     await prisma.caixinha.delete({ where: { id } });
     res.status(204).end();
@@ -224,7 +224,7 @@ async function criarMovimento(req, res, tipo, calcularValor) {
 
     await prisma.$transaction(async (tx) => {
       const caixinha = await buscarCaixinha(id, req.casalId, tx);
-      if (caixinha.arquivada) throw new ErroDeRegra(409, 'Esta caixinha está arquivada.');
+      if (caixinha.arquivada) throw new ErroDeRegra(409, 'Esta meta está arquivada.');
 
       const { saldo } = (await calcularSaldos(req.casalId, tx))(id);
       const valorCentavos = calcularValor(dados, saldo); // regra de cada tipo
@@ -252,7 +252,7 @@ router.post('/:id/guardar', (req, res) => criarMovimento(req, res, 'GUARDADO', (
 router.post('/:id/resgatar', (req, res) =>
   criarMovimento(req, res, 'RESGATE', (d, saldo) => {
     if (d.valorCentavos > saldo) {
-      throw new ErroDeRegra(409, 'Não dá para resgatar mais do que o saldo da caixinha.');
+      throw new ErroDeRegra(409, 'Não dá para resgatar mais do que o saldo da meta.');
     }
     return d.valorCentavos;
   }),

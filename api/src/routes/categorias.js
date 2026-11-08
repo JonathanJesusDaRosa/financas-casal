@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { prisma } from '../lib/prisma.js';
 import { autenticar } from '../middlewares/autenticar.js';
 import { exigirCasal } from '../middlewares/exigirCasal.js';
-import { idSchema, validar } from '../lib/validar.js';
+import { iconeSchema, idSchema, validar } from '../lib/validar.js';
 
 const router = Router();
 router.use(autenticar, exigirCasal);
@@ -17,10 +17,12 @@ const nome = z
 
 const cor = z.string().regex(/^#[0-9a-fA-F]{6}$/, { error: 'Cor inválida.' });
 
-const criarSchema = z.object({ nome, cor: cor.optional() });
+const criarSchema = z.object({ nome, cor: cor.optional(), icone: iconeSchema });
 const editarSchema = z
-  .object({ nome: nome.optional(), cor: cor.optional() })
-  .refine((d) => d.nome !== undefined || d.cor !== undefined, { error: 'Nada para alterar.' });
+  .object({ nome: nome.optional(), cor: cor.optional(), icone: iconeSchema.optional() })
+  .refine((d) => d.nome !== undefined || d.cor !== undefined || d.icone !== undefined, {
+    error: 'Nada para alterar.',
+  });
 
 const NOME_REPETIDO = 'Já existe uma categoria com esse nome.';
 
@@ -29,7 +31,7 @@ router.get('/', async (req, res) => {
   const categorias = await prisma.categoria.findMany({
     where: { casalId: req.casalId },
     orderBy: { nome: 'asc' },
-    select: { id: true, nome: true, cor: true, _count: { select: { lancamentos: true } } },
+    select: { id: true, nome: true, cor: true, icone: true, _count: { select: { lancamentos: true } } },
   });
 
   res.json({
@@ -44,8 +46,8 @@ router.post('/', async (req, res) => {
 
   try {
     const categoria = await prisma.categoria.create({
-      data: { nome: dados.nome, cor: dados.cor ?? '#607d8b', casalId: req.casalId },
-      select: { id: true, nome: true, cor: true },
+      data: { nome: dados.nome, cor: dados.cor ?? null, icone: dados.icone ?? 'etiqueta', casalId: req.casalId },
+      select: { id: true, nome: true, cor: true, icone: true },
     });
     res.status(201).json({ categoria });
   } catch (erro) {
@@ -71,7 +73,7 @@ router.patch('/:id', async (req, res) => {
 
     const categoria = await prisma.categoria.findUnique({
       where: { id },
-      select: { id: true, nome: true, cor: true },
+      select: { id: true, nome: true, cor: true, icone: true },
     });
     res.json({ categoria });
   } catch (erro) {

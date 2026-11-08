@@ -1,6 +1,6 @@
-# Finanças do Casal
+# Casa em Conta (antes "Finanças do Casal")
 
-App de finanças para um casal (eu e minha esposa) organizarmos o dinheiro juntos. Também é meu projeto de portfólio: estudo engenharia de software e quero aprender construindo algo real.
+App de finanças da casa: eu e minha esposa (e, no futuro, filhos) organizando o dinheiro juntos. Também é meu projeto de portfólio: estudo engenharia de software e quero aprender construindo algo real.
 
 Visão completa do projeto: https://claude.ai/artifact/1iXKbJSAJDdfKFPmdAuVEz
 
@@ -27,6 +27,14 @@ Visão completa do projeto: https://claude.ai/artifact/1iXKbJSAJDdfKFPmdAuVEz
 - Sistema: Windows, VS Code.
 - JavaScript por enquanto; TypeScript fica para depois.
 - Se um dia precisar de app nativo, o plano é embrulhar a PWA com Capacitor.
+
+## Publicação (Vercel, plano Hobby)
+
+- App: https://financas-casal-gold.vercel.app (projeto Vercel `financas-casal`, pasta `web`, variável `VITE_API_URL`)
+- API: https://financas-casal-api-beta.vercel.app (projeto Vercel `financas-casal-api`, pasta `api`, variáveis `DATABASE_URL`, `JWT_SECRET`, `WEB_URL`)
+- Cada push na `main` publica os dois sozinho. Variável nova na Vercel só vale depois de um Redeploy.
+- Banco: branch `production` do Neon = app publicado (dados reais); branch `dev` = computador local.
+- Mudou o schema? Testar na dev (`npm run db:migrate`) e, antes do push, aplicar em produção com `npm run db:migrar-producao` (o usuário roda; é dado real).
 
 ## Estrutura
 
@@ -102,11 +110,20 @@ Cada fase só começa quando a anterior está em uso no dia a dia.
 - Senhas com hash (bcrypt ou argon2); cada casal só enxerga os próprios dados.
 - Nunca colocar dados financeiros reais no repositório.
 
+## Visual (DESIGN.md)
+
+- O guia visual é o **DESIGN.md** (marca, tokens, tipografia, layout). Seguir sempre. As telas de referência (imagens) ficam na pasta `Ideia Design/` e o usuário gosta delas: seguir esse layout o mais perto possível.
+- Cores só por tokens (`web/src/styles/tokens.css`): nunca cor fixa nas telas. Ícones: `lucide-react` via `<Icone nome="..." />` (lista em `web/src/utils/icones.js`; o banco guarda só o nome).
+- Interface sem a palavra "casal" (usar "casa", "membros", "quem pagou") e sem emoji. Por dentro (banco, rotas `/casal`, `casalId`) o nome continua.
+- Navegação: Início, Extrato, (+), Metas, Investir, Casa. O "+" central abre o lançamento; na Fase 3 vira o microfone. Rótulos curtos para caber em 360px.
+- "Caixinhas" se chamam **Metas** na interface (rotas do front `/metas`; API continua `/caixinhas`).
+- Para conferir telas: prints com o Edge headless dentro de um iframe de 360/390px (o Edge sem janela tem largura mínima maior que um celular).
+
 ## Pendências combinadas
 
-- Rodada de melhorias visuais (o usuário não gostou de partes do layout): fazer depois de publicar, com o app em uso no celular.
-- Resumo do mês por categoria (com gráfico) e divisão proporcional à renda.
-- Limite de tentativas de login antes de publicar.
+- Divisão proporcional à renda.
+- Mais dashboards (ex.: evolução mês a mês, gastos por pessoa) depois do Início.
+- Ajustes finos de visual conforme o uso no celular.
 
 ## Fora de escopo por enquanto
 

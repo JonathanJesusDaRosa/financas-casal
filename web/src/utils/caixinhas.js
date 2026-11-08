@@ -1,4 +1,4 @@
-// Cálculos das caixinhas: porcentagem e quanto guardar por mês.
+// Cálculos das metas (caixinhas): porcentagem e quanto guardar por mês.
 import { formatarReais } from './dinheiro.js';
 import { hoje } from './datas.js';
 
@@ -18,7 +18,7 @@ function mesesAte(prazo) {
 // "Faltam R$ 3.800,00. Guardando R$ 475,00 por mês, vocês chegam lá até julho de 2027."
 export function planejamento(caixinha) {
   const falta = caixinha.valorAlvoCentavos - caixinha.saldoCentavos;
-  if (falta <= 0) return '🎉 Meta alcançada!';
+  if (falta <= 0) return 'Meta alcançada.';
   if (!caixinha.prazo) return `Faltam ${formatarReais(falta)}.`;
 
   const meses = mesesAte(caixinha.prazo);

@@ -1,0 +1,68 @@
+/* Tokens do guia visual "Casa em Conta" (DESIGN.md).
+   Regra: nas telas, nunca escreva cor fixa. Use sempre var(--token). */
+
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+
+:root {
+  /* cores — tema claro */
+  --surface: #F8F7FC;        /* fundo das telas */
+  --surface-raised: #FFFFFF; /* cards e campos */
+  --ink: #1C1B33;            /* texto principal */
+  --ink-muted: #5E5B7A;      /* texto secundário, datas */
+  --line: #E3E1F0;           /* divisórias e bordas de card */
+  --indigo: #3D3A8C;         /* marca: botão principal, nav ativa, links, foco */
+  --on-indigo: #FFFFFF;
+  --indigo-soft: #E6E5F6;    /* chips, abas, card de saldo */
+  --peach: #FFB38A;          /* destaque: botão central e metas (nunca texto) */
+  --on-peach: #1C1B33;
+  --peach-soft: #FFE9DC;     /* avisos, fundo da barra de meta */
+  --income: #1E7F5C;         /* receitas, sempre com "+" */
+  --expense: #B42318;        /* despesas e erros, sempre com "−" */
+  --warning: #9A4A06;        /* orçamento perto do limite */
+
+  /* tipografia */
+  --font-sans: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  /* espaçamento (grade de 4px) */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;  /* margem lateral e padding de card */
+  --space-6: 24px;  /* entre seções */
+  --space-8: 32px;
+
+  /* cantos */
+  --radius-sm: 8px;    /* campos, chips, ícone de categoria */
+  --radius-md: 12px;   /* botões e cards */
+  --radius-lg: 20px;   /* folhas e card de saldo */
+  --radius-full: 999px;/* botão central, avatar, barra de progresso */
+
+  /* sombra (só folhas e botão central) */
+  --shadow-sheet: 0 -4px 24px rgba(28, 27, 51, 0.12);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --surface: #15142A;
+    --surface-raised: #201E3D;
+    --ink: #F1F0FA;
+    --ink-muted: #A9A6C6;
+    --line: #33315A;
+    --indigo: #8C88E8;
+    --on-indigo: #15142A;
+    --indigo-soft: #2A2858;
+    --peach-soft: #4A3330;
+    --income: #5FD3A4;
+    --expense: #FF8A80;
+    --warning: #F5B451;
+  }
+}
+
+body {
+  margin: 0;
+  background: var(--surface);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 22px;
+}

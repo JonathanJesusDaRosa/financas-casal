@@ -1,30 +1,31 @@
 // Define as páginas do app e quem pode ver cada uma.
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { useAuth } from './auth.jsx';
+import Layout from './components/Layout.jsx';
 import Login from './pages/Login.jsx';
 import Cadastro from './pages/Cadastro.jsx';
 import Espaco from './pages/Espaco.jsx';
-import Layout from './components/Layout.jsx';
+import Inicio from './pages/Inicio.jsx';
 import Lancamentos from './pages/Lancamentos.jsx';
 import FormLancamento from './pages/FormLancamento.jsx';
-import Categorias from './pages/Categorias.jsx';
-import Casal from './pages/Casal.jsx';
 import Caixinhas from './pages/Caixinhas.jsx';
 import CaixinhaDetalhe from './pages/CaixinhaDetalhe.jsx';
 import FormCaixinha from './pages/FormCaixinha.jsx';
 import Investimentos from './pages/Investimentos.jsx';
+import Casa from './pages/Casa.jsx';
+import Categorias from './pages/Categorias.jsx';
 
-// Para quem está logado E já tem casal.
-// Sem login -> login. Logado sem casal -> tela "Seu espaço".
-function RotaDoCasal({ children }) {
+// Para quem está logado E já está numa casa.
+// Sem login -> login. Logado sem casa -> tela "Criar casa".
+function RotaDaCasa({ children }) {
   const { usuario } = useAuth();
   if (!usuario) return <Navigate to="/login" replace />;
-  if (!usuario.casalId) return <Navigate to="/espaco" replace />;
+  if (!usuario.casalId) return <Navigate to="/bem-vindo" replace />;
   return children;
 }
 
-// Para quem está logado mas AINDA não tem casal.
-function RotaSemCasal({ children }) {
+// Para quem está logado mas AINDA não está numa casa.
+function RotaSemCasa({ children }) {
   const { usuario } = useAuth();
   if (!usuario) return <Navigate to="/login" replace />;
   if (usuario.casalId) return <Navigate to="/" replace />;
@@ -46,26 +47,28 @@ export default function App() {
 
   return (
     <Routes>
-      {/* Área do casal: todas estas páginas ficam dentro do Layout (barra embaixo) */}
-      <Route element={<RotaDoCasal><Layout /></RotaDoCasal>}>
-        <Route path="/" element={<Lancamentos />} />
-        <Route path="/caixinhas" element={<Caixinhas />} />
-        <Route path="/caixinhas/:id" element={<CaixinhaDetalhe />} />
+      {/* Telas com a navegação inferior */}
+      <Route element={<RotaDaCasa><Layout /></RotaDaCasa>}>
+        <Route path="/" element={<Inicio />} />
+        <Route path="/lancamentos" element={<Lancamentos />} />
+        <Route path="/metas" element={<Caixinhas />} />
+        <Route path="/metas/:id" element={<CaixinhaDetalhe />} />
         <Route path="/investimentos" element={<Investimentos />} />
-        <Route path="/casal" element={<Casal />} />
-        <Route path="/categorias" element={<Categorias />} />
+        <Route path="/casa" element={<Casa />} />
+        <Route path="/casa/categorias" element={<Categorias />} />
       </Route>
 
-      <Route path="/caixinhas/nova" element={<RotaDoCasal><FormCaixinha /></RotaDoCasal>} />
-      <Route path="/caixinhas/:id/editar" element={<RotaDoCasal><FormCaixinha /></RotaDoCasal>} />
+      {/* Formulários em tela cheia (sem a navegação, para sobrar espaço ao teclado) */}
+      <Route path="/lancamentos/novo" element={<RotaDaCasa><FormLancamento /></RotaDaCasa>} />
+      <Route path="/lancamentos/:id" element={<RotaDaCasa><FormLancamento /></RotaDaCasa>} />
+      <Route path="/metas/nova" element={<RotaDaCasa><FormCaixinha /></RotaDaCasa>} />
+      <Route path="/metas/:id/editar" element={<RotaDaCasa><FormCaixinha /></RotaDaCasa>} />
 
-      {/* Formulário em tela cheia (sem a barra embaixo, para sobrar espaço ao teclado) */}
-      <Route path="/lancamentos/novo" element={<RotaDoCasal><FormLancamento /></RotaDoCasal>} />
-      <Route path="/lancamentos/:id" element={<RotaDoCasal><FormLancamento /></RotaDoCasal>} />
-      <Route path="/espaco" element={<RotaSemCasal><Espaco /></RotaSemCasal>} />
+      <Route path="/bem-vindo" element={<RotaSemCasa><Espaco /></RotaSemCasa>} />
       <Route path="/login" element={<RotaPublica><Login /></RotaPublica>} />
       <Route path="/cadastro" element={<RotaPublica><Cadastro /></RotaPublica>} />
-      {/* Qualquer outro endereço volta para o início */}
+
+      {/* Qualquer outro endereço (inclusive os antigos) volta para o início */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

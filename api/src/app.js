@@ -7,6 +7,7 @@ import categoriasRoutes from './routes/categorias.js';
 import lancamentosRoutes from './routes/lancamentos.js';
 import caixinhasRoutes from './routes/caixinhas.js';
 import investimentosRoutes from './routes/investimentos.js';
+import resumoRoutes from './routes/resumo.js';
 
 const app = express();
 
@@ -53,6 +54,9 @@ app.use('/lancamentos', lancamentosRoutes);
 // Caixinhas para sonhos e onde o dinheiro está investido
 app.use('/caixinhas', caixinhasRoutes);
 app.use('/investimentos', investimentosRoutes);
+
+// Números da tela Início (dashboard do mês)
+app.use('/resumo', resumoRoutes);
 
 // Rota que não existe
 app.use((req, res) => {

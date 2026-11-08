@@ -11,7 +11,7 @@ export async function exigirCasal(req, res, next) {
   });
 
   if (!usuario?.casalId) {
-    return res.status(403).json({ erro: 'Você ainda não faz parte de um espaço do casal.' });
+    return res.status(403).json({ erro: 'Você ainda não faz parte de uma casa.' });
   }
 
   req.casalId = usuario.casalId;

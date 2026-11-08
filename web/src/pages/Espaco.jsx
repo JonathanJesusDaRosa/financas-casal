@@ -1,7 +1,8 @@
-// Tela para quem ainda não tem casal: criar o espaço ou entrar com um código.
+// Para quem ainda não está numa casa: criar a casa ou entrar com um código de convite.
 import { useState } from 'react';
 import { api } from '../api.js';
 import { useAuth } from '../auth.jsx';
+import Marca from '../components/Marca.jsx';
 
 export default function Espaco() {
   const { usuario, atualizarUsuario, sair } = useAuth();
@@ -34,53 +35,50 @@ export default function Espaco() {
   }
 
   return (
-    <main className="tela-auth">
-      <h1>Finanças do Casal</h1>
+    <main className="tela-entrada">
+      <Marca tagline={false} />
 
-      <div className="cartao">
-        <h2>Olá, {usuario.nome}!</h2>
-        <p className="dica">
-          Para começar, crie o espaço de vocês ou entre com o código que seu par enviou.
-        </p>
+      <h1>Olá, {usuario.nome}</h1>
+      <p className="muted" style={{ margin: 'var(--space-2) 0 var(--space-6)' }}>
+        Crie a sua casa ou entre com o código que um membro enviou.
+      </p>
 
-        {/* Abas: criar / entrar */}
-        <div className="abas" role="tablist">
-          <button type="button" role="tab" aria-selected={modo === 'criar'}
-            className={modo === 'criar' ? 'ativa' : ''} onClick={() => trocarModo('criar')}>
-            Criar espaço
-          </button>
-          <button type="button" role="tab" aria-selected={modo === 'entrar'}
-            className={modo === 'entrar' ? 'ativa' : ''} onClick={() => trocarModo('entrar')}>
-            Tenho um código
-          </button>
-        </div>
-
-        <form className="formulario" onSubmit={aoEnviar}>
-          {modo === 'criar' ? (
-            <label>
-              Nome do espaço
-              <input type="text" required maxLength={60} placeholder={`${usuario.nome} & …`}
-                value={nome} onChange={(e) => setNome(e.target.value)} />
-            </label>
-          ) : (
-            <label>
-              Código de convite
-              <input type="text" required placeholder="K7M-4QX" autoCapitalize="characters"
-                autoComplete="off" maxLength={9} className="campo-codigo"
-                value={codigo} onChange={(e) => setCodigo(e.target.value.toUpperCase())} />
-            </label>
-          )}
-
-          {erro && <p className="erro" role="alert">{erro}</p>}
-
-          <button type="submit" disabled={enviando}>
-            {enviando ? 'Aguarde…' : modo === 'criar' ? 'Criar nosso espaço' : 'Entrar no espaço'}
-          </button>
-        </form>
+      <div className="segmentado" role="tablist">
+        <button type="button" role="tab" aria-selected={modo === 'criar'}
+          className={modo === 'criar' ? 'ativo' : ''} onClick={() => trocarModo('criar')}>
+          Criar casa
+        </button>
+        <button type="button" role="tab" aria-selected={modo === 'entrar'}
+          className={modo === 'entrar' ? 'ativo' : ''} onClick={() => trocarModo('entrar')}>
+          Tenho um código
+        </button>
       </div>
 
-      <p className="rodape">
-        <button type="button" className="link" onClick={sair}>Sair da conta</button>
+      <form className="formulario" style={{ marginTop: 'var(--space-6)' }} onSubmit={aoEnviar}>
+        {modo === 'criar' ? (
+          <label className="campo">
+            Nome da casa
+            <input type="text" required maxLength={60} placeholder="Ex.: Casa da Rua das Flores"
+              value={nome} onChange={(e) => setNome(e.target.value)} />
+          </label>
+        ) : (
+          <label className="campo">
+            Código de convite
+            <input type="text" required placeholder="K7M-4QX" autoCapitalize="characters"
+              autoComplete="off" maxLength={9} className="campo-valor" style={{ textAlign: 'center', letterSpacing: '4px' }}
+              value={codigo} onChange={(e) => setCodigo(e.target.value.toUpperCase())} />
+          </label>
+        )}
+
+        {erro && <p className="erro" role="alert">{erro}</p>}
+
+        <button type="submit" className="botao" disabled={enviando}>
+          {enviando ? 'Aguarde…' : modo === 'criar' ? 'Criar casa' : 'Entrar na casa'}
+        </button>
+      </form>
+
+      <p className="rodape-entrada">
+        <button type="button" className="botao-quieto" onClick={sair}>Sair da conta</button>
       </p>
     </main>
   );

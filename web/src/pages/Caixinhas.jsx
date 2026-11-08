@@ -1,9 +1,12 @@
-// Aba "Caixinhas": lista de sonhos com o progresso de cada um.
+// Aba "Metas": os sonhos da casa (caixinhas), com o progresso de cada um.
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { Plus } from 'lucide-react';
 import { api } from '../api.js';
-import { formatarReais } from '../utils/dinheiro.js';
+import Cabecalho from '../components/Cabecalho.jsx';
+import Icone from '../components/Icone.jsx';
 import Progresso from '../components/Progresso.jsx';
+import { formatarReais } from '../utils/dinheiro.js';
 import { porcentagem } from '../utils/caixinhas.js';
 
 export default function Caixinhas() {
@@ -22,67 +25,66 @@ export default function Caixinhas() {
   const totalGuardado = ativas.reduce((total, c) => total + c.saldoCentavos, 0);
 
   return (
-    <main className="pagina">
-      <header className="topo">
-        <h1>Caixinhas</h1>
-      </header>
+    <main className="tela">
+      <Cabecalho titulo="Metas">
+        <Link to="/metas/nova" className="botao-secundario">
+          <Plus size={20} strokeWidth={1.75} aria-hidden="true" /> Nova
+        </Link>
+      </Cabecalho>
 
       {erro && <p className="erro" role="alert">{erro}</p>}
-      {!caixinhas && !erro && <p className="dica">Carregando…</p>}
+      {!caixinhas && !erro && <p className="vazio">Carregando…</p>}
 
       {caixinhas && (
         <>
           {ativas.length > 0 && (
-            <p className="resumo-caixinhas">
-              Total guardado nas caixinhas: <strong>{formatarReais(totalGuardado)}</strong>
+            <p className="muted" style={{ marginBottom: 'var(--space-4)' }}>
+              Guardado nas metas: <strong style={{ color: 'var(--ink)' }}>{formatarReais(totalGuardado)}</strong>
             </p>
           )}
 
           {ativas.length === 0 && (
             <p className="vazio">
-              Nenhuma caixinha ainda.<br />
-              Crie uma para cada sonho: viagem, reserva de emergência, carro…
+              Nenhuma meta ainda.<br />Crie uma para cada sonho: viagem, reserva, carro.
             </p>
           )}
 
-          <ul className="lista-caixinhas">
-            {ativas.map((c) => <CartaoCaixinha key={c.id} caixinha={c} />)}
-          </ul>
+          {ativas.map((c) => <CartaoMeta key={c.id} caixinha={c} />)}
 
           {arquivadas.length > 0 && (
-            <>
-              <button className="link mostrar-arquivadas" onClick={() => setVerArquivadas(!verArquivadas)}>
+            <div className="secao">
+              <button className="botao-quieto" onClick={() => setVerArquivadas(!verArquivadas)}>
                 {verArquivadas ? 'Esconder' : 'Mostrar'} arquivadas ({arquivadas.length})
               </button>
               {verArquivadas && (
-                <ul className="lista-caixinhas arquivadas">
-                  {arquivadas.map((c) => <CartaoCaixinha key={c.id} caixinha={c} />)}
-                </ul>
+                <div style={{ opacity: 0.7, marginTop: 'var(--space-3)' }}>
+                  {arquivadas.map((c) => <CartaoMeta key={c.id} caixinha={c} />)}
+                </div>
               )}
-            </>
+            </div>
           )}
         </>
       )}
-
-      <Link className="botao-flutuante" to="/caixinhas/nova">+ Nova caixinha</Link>
     </main>
   );
 }
 
-function CartaoCaixinha({ caixinha: c }) {
+function CartaoMeta({ caixinha: c }) {
   return (
-    <li>
-      <Link to={`/caixinhas/${c.id}`} className="cartao cartao-caixinha">
-        <div className="linha">
-          <span className="nome">{c.icone} {c.nome}</span>
-          <span className="porcento">{porcentagem(c)}%</span>
-        </div>
-        <Progresso caixinha={c} />
-        <div className="linha valores">
-          <span><strong>{formatarReais(c.saldoCentavos)}</strong> de {formatarReais(c.valorAlvoCentavos)}</span>
-          {c.investimento && <small>{c.investimento.nome}</small>}
-        </div>
-      </Link>
-    </li>
+    <Link to={`/metas/${c.id}`} className="card card-meta">
+      <div className="item">
+        <span className="item-icone meta"><Icone nome={c.icone} /></span>
+        <span className="item-textos">
+          <span className="item-titulo">{c.nome}</span>
+          <span className="item-sub">{c.investimento ? c.investimento.nome : 'Sem investimento definido'}</span>
+        </span>
+        <span className="label">{porcentagem(c)}%</span>
+      </div>
+      <Progresso caixinha={c} />
+      <p className="caption muted">
+        <strong className="valor" style={{ color: 'var(--ink)' }}>{formatarReais(c.saldoCentavos)}</strong>
+        {' '}de {formatarReais(c.valorAlvoCentavos)}
+      </p>
+    </Link>
   );
 }

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../auth.jsx';
+import Marca from '../components/Marca.jsx';
 
 export default function Cadastro() {
   const { cadastrar } = useAuth();
@@ -23,39 +24,40 @@ export default function Cadastro() {
   }
 
   return (
-    <main className="tela-auth">
-      <h1>Finanças do Casal</h1>
-      <form className="cartao" onSubmit={aoEnviar}>
-        <h2>Criar conta</h2>
+    <main className="tela-entrada">
+      <Marca tagline={false} />
 
-        <label>
+      <form className="formulario" onSubmit={aoEnviar}>
+        <h1>Criar conta</h1>
+
+        <label className="campo">
           Nome
           <input type="text" autoComplete="given-name" required
             value={nome} onChange={(e) => setNome(e.target.value)} />
         </label>
 
-        <label>
+        <label className="campo">
           E-mail
           <input type="email" autoComplete="email" required
             value={email} onChange={(e) => setEmail(e.target.value)} />
         </label>
 
-        <label>
-          Senha <small>(mínimo 8 caracteres)</small>
+        <label className="campo">
+          <span>Senha <small>Mínimo de 8 caracteres</small></span>
           <input type="password" autoComplete="new-password" required minLength={8} maxLength={72}
             value={senha} onChange={(e) => setSenha(e.target.value)} />
         </label>
 
         {erro && <p className="erro" role="alert">{erro}</p>}
 
-        <button type="submit" disabled={enviando}>
+        <button type="submit" className="botao" disabled={enviando}>
           {enviando ? 'Criando conta…' : 'Criar conta'}
         </button>
-
-        <p className="rodape">
-          Já tem conta? <Link to="/login">Entrar</Link>
-        </p>
       </form>
+
+      <p className="rodape-entrada">
+        Já tem conta? <Link to="/login">Entrar</Link>
+      </p>
     </main>
   );
 }

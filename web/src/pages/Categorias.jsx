@@ -1,19 +1,16 @@
-// Categorias do casal: adicionar, renomear, trocar a cor e apagar.
-import { useEffect, useRef, useState } from 'react';
+// Categorias da casa: adicionar, renomear, trocar o ícone e apagar.
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { ChevronLeft, Plus } from 'lucide-react';
 import { api } from '../api.js';
+import Icone from '../components/Icone.jsx';
+import { ICONES, ICONES_CATEGORIA } from '../utils/icones.js';
 
 export default function Categorias() {
   const [categorias, setCategorias] = useState(null);
   const [erro, setErro] = useState('');
-
-  // Formulário de nova categoria
-  const [novoNome, setNovoNome] = useState('');
-  const [novaCor, setNovaCor] = useState('#607d8b');
-
-  // Qual categoria está sendo renomeada (id) e o texto digitado
-  const [editandoId, setEditandoId] = useState(null);
-  const [nomeEditado, setNomeEditado] = useState('');
+  // Qual categoria está aberta para edição: um id, 'nova', ou null
+  const [aberta, setAberta] = useState(null);
 
   function carregar() {
     return api('/categorias')
@@ -25,91 +22,80 @@ export default function Categorias() {
     carregar();
   }, []);
 
-  // Executa uma ação na API e recarrega a lista; mostra o erro se falhar.
-  async function executar(acao) {
+  async function salvar(categoria, campos) {
     setErro('');
     try {
-      await acao();
+      if (categoria) {
+        await api(`/categorias/${categoria.id}`, { metodo: 'PATCH', corpo: campos });
+      } else {
+        await api('/categorias', { metodo: 'POST', corpo: campos });
+      }
+      setAberta(null);
       await carregar();
-      return true;
     } catch (e) {
       setErro(e.message);
-      return false;
     }
   }
 
-  async function adicionar(evento) {
-    evento.preventDefault();
-    const ok = await executar(() =>
-      api('/categorias', { metodo: 'POST', corpo: { nome: novoNome, cor: novaCor } }),
-    );
-    if (ok) setNovoNome('');
-  }
-
-  async function salvarNome(evento) {
-    evento.preventDefault();
-    const ok = await executar(() =>
-      api(`/categorias/${editandoId}`, { metodo: 'PATCH', corpo: { nome: nomeEditado } }),
-    );
-    if (ok) setEditandoId(null);
-  }
-
-  function trocarCor(categoria, cor) {
-    executar(() => api(`/categorias/${categoria.id}`, { metodo: 'PATCH', corpo: { cor } }));
-  }
-
-  function apagar(categoria) {
+  async function apagar(categoria) {
     const aviso = categoria.totalLancamentos
-      ? `Apagar "${categoria.nome}"? Os ${categoria.totalLancamentos} lançamento(s) dela vão ficar "Sem categoria".`
+      ? `Apagar "${categoria.nome}"? Os ${categoria.totalLancamentos} lançamento(s) dela vão ficar sem categoria.`
       : `Apagar "${categoria.nome}"?`;
     if (!window.confirm(aviso)) return;
-    executar(() => api(`/categorias/${categoria.id}`, { metodo: 'DELETE' }));
+    setErro('');
+    try {
+      await api(`/categorias/${categoria.id}`, { metodo: 'DELETE' });
+      setAberta(null);
+      await carregar();
+    } catch (e) {
+      setErro(e.message);
+    }
   }
 
   return (
-    <main className="pagina">
-      <header className="topo">
-        <Link to="/casal" className="botao secundario">‹ Casal</Link>
+    <main className="tela">
+      <header className="cabecalho">
+        <Link to="/casa" className="botao-icone" aria-label="Voltar para Casa">
+          <ChevronLeft size={24} strokeWidth={1.75} />
+        </Link>
         <h1>Categorias</h1>
+        {aberta !== 'nova' && (
+          <button className="botao-secundario" onClick={() => { setErro(''); setAberta('nova'); }}>
+            <Plus size={20} strokeWidth={1.75} aria-hidden="true" /> Nova
+          </button>
+        )}
       </header>
 
-      <form className="cartao nova-categoria" onSubmit={adicionar}>
-        <input type="color" aria-label="Cor da nova categoria" value={novaCor}
-          onChange={(e) => setNovaCor(e.target.value)} />
-        <input type="text" required maxLength={40} placeholder="Nova categoria (ex.: Pets)"
-          value={novoNome} onChange={(e) => setNovoNome(e.target.value)} />
-        <button type="submit">Adicionar</button>
-      </form>
+      {erro && <p className="erro" role="alert" style={{ marginBottom: 'var(--space-3)' }}>{erro}</p>}
+      {!categorias && !erro && <p className="vazio">Carregando…</p>}
 
-      {erro && <p className="erro" role="alert">{erro}</p>}
-      {!categorias && !erro && <p className="dica">Carregando…</p>}
+      {aberta === 'nova' && (
+        <EditorCategoria aoSalvar={(campos) => salvar(null, campos)} aoCancelar={() => setAberta(null)} />
+      )}
 
       {categorias && (
-        <ul className="cartao lista-categorias">
+        <ul className="card lista" style={{ marginTop: aberta === 'nova' ? 'var(--space-3)' : 0 }}>
           {categorias.map((c) => (
             <li key={c.id}>
-              <SeletorCor categoria={c} aoEscolher={(cor) => trocarCor(c, cor)} />
-
-              {editandoId === c.id ? (
-                <form className="renomear" onSubmit={salvarNome}>
-                  <input type="text" required maxLength={40} autoFocus aria-label="Novo nome"
-                    value={nomeEditado} onChange={(e) => setNomeEditado(e.target.value)} />
-                  <button type="submit">OK</button>
-                  <button type="button" className="secundario" onClick={() => setEditandoId(null)}>✕</button>
-                </form>
+              {aberta === c.id ? (
+                <div style={{ padding: 'var(--space-3) 0' }}>
+                  <EditorCategoria
+                    categoria={c}
+                    aoSalvar={(campos) => salvar(c, campos)}
+                    aoApagar={() => apagar(c)}
+                    aoCancelar={() => setAberta(null)}
+                  />
+                </div>
               ) : (
-                <>
-                  <span className="nome">
-                    {c.nome}
-                    <small>{c.totalLancamentos} lançamento(s)</small>
+                <button className="item bloco" style={{ justifyContent: 'flex-start', padding: 'var(--space-3) 0', borderRadius: 0, fontWeight: 400 }}
+                  onClick={() => { setErro(''); setAberta(c.id); }}>
+                  <span className="item-icone"><Icone nome={c.icone} /></span>
+                  <span className="item-textos" style={{ textAlign: 'left' }}>
+                    <span className="item-titulo">{c.nome}</span>
+                    <span className="item-sub">{c.totalLancamentos} lançamento(s)</span>
                   </span>
-                  <button className="secundario" onClick={() => { setEditandoId(c.id); setNomeEditado(c.nome); }}>
-                    Renomear
-                  </button>
-                  <button className="secundario perigo-texto" aria-label={`Apagar ${c.nome}`} onClick={() => apagar(c)}>
-                    Apagar
-                  </button>
-                </>
+                  <span className="label" style={{ color: 'var(--indigo)' }}>Editar</span>
+                </button>
               )}
             </li>
           ))}
@@ -119,28 +105,43 @@ export default function Categorias() {
   );
 }
 
-// Bolinha de cor que abre a paleta ao tocar.
-// O onChange do React dispara a CADA movimento na paleta; já o evento "change"
-// nativo do navegador só dispara quando a paleta fecha. Usamos o nativo para
-// salvar na API uma vez só, com a cor final.
-function SeletorCor({ categoria, aoEscolher }) {
-  const campo = useRef(null);
-  const aoEscolherAtual = useRef(aoEscolher);
+// Formulário de uma categoria (nova ou existente): nome + ícone.
+function EditorCategoria({ categoria, aoSalvar, aoApagar, aoCancelar }) {
+  const [nome, setNome] = useState(categoria?.nome ?? '');
+  const [icone, setIcone] = useState(categoria?.icone ?? 'etiqueta');
 
-  // Mantém a função mais recente guardada (sem mexer no ref durante a renderização).
-  useEffect(() => {
-    aoEscolherAtual.current = aoEscolher;
-  });
-
-  useEffect(() => {
-    const elemento = campo.current;
-    const aoFechar = () => aoEscolherAtual.current(elemento.value);
-    elemento.addEventListener('change', aoFechar);
-    return () => elemento.removeEventListener('change', aoFechar);
-  }, []);
+  function aoEnviar(evento) {
+    evento.preventDefault();
+    aoSalvar({ nome, icone });
+  }
 
   return (
-    <input ref={campo} type="color" className="seletor-cor" aria-label={`Cor de ${categoria.nome}`}
-      defaultValue={categoria.cor ?? '#607d8b'} />
+    <form className={categoria ? 'formulario' : 'card formulario'} onSubmit={aoEnviar}>
+      <label className="campo">
+        Nome
+        <input type="text" required maxLength={40} autoFocus placeholder="Ex.: Pets"
+          value={nome} onChange={(e) => setNome(e.target.value)} />
+      </label>
+
+      <fieldset className="campo" style={{ border: 'none', padding: 0, margin: 0 }}>
+        <legend style={{ marginBottom: 'var(--space-2)' }}>Ícone</legend>
+        <div className="grade-icones">
+          {ICONES_CATEGORIA.map((chave) => (
+            <button key={chave} type="button" aria-pressed={chave === icone} aria-label={ICONES[chave].nome}
+              className={chave === icone ? 'ativo' : ''} onClick={() => setIcone(chave)}>
+              <Icone nome={chave} />
+            </button>
+          ))}
+        </div>
+      </fieldset>
+
+      <div className="botoes">
+        <button type="button" className="botao-secundario" onClick={aoCancelar}>Cancelar</button>
+        <button type="submit" className="botao">Salvar</button>
+      </div>
+      {aoApagar && (
+        <button type="button" className="botao-perigo" onClick={aoApagar}>Apagar categoria</button>
+      )}
+    </form>
   );
 }
