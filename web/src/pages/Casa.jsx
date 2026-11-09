@@ -1,7 +1,7 @@
 // Aba "Casa": a casa, os membros, o convite (se ainda houver vaga), categorias e sair.
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { BookOpen, CalendarClock, ChevronRight, CreditCard, Copy, LogOut, MessageCircle, RefreshCw, Tag } from 'lucide-react';
+import { BookOpen, CalendarClock, ChevronRight, CreditCard, Copy, LogOut, MessageCircle, RefreshCw, Tag, Trash2 } from 'lucide-react';
 import { api } from '../api.js';
 import { useAuth } from '../auth.jsx';
 import Cabecalho from '../components/Cabecalho.jsx';
@@ -99,9 +99,77 @@ export default function Casa() {
               </li>
             </ul>
           </section>
+
+          <ApagarLancamentos nomeCasa={casa.nome} />
         </>
       )}
     </main>
+  );
+}
+
+// "Apagar dados": apaga TODOS os lançamentos da casa (não tem volta).
+// Para confirmar, a pessoa digita o nome da casa.
+function ApagarLancamentos({ nomeCasa }) {
+  const [aberto, setAberto] = useState(false);
+  const [confirmacao, setConfirmacao] = useState('');
+  const [erro, setErro] = useState('');
+  const [aviso, setAviso] = useState('');
+  const [enviando, setEnviando] = useState(false);
+  const confere = confirmacao.trim().toLocaleLowerCase('pt-BR') === nomeCasa.trim().toLocaleLowerCase('pt-BR');
+
+  async function apagar(evento) {
+    evento.preventDefault();
+    setErro('');
+    setEnviando(true);
+    try {
+      const { apagados } = await api('/casal/lancamentos', { metodo: 'DELETE', corpo: { confirmacao } });
+      setAviso(`Pronto: ${apagados} lançamento(s) apagado(s). A casa recomeça do zero.`);
+      setAberto(false);
+      setConfirmacao('');
+    } catch (e) {
+      setErro(e.message);
+    } finally {
+      setEnviando(false);
+    }
+  }
+
+  return (
+    <section className="secao">
+      <div className="secao-topo"><h2>Apagar dados</h2></div>
+      <div className="card formulario">
+        <p>
+          Apaga <strong>todos os lançamentos</strong> da casa: entradas, saídas, pagamentos de contas e de faturas
+          e os movimentos das metas. <strong>Não tem volta.</strong>
+        </p>
+        <p className="caption muted">
+          Continuam: membros, categorias, formas de pagamento, cartões, contas fixas, metas (ficam zeradas) e investimentos.
+        </p>
+        {aviso && <p className="aviso">{aviso}</p>}
+
+        {!aberto ? (
+          <button type="button" className="botao-perigo" onClick={() => { setAviso(''); setAberto(true); }}>
+            <Trash2 size={18} strokeWidth={1.75} aria-hidden="true" /> Apagar todos os lançamentos
+          </button>
+        ) : (
+          <form className="formulario" onSubmit={apagar}>
+            <label className="campo">
+              <span>Para confirmar, digite o nome da casa: <strong>{nomeCasa}</strong></span>
+              <input type="text" autoComplete="off" autoFocus value={confirmacao}
+                onChange={(e) => setConfirmacao(e.target.value)} />
+            </label>
+            {erro && <p className="erro" role="alert">{erro}</p>}
+            <div className="botoes">
+              <button type="button" className="botao-secundario" onClick={() => { setAberto(false); setConfirmacao(''); setErro(''); }}>
+                Cancelar
+              </button>
+              <button type="submit" className="botao-perigo" disabled={!confere || enviando}>
+                {enviando ? 'Apagando…' : 'Apagar para sempre'}
+              </button>
+            </div>
+          </form>
+        )}
+      </div>
+    </section>
   );
 }
 

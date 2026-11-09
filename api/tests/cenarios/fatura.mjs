@@ -29,7 +29,8 @@ try {
   const resumo = async (mes) => (await chamar(`/resumo?mes=${mes}`, t)).dados.totais;
 
   console.log('\n--- Cartão precisa de fechamento e vencimento ---');
-  igual('crédito sem os dias: recusado', (await compra({ valorCentavos: 100, data: '2026-11-02', formaPagamentoId: formas['Crédito'].id })).status, 400);
+  const semDias = (await chamar('/formas-pagamento', { metodo: 'POST', corpo: { nome: 'Cartão sem dias', tipo: 'CREDITO' }, ...t })).dados.forma;
+  igual('crédito sem os dias: recusado', (await compra({ valorCentavos: 100, data: '2026-11-02', formaPagamentoId: semDias.id })).status, 400);
   const nubank = (await chamar('/formas-pagamento', { metodo: 'POST', corpo: { nome: 'Nubank', tipo: 'CREDITO', diaFechamento: 3, diaVencimento: 10 }, ...t })).dados.forma;
   igual('cartão com os dias', [nubank.diaFechamento, nubank.diaVencimento], [3, 10]);
   igual('dias no Pix são ignorados', (await chamar('/formas-pagamento', { metodo: 'POST', corpo: { nome: 'Pix 2', tipo: 'PIX', diaFechamento: 3 }, ...t })).dados.forma.diaFechamento, null);

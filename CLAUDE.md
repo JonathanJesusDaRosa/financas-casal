@@ -150,6 +150,11 @@ Cada fase só começa quando a anterior está em uso no dia a dia.
 - Faturas que vencem no mês aparecem em `/contas-fixas/mes` (`faturas`) e entram no "faltam pagar". Conta fixa paga com cartão vai para a fatura (não soma de novo).
 - Cartão com compras em faturas não pode ser apagado nem mudar de tipo (só renomear). Compras no crédito anteriores a esta regra ficaram com `faturaMes` null (já contaram como saída) — decisão do usuário.
 
+### Apagar dados e formas padrão
+
+- Casa nova vem com Pix, Débito, Dinheiro e Boleto (SEM cartão de crédito: cada casa cadastra os seus).
+- "Apagar dados" (Casa, fim da página): `DELETE /casal/lancamentos { confirmacao: nome da casa }` apaga TODOS os lançamentos da casa + ajustes de valor do mês. Mantém casa, membros, categorias, formas, contas fixas, metas (zeradas) e investimentos. Sem volta.
+
 ### Testes automáticos
 
 - `cd api` e `npm test`: liga a API numa porta livre e roda os cenários de `api/tests/cenarios/` (dados fictícios `teste-*@exemplo.com`, apagados no final). Trava: recusa rodar se `DATABASE_URL` for igual a `PRODUCAO_DATABASE_URL`.

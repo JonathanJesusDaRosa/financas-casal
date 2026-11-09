@@ -180,4 +180,24 @@ router.post('/convite', exigirCasal, async (req, res) => {
   res.json({ casal: await montarCasal(req.casalId, req.papel) });
 });
 
+// DELETE /casal/lancamentos { confirmacao } -> apaga TODOS os lançamentos da casa
+// (entradas, saídas, pagamentos de contas e faturas, movimentos das metas) e os
+// ajustes de valor do mês das contas fixas. NÃO apaga: membros, casa, categorias,
+// formas de pagamento, cadastro das contas fixas, metas (ficam zeradas) e investimentos.
+// Para confirmar, é preciso mandar o nome da casa (evita apagar sem querer). Não tem volta.
+router.delete('/lancamentos', exigirCasal, async (req, res) => {
+  const casa = await prisma.casal.findUnique({ where: { id: req.casalId }, select: { nome: true } });
+  const digitado = String(req.body?.confirmacao ?? '').trim().toLocaleLowerCase('pt-BR');
+  if (digitado !== casa.nome.trim().toLocaleLowerCase('pt-BR')) {
+    return res.status(400).json({ erro: 'Para confirmar, digite o nome da casa exatamente como aparece.' });
+  }
+
+  // $transaction: ou apaga tudo, ou nada
+  const [lancamentos] = await prisma.$transaction([
+    prisma.lancamento.deleteMany({ where: { casalId: req.casalId } }),
+    prisma.contaFixaAjuste.deleteMany({ where: { contaFixa: { casalId: req.casalId } } }),
+  ]);
+  res.json({ apagados: lancamentos.count });
+});
+
 export default router;

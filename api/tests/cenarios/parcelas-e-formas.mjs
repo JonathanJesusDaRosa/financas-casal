@@ -19,7 +19,7 @@ try {
 
   console.log('\n--- Formas de pagamento ---');
   const formas = (await chamar('/formas-pagamento', t)).dados.formas;
-  igual('casa nova já vem com 5 formas', formas.map((f) => `${f.nome}/${f.tipo}`), ['Pix/PIX', 'Débito/DEBITO', 'Crédito/CREDITO', 'Dinheiro/DINHEIRO', 'Boleto/BOLETO']);
+  igual('casa nova já vem com 4 formas (sem cartão de crédito)', formas.map((f) => `${f.nome}/${f.tipo}`), ['Pix/PIX', 'Débito/DEBITO', 'Dinheiro/DINHEIRO', 'Boleto/BOLETO']);
   const nubank = (await chamar('/formas-pagamento', { metodo: 'POST', corpo: { nome: 'Nubank Crédito', tipo: 'CREDITO', diaFechamento: 3, diaVencimento: 10 }, ...t })).dados.forma;
   igual('criar cartão', [nubank.nome, nubank.tipo], ['Nubank Crédito', 'CREDITO']);
   igual('nome repetido', (await chamar('/formas-pagamento', { metodo: 'POST', corpo: { nome: 'Pix', tipo: 'PIX' }, ...t })).status, 409);

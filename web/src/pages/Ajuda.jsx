@@ -177,7 +177,7 @@ const SECOES = [
     Icone: CreditCard,
     conteudo: (
       <>
-        <p>A casa já começa com Pix, Débito, Crédito, Dinheiro e Boleto. Em <strong>Casa → Formas de pagamento</strong> dá para criar uma por cartão (ex.: "Nubank Crédito", tipo Crédito), renomear ou apagar.</p>
+        <p>A casa já começa com Pix, Débito, Dinheiro e Boleto. Os <strong>cartões de crédito</strong> vocês cadastram em <strong>Casa → Formas de pagamento → Nova</strong> (ex.: "Nubank", tipo Crédito, com fechamento e vencimento). Dá também para renomear ou apagar.</p>
         <p>Escolha a forma ao lançar ou ao pagar uma conta fixa. No Início, o card <strong>Por forma de pagamento</strong> mostra quanto foi gasto em cada uma e o total no crédito.</p>
         <p>Ao apagar uma forma, os lançamentos <strong>não somem</strong>: ficam sem forma de pagamento. Cartão com compras em faturas não pode ser apagado (só renomeado).</p>
 
@@ -219,6 +219,8 @@ const SECOES = [
         <p>Ainda não dá para recuperar a senha pelo app. Guarde a senha num lugar seguro.</p>
         <h3>Os dados ficam no celular?</h3>
         <p>Não: ficam guardados no servidor. Por isso aparecem iguais no celular e no computador, e não se perdem se o celular trocar.</p>
+        <h3>Como recomeçar do zero?</h3>
+        <p>Em <strong>Casa → Apagar dados</strong>, toque em <strong>Apagar todos os lançamentos</strong> e digite o nome da casa para confirmar. Apaga todas as entradas, saídas, pagamentos e movimentos das metas. Cadastros (categorias, cartões, contas fixas, metas) continuam. <strong>Não tem volta.</strong></p>
         <h3>Posso lançar sem internet?</h3>
         <p>Ainda não. O app abre, mas para salvar e ver os dados é preciso estar conectado.</p>
       </>

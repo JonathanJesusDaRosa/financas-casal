@@ -43,6 +43,7 @@ const CENARIOS = [
   ['evolução mês a mês', 'evolucao.mjs'],
   ['parcelas, ajuste do mês e formas de pagamento', 'parcelas-e-formas.mjs'],
   ['fatura do cartão de crédito', 'fatura.mjs'],
+  ['apagar o histórico de lançamentos', 'apagar-historico.mjs'],
 ];
 
 for (const [nome, arquivo] of CENARIOS) {
