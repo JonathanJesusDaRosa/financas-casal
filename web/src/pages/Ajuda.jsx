@@ -44,7 +44,7 @@ const SECOES = [
           <li>Escolha <strong>Saiu</strong> (gasto) ou <strong>Entrou</strong> (receita).</li>
           <li>Digite o <strong>valor</strong>. Vale escrever 50, 120,90 ou 1.234,56.</li>
           <li>Toque numa <strong>categoria</strong> (ex.: Mercado). Tocar de novo desmarca.</li>
-          <li>Se quiser, escolha a <strong>forma de pagamento</strong> (ex.: Pix, Nubank Crédito).</li>
+          <li>Se quiser, escolha a <strong>forma de pagamento</strong> (ex.: Pix, Nubank Crédito). No cartão de crédito, informe também as <strong>parcelas</strong> (1 = à vista).</li>
           <li>Se quiser, escreva uma <strong>descrição</strong> (ex.: "feira da semana").</li>
           <li>Confira a <strong>data</strong> (já vem com hoje) e <strong>quem pagou</strong>.</li>
           <li>Toque em <strong>Salvar</strong>.</li>
@@ -61,9 +61,10 @@ const SECOES = [
       <>
         <ul>
           <li><strong>Saldo do mês</strong>: quanto entrou, menos o que saiu, menos o que foi guardado nas metas.</li>
-          <li><strong>Entrou e Saiu</strong>: os totais do mês. Resgates de metas contam como entrada.</li>
+          <li><strong>Entrou e Saiu</strong>: o dinheiro que entrou e saiu da conta no mês. Resgates de metas contam como entrada. Compras no cartão <strong>não</strong> contam no Saiu: o que conta é o pagamento da fatura.</li>
+          <li><strong>Compras no cartão</strong>: quanto vocês compraram no crédito no mês (vai para as faturas).</li>
           <li><strong>Contas do mês</strong>: as próximas contas fixas a vencer e as atrasadas.</li>
-          <li><strong>Gastos por categoria</strong>: as 3 maiores. Toque em <strong>Ver todos</strong> para ver o resto.</li>
+          <li><strong>Gastos por categoria</strong>: as 3 maiores, contando também as compras no cartão pela data da compra. Toque em <strong>Ver todos</strong> para ver o resto.</li>
           <li><strong>Orçamento do mês</strong>: as categorias com limite e quanto ainda falta.</li>
           <li><strong>Por forma de pagamento</strong>: quanto saiu em cada forma (Pix, cada cartão...), com o total no crédito em destaque.</li>
           <li><strong>Evolução</strong>: entrou e saiu nos últimos 6 meses. Toque num mês para abrir o Início daquele mês. Em <strong>Ver em tabela</strong>, aparecem os números.</li>
@@ -109,11 +110,11 @@ const SECOES = [
         <ul>
           <li>A conta aparece como <strong>a pagar</strong> e, depois do vencimento, como <strong>atrasada</strong>.</li>
           <li>Toque em <strong>Pagar</strong>, confira o valor e a forma de pagamento e toque em <strong>Confirmar</strong>. A conta vira um lançamento.</li>
-          <li><strong>Compra no cartão de crédito</strong>: toquem em <strong>Pagar</strong> quando pagarem a fatura.</li>
           <li><strong>Marcou sem querer?</strong> Toque na conta paga, que abre o lançamento, e apague. Ela volta para "a pagar".</li>
         </ul>
         <p>A conta <strong>não é lançada sozinha</strong>: só depois que alguém confirma. Para parar de vê-la sem apagar, edite e escolha <strong>Pausada</strong>. Vencimento no dia 31, em mês mais curto, vale o último dia.</p>
-        <p><strong>Atenção:</strong> uma compra parcelada cadastrada como conta fixa não deve ser lançada também pelo botão +. Senão ela conta duas vezes.</p>
+        <p><strong>Compra parcelada no cartão de crédito</strong>: lance pelo botão <strong>+</strong> com o número de parcelas (cada parcela vai para uma fatura). As contas fixas com parcelas ficam para <strong>boleto e carnê</strong>.</p>
+        <p>Conta fixa paga no cartão (ex.: streaming): ao tocar em Pagar, ela vai para a fatura do cartão.</p>
       </>
     ),
   },
@@ -177,8 +178,18 @@ const SECOES = [
     conteudo: (
       <>
         <p>A casa já começa com Pix, Débito, Crédito, Dinheiro e Boleto. Em <strong>Casa → Formas de pagamento</strong> dá para criar uma por cartão (ex.: "Nubank Crédito", tipo Crédito), renomear ou apagar.</p>
-        <p>Escolha a forma ao lançar ou ao pagar uma conta fixa. No Início, o card <strong>Por forma de pagamento</strong> mostra quanto saiu em cada uma e o total no crédito.</p>
-        <p>Ao apagar uma forma, os lançamentos <strong>não somem</strong>: ficam sem forma de pagamento.</p>
+        <p>Escolha a forma ao lançar ou ao pagar uma conta fixa. No Início, o card <strong>Por forma de pagamento</strong> mostra quanto foi gasto em cada uma e o total no crédito.</p>
+        <p>Ao apagar uma forma, os lançamentos <strong>não somem</strong>: ficam sem forma de pagamento. Cartão com compras em faturas não pode ser apagado (só renomeado).</p>
+
+        <h3>Cartão de crédito e fatura</h3>
+        <ol>
+          <li>Em <strong>Casa → Formas de pagamento</strong>, abra o cartão e informe o <strong>dia em que a fatura fecha</strong> e o <strong>dia em que vence</strong>.</li>
+          <li>Ao lançar no cartão, a compra <strong>vai para a fatura</strong> e não sai da conta na hora. O app mostra em qual fatura ela cai. Compra no dia do fechamento ou depois vai para a fatura seguinte.</li>
+          <li>Parcelado: informe as parcelas e o <strong>valor total</strong>. Cada parcela vai para uma fatura.</li>
+          <li>A fatura aparece em <strong>Contas</strong> como uma conta a pagar. Toque em <strong>Pagar fatura</strong> (sempre o valor inteiro). Só então o valor entra no Saiu do mês.</li>
+          <li>Toque na fatura para ver as compras dela, as próximas faturas (com as parcelas) e para <strong>desfazer</strong> um pagamento marcado sem querer.</li>
+        </ol>
+        <p>Compras no crédito lançadas antes desta regra continuam como estavam (já contaram como saída).</p>
       </>
     ),
   },

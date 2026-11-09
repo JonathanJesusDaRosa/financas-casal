@@ -46,7 +46,7 @@ export default function Lancamentos() {
 
   return (
     <main className="tela">
-      <Cabecalho titulo="Lançamentos">
+      <Cabecalho titulo="Extrato">
         <SeletorMes mes={mes} aoMudar={irParaMes} />
       </Cabecalho>
 
@@ -75,6 +75,11 @@ export default function Lancamentos() {
               </strong>
             </div>
           </section>
+          {t.noCartao > 0 && (
+            <p className="caption muted" style={{ marginBottom: 'var(--space-2)' }}>
+              Compras no cartão este mês: {formatarReais(t.noCartao)}. Elas entram nas faturas e saem quando vocês pagam a fatura.
+            </p>
+          )}
 
           {resposta.lancamentos.length === 0 ? (
             <p className="vazio">Nenhum lançamento neste mês.<br />Toque em + para lançar.</p>

@@ -10,6 +10,7 @@ import investimentosRoutes from './routes/investimentos.js';
 import resumoRoutes from './routes/resumo.js';
 import contasFixasRoutes from './routes/contasFixas.js';
 import formasPagamentoRoutes from './routes/formasPagamento.js';
+import faturasRoutes from './routes/faturas.js';
 
 const app = express();
 
@@ -65,6 +66,9 @@ app.use('/contas-fixas', contasFixasRoutes);
 
 // Formas de pagamento (Pix, cartões...)
 app.use('/formas-pagamento', formasPagamentoRoutes);
+
+// Faturas dos cartões de crédito
+app.use('/faturas', faturasRoutes);
 
 // Rota que não existe
 app.use((req, res) => {

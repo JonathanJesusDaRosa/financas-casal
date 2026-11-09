@@ -14,6 +14,8 @@ import SeletorMes from '../components/SeletorMes.jsx';
 import { centavosParaTexto, formatarReais, textoParaCentavos } from '../utils/dinheiro.js';
 import { hoje, mesAtual } from '../utils/datas.js';
 import { ordenarPendentes, textoVencimento } from '../utils/contas.js';
+import { SITUACAO_FATURA } from '../utils/fatura.js';
+import { PagarFatura } from './Cartao.jsx';
 
 export default function Contas() {
   useValoresOcultos(); // redesenha a tela quando tocam no "olho" do topo
@@ -97,7 +99,7 @@ export default function Contas() {
 
       {carregado && (
         <>
-          {dados.contas.length === 0 ? (
+          {dados.contas.length === 0 && dados.faturas.length === 0 ? (
             <p className="vazio">
               Nenhuma conta fixa ainda.<br />Cadastre aluguel, internet, luz… e o app lembra dos vencimentos.
             </p>
@@ -114,6 +116,42 @@ export default function Contas() {
                   {dados.resumo.atrasadas} {dados.resumo.atrasadas === 1 ? 'conta atrasada' : 'contas atrasadas'}
                 </p>
               )}
+            </section>
+          )}
+
+          {dados.faturas.length > 0 && (
+            <section className="secao">
+              <div className="secao-topo"><h2>Faturas do cartão</h2></div>
+              <ul className="lista">
+                {dados.faturas.map((f) => (
+                  <li key={f.cartao.id}>
+                    <div className="item item-conta">
+                      <Link to={`/cartoes/${f.cartao.id}?mes=${f.mes}`} className="item-link">
+                        <span className="item-icone"><Icone nome="conta" /></span>
+                        <span className="item-textos">
+                          <span className="item-titulo">Fatura {f.cartao.nome}</span>
+                          <span className={`item-sub ${f.situacao === 'atrasada' ? 'texto-atencao' : ''}`}>
+                            {SITUACAO_FATURA[f.situacao]} · {textoVencimento({ ...f, tipo: 'DESPESA' })}
+                          </span>
+                        </span>
+                        <span className={`valor-lista ${f.situacao === 'paga' ? 'saida' : ''}`}>{formatarReais(f.totalCentavos)}</span>
+                      </Link>
+                      {f.situacao !== 'paga' && (
+                        <div className="acoes-conta">
+                          <button className="botao-secundario botao-pequeno"
+                            onClick={() => { setErro(''); setAberto({ id: `fatura-${f.cartao.id}`, acao: 'pagar' }); }}>
+                            Pagar fatura
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                    {aberto?.id === `fatura-${f.cartao.id}` && (
+                      <PagarFatura cartao={f.cartao} fatura={f}
+                        aoTerminar={() => { setAberto(null); carregar(); }} aoCancelar={() => setAberto(null)} />
+                    )}
+                  </li>
+                ))}
+              </ul>
             </section>
           )}
 

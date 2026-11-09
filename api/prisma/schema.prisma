@@ -22,6 +22,7 @@ enum TipoLancamento {
   GUARDADO
   RESGATE
   RENDIMENTO
+  FATURA // pagamento da fatura do cartão: é aqui que o dinheiro SAI (conta no "Saiu")
 }
 
 // Papel de cada pessoa no espaço do casal.
@@ -100,9 +101,19 @@ model Lancamento {
   formaPagamentoId Int?
   formaPagamento   FormaPagamento? @relation(fields: [formaPagamentoId], references: [id], onDelete: SetNull)
 
+  // Cartão de crédito: de qual FATURA a compra faz parte ("2026-12" = fatura que vence em dez/2026).
+  // Compra com faturaMes NÃO conta no "Saiu" do mês: o dinheiro só sai ao pagar a fatura
+  // (lançamento tipo FATURA). Compras no crédito anteriores a esta regra ficam com null.
+  faturaMes     String?
+  // Compra parcelada no cartão: cada parcela é um lançamento ("3 de 8"), todas com o mesmo grupo.
+  parcela       Int?
+  totalParcelas Int?
+  grupoParcelas String?
+
   @@unique([contaFixaId, competencia]) // cada conta só pode ser paga uma vez por mês
   @@index([casalId, data]) // deixa rápido o "resumo do mês"
   @@index([caixinhaId])
+  @@index([formaPagamentoId, faturaMes]) // deixa rápido somar uma fatura
 }
 
 // Caixinha para um sonho. O saldo NÃO fica guardado aqui: é calculado somando
@@ -185,14 +196,17 @@ enum TipoFormaPagamento {
 
 // Formas de pagamento da casa: "Pix", "Nubank Crédito", "Itaú Débito"...
 model FormaPagamento {
-  id          Int                @id @default(autoincrement())
-  nome        String
-  tipo        TipoFormaPagamento
-  criadoEm    DateTime           @default(now())
-  casalId     Int
-  casal       Casal              @relation(fields: [casalId], references: [id], onDelete: Cascade)
-  lancamentos Lancamento[]
-  contasFixas ContaFixa[]
+  id            Int                @id @default(autoincrement())
+  nome          String
+  tipo          TipoFormaPagamento
+  criadoEm      DateTime           @default(now())
+  casalId       Int
+  casal         Casal              @relation(fields: [casalId], references: [id], onDelete: Cascade)
+  lancamentos   Lancamento[]
+  contasFixas   ContaFixa[]
+  // Só para cartão de crédito: dia em que a fatura FECHA e dia em que VENCE (1 a 31)
+  diaFechamento Int?
+  diaVencimento Int?
 
   @@unique([casalId, nome])
 }

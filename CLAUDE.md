@@ -124,7 +124,7 @@ Cada fase só começa quando a anterior está em uso no dia a dia.
 - Dois tipos de conta fixa: SEM FIM (`totalParcelas` null) e COM FIM/parcelas (`totalParcelas` + `parcelaInicial`, ex.: 10x começando na 3ª). Último mês = `mesInicio` + (total − inicial).
 - NADA RETROATIVO: `mesInicio` (AAAA-MM) nunca anterior ao mês atual no cadastro; a conta só aparece de `mesInicio` em diante. Contas antigas ganharam o mês de criação na migração.
 - Valor variável: `ContaFixaAjuste` guarda o valor de UM mês, ajustado antes de pagar (`PUT/DELETE /contas-fixas/:id/valor-mes`); "Pagar" já usa esse valor. Depois de paga, não ajusta (edita o lançamento).
-- Formas de pagamento: `FormaPagamento` (nome + tipo PIX/DEBITO/CREDITO/DINHEIRO/BOLETO/OUTRO), cadastro em Casa → Formas de pagamento; casa nova já vem com 5. Opcional no lançamento; conta fixa tem forma de costume. `/resumo` devolve `porFormaPagamento` (card no Início com total no crédito). Compra no cartão: o casal toca "Pagar" quando paga a fatura. Lançamento avulso no crédito conta como "Saiu" na data da compra (controle de fatura completo NÃO existe ainda).
+- Formas de pagamento: `FormaPagamento` (nome + tipo PIX/DEBITO/CREDITO/DINHEIRO/BOLETO/OUTRO), cadastro em Casa → Formas de pagamento; casa nova já vem com 5. Opcional no lançamento; conta fixa tem forma de costume. `/resumo` devolve `porFormaPagamento` (card no Início com total no crédito). Cartão de crédito tem regra própria (ver "Fatura do cartão").
 - `ContaFixa` (nome, valor de costume, dia de vencimento 1–31, tipo, categoria, ativa). NÃO vira lançamento sozinha: no mês fica "a pagar"/"atrasada" até alguém tocar em "Pagar" (`POST /contas-fixas/:id/pagar`), que cria um `Lancamento` com `contaFixaId` + `competencia` ("2026-11"; único por conta e mês). Desfazer = apagar esse lançamento.
 - Dia 31 em mês curto = último dia. "Hoje" para vencimento usa o fuso de São Paulo (`api/src/lib/datas.js`), porque a Vercel roda em UTC.
 - Orçamento: `Categoria.limiteMensalCentavos` (opcional, o mesmo todo mês). `/resumo` devolve `orcamento`; barra na cor `--warning` a partir de 80%; texto calmo ("Faltam R$ X" / "Passou R$ X do previsto").
@@ -139,6 +139,21 @@ Cada fase só começa quando a anterior está em uso no dia a dia.
 ### Manual de uso
 
 - Tela "Como usar" em `web/src/pages/Ajuda.jsx` (Casa → Ajustes → Como usar), em seções que abrem ao tocar. **Sempre que uma funcionalidade mudar ou for criada, atualizar o texto dali também.**
+
+### Fatura do cartão de crédito
+
+- Cartão = `FormaPagamento` tipo CREDITO com `diaFechamento` e `diaVencimento`. Sem os dias, lançar no cartão é recusado (pede para configurar).
+- DESPESA no cartão ganha `faturaMes` (mês em que a fatura VENCE) e NÃO conta no "Saiu". Regra: compra antes do dia de fechamento -> fatura que fecha no mês; no dia ou depois -> a seguinte; vence no mês do fechamento se vencimento > fechamento, senão no mês seguinte (`api/src/lib/fatura.js`; cópia só para mostrar em `web/src/utils/fatura.js`).
+- Parcelado no cartão: `POST /lancamentos` com `parcelas` e o valor TOTAL -> N lançamentos (`grupoParcelas`, `parcela`, `totalParcelas`), um por mês/fatura; centavos que sobram vão na 1ª. `DELETE ?todasParcelas=1` apaga a compra inteira.
+- Pagar fatura (sempre inteira): `POST /faturas/:cartaoId/pagar` cria lançamento tipo FATURA (`competencia` = mês da fatura) — é ele que entra no "Saiu". Desfazer: `DELETE /faturas/:cartaoId/pagamento?mes=`. FATURA não se edita pelas rotas de lançamento.
+- DUAS VISÕES: Saldo/Entrou/Saiu/Sobra/Evolução = dinheiro (caixa: despesas fora do cartão + faturas pagas). Gastos por categoria, orçamento e formas de pagamento = consumo (todas as despesas pela data da compra, inclusive no cartão). `/resumo` e `/lancamentos` devolvem `noCartao` (compras no cartão no mês).
+- Faturas que vencem no mês aparecem em `/contas-fixas/mes` (`faturas`) e entram no "faltam pagar". Conta fixa paga com cartão vai para a fatura (não soma de novo).
+- Cartão com compras em faturas não pode ser apagado nem mudar de tipo (só renomear). Compras no crédito anteriores a esta regra ficaram com `faturaMes` null (já contaram como saída) — decisão do usuário.
+
+### Testes automáticos
+
+- `cd api` e `npm test`: liga a API numa porta livre e roda os cenários de `api/tests/cenarios/` (dados fictícios `teste-*@exemplo.com`, apagados no final). Trava: recusa rodar se `DATABASE_URL` for igual a `PRODUCAO_DATABASE_URL`.
+- Rodar SEMPRE antes de publicar mudanças na API. Funcionalidade nova = cenário novo (ou verificações novas) em `tests/cenarios/` e na lista do `tests/api.test.js`.
 
 ## Pendências combinadas
 

@@ -30,6 +30,7 @@ function intervaloDoMes(mes) {
 // GET /resumo/evolucao?ate=2026-11&meses=6 -> entrou, saiu, guardado e sobra de cada mês,
 // do mais antigo ao mais novo (para o gráfico "Evolução" do Início).
 // Mesmas regras do resumo: entrou = receitas + resgates; sobra = entrou - saiu - guardado.
+// "Saiu" é dinheiro que saiu da conta: compra no cartão só conta quando a fatura é paga.
 router.get('/evolucao', async (req, res) => {
   const ate = validar(mesSchema, req.query.ate ?? mesAtualNoBrasil(), res);
   if (!ate) return;
@@ -44,11 +45,11 @@ router.get('/evolucao', async (req, res) => {
 
   // Uma consulta só: todos os lançamentos do período, somados por dia e tipo.
   const lancamentos = await prisma.lancamento.groupBy({
-    by: ['data', 'tipo'],
+    by: ['data', 'tipo', 'faturaMes'],
     where: {
       casalId: req.casalId,
       data: { gte: intervaloDoMes(meses[0]).inicio, lt: intervaloDoMes(ate).fim },
-      tipo: { in: ['RECEITA', 'RESGATE', 'DESPESA', 'GUARDADO'] },
+      tipo: { in: ['RECEITA', 'RESGATE', 'DESPESA', 'GUARDADO', 'FATURA'] },
     },
     _sum: { valorCentavos: true },
   });
@@ -58,7 +59,7 @@ router.get('/evolucao', async (req, res) => {
     const linha = porMes[paraTexto(g.data).slice(0, 7)];
     const valor = g._sum.valorCentavos ?? 0;
     if (g.tipo === 'RECEITA' || g.tipo === 'RESGATE') linha.entradas += valor;
-    if (g.tipo === 'DESPESA') linha.saidas += valor;
+    if ((g.tipo === 'DESPESA' && !g.faturaMes) || g.tipo === 'FATURA') linha.saidas += valor;
     if (g.tipo === 'GUARDADO') linha.guardado += valor;
   }
 
@@ -74,9 +75,10 @@ router.get('/', async (req, res) => {
   const doMes = { casalId: req.casalId, data: { gte: inicio, lt: fim } };
 
   // As 3 consultas rodam ao mesmo tempo (Promise.all).
-  const [porTipo, porCategoriaBruto, ultimos, porFormaBruto, formas] = await Promise.all([
-    // soma por tipo (RECEITA, DESPESA, GUARDADO...)
-    prisma.lancamento.groupBy({ by: ['tipo'], where: doMes, _sum: { valorCentavos: true } }),
+  const [porTipo, porCategoriaBruto, ultimos, porFormaBruto, formas, noCartaoBruto] = await Promise.all([
+    // soma por tipo (RECEITA, DESPESA, GUARDADO, FATURA...) do dinheiro que entrou/saiu da conta:
+    // compras no cartão (faturaMes preenchido) ficam de fora; elas saem ao pagar a fatura.
+    prisma.lancamento.groupBy({ by: ['tipo'], where: { ...doMes, faturaMes: null }, _sum: { valorCentavos: true } }),
     // soma das DESPESAS por categoria
     prisma.lancamento.groupBy({
       by: ['categoriaId'],
@@ -97,6 +99,10 @@ router.get('/', async (req, res) => {
         pagoPor: { select: { id: true, nome: true } },
         caixinha: { select: { id: true, nome: true, icone: true } },
         formaPagamento: { select: { id: true, nome: true, tipo: true } },
+        faturaMes: true,
+        parcela: true,
+        totalParcelas: true,
+        competencia: true,
       },
     }),
     // soma das DESPESAS por forma de pagamento
@@ -106,12 +112,18 @@ router.get('/', async (req, res) => {
       _sum: { valorCentavos: true },
     }),
     prisma.formaPagamento.findMany({ where: { casalId: req.casalId }, select: { id: true, nome: true, tipo: true } }),
+    // compras no cartão neste mês (vão para as faturas)
+    prisma.lancamento.aggregate({ where: { ...doMes, tipo: 'DESPESA', faturaMes: { not: null } }, _sum: { valorCentavos: true } }),
   ]);
 
   const soma = (tipo) => porTipo.find((g) => g.tipo === tipo)?._sum.valorCentavos ?? 0;
   const entradas = soma('RECEITA') + soma('RESGATE');
-  const saidas = soma('DESPESA');
+  const saidas = soma('DESPESA') + soma('FATURA'); // dinheiro que saiu da conta
   const guardado = soma('GUARDADO');
+  const noCartao = noCartaoBruto._sum.valorCentavos ?? 0;
+  // Consumo do mês (todas as despesas pela data da compra, inclusive no cartão):
+  // é a base de "Gastos por categoria", do orçamento e das formas de pagamento.
+  const consumo = porCategoriaBruto.reduce((total, g) => total + (g._sum.valorCentavos ?? 0), 0);
 
   // Busca nome e ícone das categorias que apareceram + as que têm limite (orçamento).
   const ids = porCategoriaBruto.map((g) => g.categoriaId).filter(Boolean);
@@ -131,13 +143,21 @@ router.get('/', async (req, res) => {
     .map((g) => ({
       categoria: dadosDa(g.categoriaId),
       totalCentavos: g._sum.valorCentavos ?? 0,
-      percentual: saidas ? Math.round(((g._sum.valorCentavos ?? 0) / saidas) * 100) : 0,
+      percentual: consumo ? Math.round(((g._sum.valorCentavos ?? 0) / consumo) * 100) : 0,
     }))
     .sort(ordenarCategorias);
 
   res.json({
     mes,
-    totais: { entradas, saidas, guardado, sobra: entradas - saidas - guardado, rendimento: soma('RENDIMENTO') },
+    totais: {
+      entradas,
+      saidas,
+      noCartao,
+      consumo,
+      guardado,
+      sobra: entradas - saidas - guardado,
+      rendimento: soma('RENDIMENTO'),
+    },
     porCategoria,
     orcamento: categorias
       .filter((c) => c.limiteMensalCentavos)
@@ -156,7 +176,7 @@ router.get('/', async (req, res) => {
       .map((g) => ({
         forma: formas.find((f) => f.id === g.formaPagamentoId) ?? null, // null = "Não informada"
         totalCentavos: g._sum.valorCentavos ?? 0,
-        percentual: saidas ? Math.round(((g._sum.valorCentavos ?? 0) / saidas) * 100) : 0,
+        percentual: consumo ? Math.round(((g._sum.valorCentavos ?? 0) / consumo) * 100) : 0,
       }))
       .sort((a, b) => b.totalCentavos - a.totalCentavos),
     ultimos: ultimos.map((l) => ({ ...l, data: paraTexto(l.data) })),

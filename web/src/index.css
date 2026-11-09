@@ -1431,3 +1431,16 @@ body {
   align-items: center;
   gap: var(--space-2);
 }
+
+/* ---------- Fatura do cartão ---------- */
+/* Meses das faturas: uma linha que rola para o lado, se não couber */
+.meses-fatura {
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  padding-bottom: var(--space-1);
+  touch-action: pan-x;
+}
+
+.meses-fatura button {
+  flex-shrink: 0;
+}

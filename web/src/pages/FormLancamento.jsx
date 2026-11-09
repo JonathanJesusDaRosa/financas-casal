@@ -8,7 +8,9 @@ import { useAuth } from '../auth.jsx';
 import EscolherForma from '../components/EscolherForma.jsx';
 import Icone from '../components/Icone.jsx';
 import { centavosParaTexto, textoParaCentavos } from '../utils/dinheiro.js';
-import { hoje } from '../utils/datas.js';
+import { hoje, nomeDoMes, somarMeses } from '../utils/datas.js';
+import { cartaoConfigurado, faturaDaCompra } from '../utils/fatura.js';
+import { formatarReais } from '../utils/dinheiro.js';
 
 export default function FormLancamento() {
   const { id } = useParams(); // undefined quando é um lançamento novo
@@ -25,6 +27,8 @@ export default function FormLancamento() {
   const [data, setData] = useState(hoje());
   const [categoriaId, setCategoriaId] = useState(null);
   const [formaPagamentoId, setFormaPagamentoId] = useState(null);
+  const [parcelas, setParcelas] = useState('1'); // só para compra no cartão (novo lançamento)
+  const [parcelaInfo, setParcelaInfo] = useState(null); // ao editar uma parcela: { parcela, totalParcelas }
   const [pagoPorId, setPagoPorId] = useState(usuario.id);
   const [descricao, setDescricao] = useState('');
 
@@ -46,13 +50,19 @@ export default function FormLancamento() {
           setData(l.data);
           setCategoriaId(l.categoria?.id ?? null);
           setFormaPagamentoId(l.formaPagamento?.id ?? null);
+          if (l.tipo === 'FATURA') {
+            // Pagamento de fatura se desfaz na tela do cartão
+            navegar(`/cartoes/${l.formaPagamento?.id}?mes=${l.competencia}`, { replace: true });
+            return;
+          }
+          if (l.grupoParcelas) setParcelaInfo({ parcela: l.parcela, totalParcelas: l.totalParcelas });
           setPagoPorId(l.pagoPor.id);
           setDescricao(l.descricao ?? '');
         }
       })
       .catch((e) => setErro(e.message))
       .finally(() => setCarregando(false));
-  }, [id, editando]);
+  }, [id, editando, navegar]);
 
   // Volta para a tela anterior (ou para o Início, se abriu direto por um link).
   function voltar() {
@@ -73,7 +83,10 @@ export default function FormLancamento() {
     try {
       await api(editando ? `/lancamentos/${id}` : '/lancamentos', {
         metodo: editando ? 'PATCH' : 'POST',
-        corpo: { tipo, valorCentavos, data, categoriaId, formaPagamentoId, pagoPorId, descricao },
+        corpo: {
+          tipo, valorCentavos, data, categoriaId, formaPagamentoId, pagoPorId, descricao,
+          ...(!editando && noCartao && { parcelas: Number(parcelas) || 1 }),
+        },
       });
       voltar();
     } catch (e) {
@@ -82,16 +95,34 @@ export default function FormLancamento() {
     }
   }
 
-  async function apagar() {
-    if (!window.confirm('Apagar este lançamento? Não dá para desfazer.')) return;
+  async function apagar(todasParcelas = false) {
+    const pergunta = todasParcelas
+      ? `Apagar a compra inteira (as ${parcelaInfo.totalParcelas} parcelas)? Não dá para desfazer.`
+      : 'Apagar este lançamento? Não dá para desfazer.';
+    if (!window.confirm(pergunta)) return;
     setEnviando(true);
     try {
-      await api(`/lancamentos/${id}`, { metodo: 'DELETE' });
+      await api(`/lancamentos/${id}${todasParcelas ? '?todasParcelas=1' : ''}`, { metodo: 'DELETE' });
       voltar();
     } catch (e) {
       setErro(e.message);
       setEnviando(false);
     }
+  }
+
+  // Cartão escolhido e em qual fatura a compra cai (só para mostrar; quem decide é a API)
+  const formaEscolhida = formas.find((f) => f.id === formaPagamentoId);
+  const noCartao = tipo === 'DESPESA' && cartaoConfigurado(formaEscolhida);
+  let avisoFatura = '';
+  if (noCartao) {
+    const primeira = faturaDaCompra(data, formaEscolhida.diaFechamento, formaEscolhida.diaVencimento);
+    const n = editando ? 1 : Math.max(1, Number(parcelas) || 1);
+    const total = textoParaCentavos(valor);
+    const nomeMes = (m) => nomeDoMes(m).toLowerCase();
+    avisoFatura = n > 1
+      ? `${n}x${total ? ` de ${formatarReais(Math.floor(total / n))}` : ''}, nas faturas de ${nomeMes(primeira)} a ${nomeMes(somarMeses(primeira, n - 1))}. `
+      : `Vai para a fatura de ${nomeMes(primeira)}. `;
+    avisoFatura += 'Não entra no "Saiu" agora: sai quando pagarem a fatura.';
   }
 
   if (carregando) return <main className="tela"><p className="vazio">Carregando…</p></main>;
@@ -102,7 +133,7 @@ export default function FormLancamento() {
         <button type="button" className="botao-icone" aria-label="Voltar" onClick={voltar}>
           <ChevronLeft size={24} strokeWidth={1.75} />
         </button>
-        <h1>{editando ? 'Editar lançamento' : 'Lançar'}</h1>
+        <h1>{editando ? (parcelaInfo ? `Parcela ${parcelaInfo.parcela} de ${parcelaInfo.totalParcelas}` : 'Editar lançamento') : 'Lançar'}</h1>
       </header>
 
       <form className="formulario" onSubmit={aoEnviar}>
@@ -119,7 +150,7 @@ export default function FormLancamento() {
         </div>
 
         <label className="campo">
-          Valor (R$)
+          {noCartao && !editando && Number(parcelas) > 1 ? 'Valor total da compra (R$)' : 'Valor (R$)'}
           {/* inputMode="decimal" abre o teclado numérico com vírgula no celular */}
           <input type="text" inputMode="decimal" required placeholder="0,00" autoFocus={!editando}
             className="campo-valor" value={valor} onChange={(e) => setValor(e.target.value)} />
@@ -140,6 +171,26 @@ export default function FormLancamento() {
 
         <EscolherForma formas={formas} valor={formaPagamentoId} aoMudar={setFormaPagamentoId}
           rotulo={tipo === 'DESPESA' ? 'Forma de pagamento' : 'Recebido por'} />
+
+        {/* Cartão de crédito: parcelas e em qual fatura cai */}
+        {tipo === 'DESPESA' && formaEscolhida?.tipo === 'CREDITO' && (
+          cartaoConfigurado(formaEscolhida) ? (
+            <>
+              {!editando && (
+                <label className="campo">
+                  <span>Parcelas <small>1 = à vista</small></span>
+                  <input type="number" inputMode="numeric" min={1} max={48} value={parcelas}
+                    onChange={(e) => setParcelas(e.target.value)} />
+                </label>
+              )}
+              <p className="aviso">{avisoFatura}</p>
+            </>
+          ) : (
+            <p className="aviso">
+              Este cartão ainda não tem fechamento e vencimento. Cadastre em Casa → Formas de pagamento para a compra ir para a fatura.
+            </p>
+          )
+        )}
 
         <label className="campo">
           <span>Descrição <small>Opcional</small></span>
@@ -173,8 +224,13 @@ export default function FormLancamento() {
         </button>
 
         {editando && (
-          <button type="button" className="botao-perigo" onClick={apagar} disabled={enviando}>
-            Apagar lançamento
+          <button type="button" className="botao-perigo" onClick={() => apagar(false)} disabled={enviando}>
+            {parcelaInfo ? 'Apagar só esta parcela' : 'Apagar lançamento'}
+          </button>
+        )}
+        {editando && parcelaInfo && (
+          <button type="button" className="botao-perigo" onClick={() => apagar(true)} disabled={enviando}>
+            Apagar a compra inteira ({parcelaInfo.totalParcelas} parcelas)
           </button>
         )}
       </form>

@@ -16,6 +16,7 @@ import { autenticar } from '../middlewares/autenticar.js';
 import { exigirCasal } from '../middlewares/exigirCasal.js';
 import { dataSchema, idSchema, mesSchema, paraData, paraTexto, validar } from '../lib/validar.js';
 import { diasEntre, hojeNoBrasil, mesAtualNoBrasil, mesesEntre, somarMeses, vencimentoNoMes } from '../lib/datas.js';
+import { cartaoConfigurado, faturaDaCompra, faturasQueVencemNoMes } from '../lib/fatura.js';
 
 const router = Router();
 router.use(autenticar, exigirCasal);
@@ -198,21 +199,30 @@ router.get('/mes', async (req, res) => {
       };
     });
 
-  // Valor que conta no total: o pago (se já pagou) ou o previsto do mês
+  // Faturas de cartão que vencem neste mês também são contas a pagar
+  const faturas = await faturasQueVencemNoMes(req.casalId, mes, hoje);
+
+  // Valor que conta no total: o pago (se já pagou) ou o previsto do mês.
+  // Conta fixa paga no cartão já está dentro de uma fatura: não soma de novo no "faltam".
   const valor = (c) => c.pagamento?.valorCentavos ?? c.valorDoMes;
   const total = (lista) => lista.reduce((soma, c) => soma + valor(c), 0);
   const despesas = situacoes.filter((c) => c.tipo === 'DESPESA');
+  const vaiParaFatura = (c) => c.formaPagamento?.tipo === 'CREDITO';
+  const faturasPendentes = faturas.filter((f) => f.situacao !== 'paga');
 
   res.json({
     mes,
     hoje,
     contas: situacoes,
+    faturas,
     resumo: {
-      quantidade: situacoes.length,
-      pagas: situacoes.filter((c) => c.situacao === 'paga').length,
-      atrasadas: situacoes.filter((c) => c.situacao === 'atrasada').length,
-      totalDespesasCentavos: total(despesas),
-      faltaPagarCentavos: total(despesas.filter((c) => c.situacao !== 'paga')),
+      quantidade: situacoes.length + faturas.length,
+      pagas: situacoes.filter((c) => c.situacao === 'paga').length + faturas.filter((f) => f.situacao === 'paga').length,
+      atrasadas: situacoes.filter((c) => c.situacao === 'atrasada').length + faturas.filter((f) => f.situacao === 'atrasada').length,
+      totalDespesasCentavos: total(despesas.filter((c) => !vaiParaFatura(c))) + faturas.reduce((s, f) => s + f.totalCentavos, 0),
+      faltaPagarCentavos:
+        total(despesas.filter((c) => c.situacao !== 'paga' && !vaiParaFatura(c))) +
+        faturasPendentes.reduce((s, f) => s + f.totalCentavos, 0),
     },
   });
 });
@@ -347,6 +357,19 @@ router.post('/:id/pagar', async (req, res) => {
   const problema = await conferirVinculos({ formaPagamentoId }, req.casalId);
   if (problema) return res.status(400).json({ erro: problema });
 
+  // Paga no cartão de crédito? Então vai para a fatura (não conta no "Saiu" agora).
+  const forma = formaPagamentoId ? await prisma.formaPagamento.findUnique({ where: { id: formaPagamentoId } }) : null;
+  const dataPagamento = dados.data ?? hojeNoBrasil();
+  let faturaMes = null;
+  if (conta.tipo === 'DESPESA' && forma?.tipo === 'CREDITO') {
+    if (!cartaoConfigurado(forma)) {
+      return res.status(400).json({
+        erro: `Cadastre o dia de fechamento e de vencimento do cartão "${forma.nome}" em Casa → Formas de pagamento.`,
+      });
+    }
+    faturaMes = faturaDaCompra(dataPagamento, forma.diaFechamento, forma.diaVencimento);
+  }
+
   // Valor: o informado; senão o ajustado do mês; senão o de costume.
   const ajuste = await prisma.contaFixaAjuste.findUnique({
     where: { contaFixaId_competencia: { contaFixaId: id, competencia: dados.mes } },
@@ -362,8 +385,9 @@ router.post('/:id/pagar', async (req, res) => {
       data: {
         tipo: conta.tipo,
         valorCentavos: valor,
-        data: paraData(dados.data ?? hojeNoBrasil()),
+        data: paraData(dataPagamento),
         descricao,
+        faturaMes,
         categoriaId: conta.categoriaId,
         formaPagamentoId,
         pagoPorId,

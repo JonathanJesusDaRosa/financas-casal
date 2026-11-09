@@ -87,7 +87,11 @@ export default function FormasPagamento() {
                     <span className="item-icone"><Icone size={20} strokeWidth={1.75} aria-hidden="true" /></span>
                     <span className="item-textos" style={{ textAlign: 'left' }}>
                       <span className="item-titulo">{f.nome}</span>
-                      <span className="item-sub">{nomeTipo} · {f.totalLancamentos} lançamento(s)</span>
+                      <span className={`item-sub ${f.tipo === 'CREDITO' && !f.diaFechamento ? 'texto-atencao' : ''}`}>
+                        {f.tipo === 'CREDITO'
+                          ? (f.diaFechamento ? `Fecha dia ${f.diaFechamento} · vence dia ${f.diaVencimento}` : 'Falta o fechamento e o vencimento')
+                          : `${nomeTipo} · ${f.totalLancamentos} lançamento(s)`}
+                      </span>
                     </span>
                     <span className="label" style={{ color: 'var(--indigo)' }}>Editar</span>
                   </button>
@@ -101,14 +105,22 @@ export default function FormasPagamento() {
   );
 }
 
-// Formulário de uma forma (nova ou existente): nome + tipo.
+// Formulário de uma forma (nova ou existente): nome, tipo e, no crédito, fechamento e vencimento.
 function EditorForma({ forma, aoSalvar, aoApagar, aoCancelar }) {
   const [nome, setNome] = useState(forma?.nome ?? '');
   const [tipo, setTipo] = useState(forma?.tipo ?? 'CREDITO');
+  const [fechamento, setFechamento] = useState(forma?.diaFechamento ? String(forma.diaFechamento) : '');
+  const [vencimento, setVencimento] = useState(forma?.diaVencimento ? String(forma.diaVencimento) : '');
 
   function aoEnviar(evento) {
     evento.preventDefault();
-    aoSalvar({ nome, tipo });
+    const credito = tipo === 'CREDITO';
+    aoSalvar({
+      nome,
+      tipo,
+      diaFechamento: credito && fechamento ? Number(fechamento) : null,
+      diaVencimento: credito && vencimento ? Number(vencimento) : null,
+    });
   }
 
   return (
@@ -134,10 +146,34 @@ function EditorForma({ forma, aoSalvar, aoApagar, aoCancelar }) {
         </div>
       </fieldset>
 
+      {tipo === 'CREDITO' && (
+        <>
+          <div className="linha-campos">
+            <label className="campo">
+              Dia que a fatura fecha
+              <input type="number" inputMode="numeric" required min={1} max={31} placeholder="3"
+                value={fechamento} onChange={(e) => setFechamento(e.target.value)} />
+            </label>
+            <label className="campo">
+              Dia que a fatura vence
+              <input type="number" inputMode="numeric" required min={1} max={31} placeholder="10"
+                value={vencimento} onChange={(e) => setVencimento(e.target.value)} />
+            </label>
+          </div>
+          <p className="caption muted">
+            Compras no cartão vão para a fatura e só saem da conta quando ela é paga.
+            Compra no dia do fechamento ou depois vai para a fatura seguinte.
+          </p>
+        </>
+      )}
+
       <div className="botoes">
         <button type="button" className="botao-secundario" onClick={aoCancelar}>Cancelar</button>
         <button type="submit" className="botao">Salvar</button>
       </div>
+      {forma?.tipo === 'CREDITO' && forma.diaFechamento && (
+        <Link to={`/cartoes/${forma.id}`} className="botao-quieto">Ver faturas deste cartão</Link>
+      )}
       {aoApagar && <button type="button" className="botao-perigo" onClick={aoApagar}>Apagar forma de pagamento</button>}
     </form>
   );

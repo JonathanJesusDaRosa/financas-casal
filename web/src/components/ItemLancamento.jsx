@@ -6,7 +6,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../auth.jsx';
 import Icone from './Icone.jsx';
 import { formatarReais } from '../utils/dinheiro.js';
-import { dataRelativa } from '../utils/datas.js';
+import { dataRelativa, nomeDoMes } from '../utils/datas.js';
 
 export default function ItemLancamento({ lancamento: l, mostrarData = true }) {
   const { usuario } = useAuth();
@@ -27,6 +27,36 @@ export default function ItemLancamento({ lancamento: l, mostrarData = true }) {
         <span className={resgate ? 'valor-lista entrada' : 'valor-lista'}>
           {resgate ? '+ ' : ''}{formatarReais(l.valorCentavos)}
         </span>
+      </Link>
+    );
+  }
+
+  // Pagamento de fatura: abre a tela do cartão
+  if (l.tipo === 'FATURA') {
+    return (
+      <Link to={`/cartoes/${l.formaPagamento?.id}?mes=${l.competencia}`} className="item">
+        <span className="item-icone"><Icone nome="conta" /></span>
+        <span className="item-textos">
+          <span className="item-titulo">{l.descricao}</span>
+          <span className="item-sub">{legenda('Pagamento de fatura', quem, quando)}</span>
+        </span>
+        <span className="valor-lista saida">− {formatarReais(l.valorCentavos)}</span>
+      </Link>
+    );
+  }
+
+  // Compra no cartão: vai para a fatura (não saiu da conta ainda) -> valor sem "−" vermelho
+  if (l.faturaMes) {
+    const parcela = l.totalParcelas ? `${l.parcela}/${l.totalParcelas}` : null;
+    const fatura = `fatura ${nomeDoMes(l.faturaMes).slice(0, 3).toLowerCase()}`;
+    return (
+      <Link to={`/lancamentos/${l.id}`} className="item">
+        <span className="item-icone"><Icone nome={l.categoria?.icone} /></span>
+        <span className="item-textos">
+          <span className="item-titulo">{l.descricao || l.categoria?.nome || 'Sem descrição'}</span>
+          <span className="item-sub">{legenda(l.categoria?.nome ?? 'Sem categoria', quem, quando, l.formaPagamento?.nome, parcela, fatura)}</span>
+        </span>
+        <span className="valor-lista">{formatarReais(l.valorCentavos)}</span>
       </Link>
     );
   }

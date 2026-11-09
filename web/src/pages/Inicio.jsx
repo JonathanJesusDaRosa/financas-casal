@@ -3,7 +3,7 @@
 // e últimos lançamentos.
 import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { PiggyBank, TrendingUp } from 'lucide-react';
+import { CreditCard, PiggyBank, TrendingUp } from 'lucide-react';
 import { api } from '../api.js';
 import { useValoresOcultos } from '../hooks/useValoresOcultos.js';
 import Cabecalho from '../components/Cabecalho.jsx';
@@ -90,13 +90,16 @@ export default function Inicio() {
               </div>
             </div>
             {/* Extra nosso (não está na referência): o que foi separado para as metas */}
-            {(t.guardado !== 0 || t.rendimento !== 0) && (
+            {(t.guardado !== 0 || t.rendimento !== 0 || t.noCartao !== 0) && (
               <div className="notas-saldo">
                 {t.guardado !== 0 && (
                   <p><PiggyBank size={16} strokeWidth={1.75} aria-hidden="true" /> Guardado nas metas: <strong>{formatarReais(t.guardado)}</strong></p>
                 )}
                 {t.rendimento !== 0 && (
                   <p><TrendingUp size={16} strokeWidth={1.75} aria-hidden="true" /> Rendimento das metas: <strong>{formatarReais(t.rendimento)}</strong></p>
+                )}
+                {t.noCartao !== 0 && (
+                  <p><CreditCard size={16} strokeWidth={1.75} aria-hidden="true" /> Compras no cartão (nas faturas): <strong>{formatarReais(t.noCartao)}</strong></p>
                 )}
               </div>
             )}
@@ -177,9 +180,15 @@ export default function Inicio() {
 const CONTAS_NO_RESUMO = 3;
 
 function CardContas({ dados }) {
-  if (dados.contas.length === 0) return null; // sem contas cadastradas: nada aqui
+  if (dados.contas.length === 0 && dados.faturas.length === 0) return null; // nada a mostrar
   const { resumo } = dados;
-  const proximas = ordenarPendentes(dados.contas).slice(0, CONTAS_NO_RESUMO);
+  // Contas e faturas pendentes juntas, as mais urgentes primeiro
+  const faturas = dados.faturas
+    .filter((f) => f.situacao !== 'paga')
+    .map((f) => ({ ...f, id: `fatura-${f.cartao.id}`, nome: `Fatura ${f.cartao.nome}`, valorDoMes: f.totalCentavos, categoria: { icone: 'conta' }, ehFatura: true }));
+  const proximas = [...ordenarPendentes(dados.contas), ...faturas]
+    .sort((a, b) => a.diasParaVencer - b.diasParaVencer)
+    .slice(0, CONTAS_NO_RESUMO);
 
   return (
     <section className="card secao area-contas">
@@ -202,7 +211,7 @@ function CardContas({ dados }) {
                 <span className="item-textos">
                   <span className="item-titulo">{c.nome}</span>
                   <span className={`item-sub ${c.situacao === 'atrasada' ? 'texto-atencao' : ''}`}>
-                    {c.parcela && `${c.parcela}/${c.totalParcelas} · `}{textoVencimento(c)}
+                    {c.parcela && `${c.parcela}/${c.totalParcelas} · `}{c.ehFatura ? textoVencimento({ ...c, tipo: 'DESPESA' }) : textoVencimento(c)}
                   </span>
                 </span>
                 <span className="valor-lista">{formatarReais(c.valorDoMes)}</span>

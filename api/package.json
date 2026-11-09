@@ -11,7 +11,8 @@
     "db:generate": "prisma generate",
     "db:seed": "prisma db seed",
     "db:studio": "prisma studio",
-    "db:migrar-producao": "node scripts/migrar-producao.js"
+    "db:migrar-producao": "node scripts/migrar-producao.js",
+    "test": "node --env-file=.env --test --test-concurrency=1 tests/api.test.js"
   },
   "keywords": [],
   "author": "",
