@@ -121,6 +121,10 @@ Cada fase só começa quando a anterior está em uso no dia a dia.
 
 ### Contas fixas e orçamento
 
+- Dois tipos de conta fixa: SEM FIM (`totalParcelas` null) e COM FIM/parcelas (`totalParcelas` + `parcelaInicial`, ex.: 10x começando na 3ª). Último mês = `mesInicio` + (total − inicial).
+- NADA RETROATIVO: `mesInicio` (AAAA-MM) nunca anterior ao mês atual no cadastro; a conta só aparece de `mesInicio` em diante. Contas antigas ganharam o mês de criação na migração.
+- Valor variável: `ContaFixaAjuste` guarda o valor de UM mês, ajustado antes de pagar (`PUT/DELETE /contas-fixas/:id/valor-mes`); "Pagar" já usa esse valor. Depois de paga, não ajusta (edita o lançamento).
+- Formas de pagamento: `FormaPagamento` (nome + tipo PIX/DEBITO/CREDITO/DINHEIRO/BOLETO/OUTRO), cadastro em Casa → Formas de pagamento; casa nova já vem com 5. Opcional no lançamento; conta fixa tem forma de costume. `/resumo` devolve `porFormaPagamento` (card no Início com total no crédito). Compra no cartão: o casal toca "Pagar" quando paga a fatura. Lançamento avulso no crédito conta como "Saiu" na data da compra (controle de fatura completo NÃO existe ainda).
 - `ContaFixa` (nome, valor de costume, dia de vencimento 1–31, tipo, categoria, ativa). NÃO vira lançamento sozinha: no mês fica "a pagar"/"atrasada" até alguém tocar em "Pagar" (`POST /contas-fixas/:id/pagar`), que cria um `Lancamento` com `contaFixaId` + `competencia` ("2026-11"; único por conta e mês). Desfazer = apagar esse lançamento.
 - Dia 31 em mês curto = último dia. "Hoje" para vencimento usa o fuso de São Paulo (`api/src/lib/datas.js`), porque a Vercel roda em UTC.
 - Orçamento: `Categoria.limiteMensalCentavos` (opcional, o mesmo todo mês). `/resumo` devolve `orcamento`; barra na cor `--warning` a partir de 80%; texto calmo ("Faltam R$ X" / "Passou R$ X do previsto").

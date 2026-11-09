@@ -5,6 +5,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { ChevronLeft } from 'lucide-react';
 import { api } from '../api.js';
 import { useAuth } from '../auth.jsx';
+import EscolherForma from '../components/EscolherForma.jsx';
 import Icone from '../components/Icone.jsx';
 import { centavosParaTexto, textoParaCentavos } from '../utils/dinheiro.js';
 import { hoje } from '../utils/datas.js';
@@ -17,11 +18,13 @@ export default function FormLancamento() {
 
   const [categorias, setCategorias] = useState([]);
   const [membros, setMembros] = useState([]);
+  const [formas, setFormas] = useState([]);
 
   const [tipo, setTipo] = useState('DESPESA');
   const [valor, setValor] = useState('');
   const [data, setData] = useState(hoje());
   const [categoriaId, setCategoriaId] = useState(null);
+  const [formaPagamentoId, setFormaPagamentoId] = useState(null);
   const [pagoPorId, setPagoPorId] = useState(usuario.id);
   const [descricao, setDescricao] = useState('');
 
@@ -31,16 +34,18 @@ export default function FormLancamento() {
 
   // Carrega categorias, membros e (se for edição) o lançamento, tudo ao mesmo tempo.
   useEffect(() => {
-    Promise.all([api('/categorias'), api('/casal'), editando ? api(`/lancamentos/${id}`) : null])
-      .then(([resCategorias, resCasa, resLancamento]) => {
+    Promise.all([api('/categorias'), api('/casal'), api('/formas-pagamento'), editando ? api(`/lancamentos/${id}`) : null])
+      .then(([resCategorias, resCasa, resFormas, resLancamento]) => {
         setCategorias(resCategorias.categorias);
         setMembros(resCasa.casal.membros);
+        setFormas(resFormas.formas);
         if (resLancamento) {
           const l = resLancamento.lancamento;
           setTipo(l.tipo);
           setValor(centavosParaTexto(l.valorCentavos));
           setData(l.data);
           setCategoriaId(l.categoria?.id ?? null);
+          setFormaPagamentoId(l.formaPagamento?.id ?? null);
           setPagoPorId(l.pagoPor.id);
           setDescricao(l.descricao ?? '');
         }
@@ -68,7 +73,7 @@ export default function FormLancamento() {
     try {
       await api(editando ? `/lancamentos/${id}` : '/lancamentos', {
         metodo: editando ? 'PATCH' : 'POST',
-        corpo: { tipo, valorCentavos, data, categoriaId, pagoPorId, descricao },
+        corpo: { tipo, valorCentavos, data, categoriaId, formaPagamentoId, pagoPorId, descricao },
       });
       voltar();
     } catch (e) {
@@ -132,6 +137,9 @@ export default function FormLancamento() {
             ))}
           </div>
         </fieldset>
+
+        <EscolherForma formas={formas} valor={formaPagamentoId} aoMudar={setFormaPagamentoId}
+          rotulo={tipo === 'DESPESA' ? 'Forma de pagamento' : 'Recebido por'} />
 
         <label className="campo">
           <span>Descrição <small>Opcional</small></span>

@@ -31,3 +31,16 @@ export function vencimentoNoMes(mes, dia) {
 export function diasEntre(a, b) {
   return Math.round((Date.parse(`${b}T00:00:00Z`) - Date.parse(`${a}T00:00:00Z`)) / 86400000);
 }
+
+// somarMeses("2026-11", 3) -> "2027-02"; somarMeses("2026-01", -1) -> "2025-12"
+export function somarMeses(mes, quantidade) {
+  const [ano, numero] = mes.split('-').map(Number);
+  return new Date(Date.UTC(ano, numero - 1 + quantidade, 1)).toISOString().slice(0, 7);
+}
+
+// Quantos meses de "a" até "b": mesesEntre("2026-11", "2027-02") -> 3
+export function mesesEntre(a, b) {
+  const [anoA, mesA] = a.split('-').map(Number);
+  const [anoB, mesB] = b.split('-').map(Number);
+  return (anoB - anoA) * 12 + (mesB - mesA);
+}

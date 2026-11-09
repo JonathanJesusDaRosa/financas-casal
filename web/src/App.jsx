@@ -16,6 +16,7 @@ import Casa from './pages/Casa.jsx';
 import Categorias from './pages/Categorias.jsx';
 import Contas from './pages/Contas.jsx';
 import Ajuda from './pages/Ajuda.jsx';
+import FormasPagamento from './pages/FormasPagamento.jsx';
 import FormContaFixa from './pages/FormContaFixa.jsx';
 
 // Para quem está logado E já está numa casa.
@@ -61,6 +62,7 @@ export default function App() {
         <Route path="/casa/categorias" element={<Categorias />} />
         <Route path="/contas" element={<Contas />} />
         <Route path="/casa/ajuda" element={<Ajuda />} />
+        <Route path="/casa/formas" element={<FormasPagamento />} />
       </Route>
 
       {/* Formulários em tela cheia (sem a navegação, para sobrar espaço ao teclado) */}

@@ -9,6 +9,7 @@ import caixinhasRoutes from './routes/caixinhas.js';
 import investimentosRoutes from './routes/investimentos.js';
 import resumoRoutes from './routes/resumo.js';
 import contasFixasRoutes from './routes/contasFixas.js';
+import formasPagamentoRoutes from './routes/formasPagamento.js';
 
 const app = express();
 
@@ -61,6 +62,9 @@ app.use('/resumo', resumoRoutes);
 
 // Contas fixas (aluguel, internet...) e a situação delas no mês
 app.use('/contas-fixas', contasFixasRoutes);
+
+// Formas de pagamento (Pix, cartões...)
+app.use('/formas-pagamento', formasPagamentoRoutes);
 
 // Rota que não existe
 app.use((req, res) => {

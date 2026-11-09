@@ -1268,9 +1268,18 @@ body {
     grid-template-areas:
       "saldo     evolucao"
       "contas    gastos"
-      "orcamento ultimos";
+      "orcamento formas"
+      "ultimos   ultimos";
     gap: var(--space-6);
     align-items: stretch; /* cards da mesma linha com a mesma altura */
+  }
+
+  /* Sem orçamento: formas e últimos lançamentos lado a lado (sem buraco no painel) */
+  .painel-inicio.sem-orcamento {
+    grid-template-areas:
+      "saldo  evolucao"
+      "contas gastos"
+      "formas ultimos";
   }
 
   .painel-inicio > * {
@@ -1283,6 +1292,7 @@ body {
   .area-gastos { grid-area: gastos; }
   .area-orcamento { grid-area: orcamento; }
   .area-ultimos { grid-area: ultimos; }
+  .area-formas { grid-area: formas; }
 
   /* Últimos lançamentos dentro de um card no computador (fica mais organizado no painel) */
   .area-ultimos {
@@ -1394,4 +1404,30 @@ body {
 
 .ajuda-conteudo li + li {
   margin-top: var(--space-2);
+}
+
+/* ---------- Parcelas, ajuste de valor e formas de pagamento ---------- */
+
+/* Conta fixa em duas linhas: dados em cima, botões embaixo à direita */
+.item-conta {
+  flex-wrap: wrap;
+  row-gap: var(--space-2);
+}
+
+.item-conta .item-link {
+  flex: 1 1 100%;
+}
+
+.acoes-conta {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  margin-left: auto;
+}
+
+.nome-forma {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
 }

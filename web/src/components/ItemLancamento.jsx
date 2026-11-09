@@ -37,7 +37,7 @@ export default function ItemLancamento({ lancamento: l, mostrarData = true }) {
       <span className="item-icone"><Icone nome={l.categoria?.icone} /></span>
       <span className="item-textos">
         <span className="item-titulo">{l.descricao || l.categoria?.nome || 'Sem descrição'}</span>
-        <span className="item-sub">{legenda(l.categoria?.nome ?? 'Sem categoria', quem, quando)}</span>
+        <span className="item-sub">{legenda(l.categoria?.nome ?? 'Sem categoria', quem, quando, l.formaPagamento?.nome)}</span>
       </span>
       <span className={entrou ? 'valor-lista entrada' : 'valor-lista saida'}>
         {entrou ? '+ ' : '− '}{formatarReais(l.valorCentavos)}

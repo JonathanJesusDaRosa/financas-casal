@@ -30,6 +30,7 @@ const campos = {
     .nullish() // pode vir vazio
     .transform((texto) => texto || null),
   categoriaId: idSchema.nullish(),
+  formaPagamentoId: idSchema.nullish(),
   pagoPorId: idSchema,
 };
 
@@ -48,6 +49,7 @@ const selecao = {
   categoria: { select: { id: true, nome: true, cor: true, icone: true } },
   pagoPor: { select: { id: true, nome: true } },
   caixinha: { select: { id: true, nome: true, icone: true } },
+  formaPagamento: { select: { id: true, nome: true, tipo: true } },
 };
 
 // Tipos que pertencem a uma caixinha: só podem ser criados/apagados pelas rotas de /caixinhas.
@@ -59,10 +61,14 @@ const formatar = (lancamento) => ({ ...lancamento, data: paraTexto(lancamento.da
 
 // Confere se a categoria e quem pagou são DESTE casal.
 // Sem isso, alguém poderia ligar um lançamento à categoria de outro casal.
-async function conferirVinculos({ categoriaId, pagoPorId }, casalId) {
+async function conferirVinculos({ categoriaId, pagoPorId, formaPagamentoId }, casalId) {
   if (categoriaId) {
     const ok = await prisma.categoria.count({ where: { id: categoriaId, casalId } });
     if (!ok) return 'Categoria não encontrada.';
+  }
+  if (formaPagamentoId) {
+    const ok = await prisma.formaPagamento.count({ where: { id: formaPagamentoId, casalId } });
+    if (!ok) return 'Forma de pagamento não encontrada.';
   }
   if (pagoPorId) {
     const ok = await prisma.usuario.count({ where: { id: pagoPorId, casalId } });

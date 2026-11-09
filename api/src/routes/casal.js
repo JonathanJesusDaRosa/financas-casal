@@ -6,6 +6,7 @@ import { autenticar } from '../middlewares/autenticar.js';
 import { exigirCasal } from '../middlewares/exigirCasal.js';
 import { limiteConvite } from '../middlewares/limitarTentativas.js';
 import { CATEGORIAS_PADRAO } from '../lib/categoriasPadrao.js';
+import { FORMAS_PADRAO } from '../lib/formasPadrao.js';
 import { gerarCodigoConvite, normalizarCodigo, novaValidade } from '../lib/convite.js';
 
 const router = Router();
@@ -95,6 +96,7 @@ router.post('/', async (req, res) => {
             codigoConvite: codigo,
             conviteExpiraEm: novaValidade(),
             categorias: { create: CATEGORIAS_PADRAO },
+            formasPagamento: { create: FORMAS_PADRAO },
           },
         });
 

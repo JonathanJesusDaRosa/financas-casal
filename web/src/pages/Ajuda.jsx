@@ -3,7 +3,7 @@
 // IMPORTANTE: quando o app mudar, atualize o texto daqui também.
 import { Link } from 'react-router-dom';
 import {
-  CalendarClock, ChevronLeft, CircleHelp, Eye, Gauge, House, List, Plus, Rocket, Tag, Target, TrendingUp,
+  CalendarClock, ChevronLeft, CircleHelp, CreditCard, Eye, Gauge, House, List, Plus, Rocket, Tag, Target, TrendingUp,
 } from 'lucide-react';
 
 const SECOES = [
@@ -44,6 +44,7 @@ const SECOES = [
           <li>Escolha <strong>Saiu</strong> (gasto) ou <strong>Entrou</strong> (receita).</li>
           <li>Digite o <strong>valor</strong>. Vale escrever 50, 120,90 ou 1.234,56.</li>
           <li>Toque numa <strong>categoria</strong> (ex.: Mercado). Tocar de novo desmarca.</li>
+          <li>Se quiser, escolha a <strong>forma de pagamento</strong> (ex.: Pix, Nubank Crédito).</li>
           <li>Se quiser, escreva uma <strong>descrição</strong> (ex.: "feira da semana").</li>
           <li>Confira a <strong>data</strong> (já vem com hoje) e <strong>quem pagou</strong>.</li>
           <li>Toque em <strong>Salvar</strong>.</li>
@@ -64,6 +65,7 @@ const SECOES = [
           <li><strong>Contas do mês</strong>: as próximas contas fixas a vencer e as atrasadas.</li>
           <li><strong>Gastos por categoria</strong>: as 3 maiores. Toque em <strong>Ver todos</strong> para ver o resto.</li>
           <li><strong>Orçamento do mês</strong>: as categorias com limite e quanto ainda falta.</li>
+          <li><strong>Por forma de pagamento</strong>: quanto saiu em cada forma (Pix, cada cartão...), com o total no crédito em destaque.</li>
           <li><strong>Evolução</strong>: entrou e saiu nos últimos 6 meses. Toque num mês para abrir o Início daquele mês. Em <strong>Ver em tabela</strong>, aparecem os números.</li>
           <li><strong>Últimos lançamentos</strong>: os 5 mais recentes.</li>
         </ul>
@@ -88,21 +90,30 @@ const SECOES = [
     Icone: CalendarClock,
     conteudo: (
       <>
-        <p>Para contas que se repetem todo mês: aluguel, internet, luz, academia.</p>
+        <p>Para o que se repete todo mês: aluguel, internet, luz, e também compras parceladas.</p>
+        <h3>Dois tipos</h3>
+        <ul>
+          <li><strong>Sem fim</strong>: aparece todo mês até ser pausada ou apagada (internet, aluguel).</li>
+          <li><strong>Com fim (parcelas)</strong>: aparece só nos meses das parcelas, como "Parcela 3 de 8", e some depois da última. Se digitar o <strong>valor total</strong> da compra, o app calcula a parcela, e dá para alterar.</li>
+        </ul>
         <h3>Cadastrar</h3>
         <ol>
           <li>Vá em <strong>Casa → Contas fixas</strong> (no computador, em <strong>Contas</strong> no menu).</li>
           <li>Toque em <strong>Nova conta fixa</strong>.</li>
-          <li>Informe o nome, o valor de costume, o <strong>dia do vencimento</strong> e a categoria.</li>
+          <li>Escolha a duração, o valor, o <strong>dia do vencimento</strong>, o mês em que começa, a categoria e a forma de pagamento de costume.</li>
         </ol>
-        <p>Também dá para cadastrar algo que <strong>entra</strong> todo mês, como o salário.</p>
+        <p><strong>Nada é retroativo</strong>: a conta só aparece a partir do mês em que começa, nunca nos meses anteriores. Comprou parcelado e já pagou algumas parcelas? Use <strong>Começa na parcela</strong> (ex.: 3) para seguir dali.</p>
+        <h3>Valor que muda (ex.: conta de luz)</h3>
+        <p>Cadastre um valor previsto (ex.: R$ 120). Quando a conta chegar, toque no <strong>lápis</strong> ao lado de "Pagar" e informe o valor real (ex.: R$ 102). Muda só aquele mês. Na hora de pagar, o valor já vem preenchido.</p>
         <h3>Pagar</h3>
         <ul>
-          <li>Toda conta aparece como <strong>a pagar</strong> no mês, e como <strong>atrasada</strong> depois do vencimento.</li>
-          <li>Toque em <strong>Pagar</strong>, confira o valor (dá para mudar, ex.: conta de luz) e toque em <strong>Confirmar</strong>. A conta vira um lançamento.</li>
+          <li>A conta aparece como <strong>a pagar</strong> e, depois do vencimento, como <strong>atrasada</strong>.</li>
+          <li>Toque em <strong>Pagar</strong>, confira o valor e a forma de pagamento e toque em <strong>Confirmar</strong>. A conta vira um lançamento.</li>
+          <li><strong>Compra no cartão de crédito</strong>: toquem em <strong>Pagar</strong> quando pagarem a fatura.</li>
           <li><strong>Marcou sem querer?</strong> Toque na conta paga, que abre o lançamento, e apague. Ela volta para "a pagar".</li>
         </ul>
         <p>A conta <strong>não é lançada sozinha</strong>: só depois que alguém confirma. Para parar de vê-la sem apagar, edite e escolha <strong>Pausada</strong>. Vencimento no dia 31, em mês mais curto, vale o último dia.</p>
+        <p><strong>Atenção:</strong> uma compra parcelada cadastrada como conta fixa não deve ser lançada também pelo botão +. Senão ela conta duas vezes.</p>
       </>
     ),
   },
@@ -156,6 +167,18 @@ const SECOES = [
       <>
         <p>Em <strong>Casa → Categorias</strong>, toque em <strong>Nova</strong> para criar, ou numa categoria para mudar o nome, o ícone ou o limite.</p>
         <p>Ao apagar uma categoria, os lançamentos dela <strong>não somem</strong>: ficam como "Sem categoria".</p>
+      </>
+    ),
+  },
+  {
+    id: 'formas',
+    titulo: 'Formas de pagamento',
+    Icone: CreditCard,
+    conteudo: (
+      <>
+        <p>A casa já começa com Pix, Débito, Crédito, Dinheiro e Boleto. Em <strong>Casa → Formas de pagamento</strong> dá para criar uma por cartão (ex.: "Nubank Crédito", tipo Crédito), renomear ou apagar.</p>
+        <p>Escolha a forma ao lançar ou ao pagar uma conta fixa. No Início, o card <strong>Por forma de pagamento</strong> mostra quanto saiu em cada uma e o total no crédito.</p>
+        <p>Ao apagar uma forma, os lançamentos <strong>não somem</strong>: ficam sem forma de pagamento.</p>
       </>
     ),
   },

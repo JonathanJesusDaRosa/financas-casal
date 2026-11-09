@@ -14,6 +14,7 @@ import SeletorMes from '../components/SeletorMes.jsx';
 import { formatarReais } from '../utils/dinheiro.js';
 import { mesAtual, nomeDoMes } from '../utils/datas.js';
 import { ordenarPendentes, textoVencimento } from '../utils/contas.js';
+import { TIPOS_FORMA } from '../utils/formas.js';
 
 const CATEGORIAS_NO_RESUMO = 3; // as 3 maiores; "Ver todos" mostra o resto
 
@@ -70,7 +71,8 @@ export default function Inicio() {
       {carregado && (
         // painel-inicio: no celular os cards ficam um embaixo do outro; no computador
         // viram um painel de duas colunas (cada card tem sua "area-..." no index.css)
-        <div className="painel-inicio">
+        // Sem orçamento, o painel do computador usa outro arranjo (ver "sem-orcamento" no index.css)
+        <div className={`painel-inicio ${resumo.orcamento.length === 0 ? 'sem-orcamento' : ''}`}>
           {/* Card de saldo: saldo grande + mini-cards Entrou e Saiu */}
           <section className="card-saldo area-saldo">
             <p className="label">Saldo de {nomeMes}</p>
@@ -132,6 +134,10 @@ export default function Inicio() {
           </section>
 
           {resumo.orcamento.length > 0 && <CardOrcamento orcamento={resumo.orcamento} />}
+
+          {resumo.porFormaPagamento.some((f) => f.forma) && (
+            <CardFormas formas={resumo.porFormaPagamento} />
+          )}
 
           {evolucao && evolucao.ate === mes && (
             <section className="card secao area-evolucao">
@@ -195,9 +201,11 @@ function CardContas({ dados }) {
                 <span className="item-icone"><Icone nome={c.categoria?.icone} /></span>
                 <span className="item-textos">
                   <span className="item-titulo">{c.nome}</span>
-                  <span className={`item-sub ${c.situacao === 'atrasada' ? 'texto-atencao' : ''}`}>{textoVencimento(c)}</span>
+                  <span className={`item-sub ${c.situacao === 'atrasada' ? 'texto-atencao' : ''}`}>
+                    {c.parcela && `${c.parcela}/${c.totalParcelas} · `}{textoVencimento(c)}
+                  </span>
                 </span>
-                <span className="valor-lista">{formatarReais(c.valorCentavos)}</span>
+                <span className="valor-lista">{formatarReais(c.valorDoMes)}</span>
               </Link>
             </li>
           ))}
@@ -235,6 +243,49 @@ function CardOrcamento({ orcamento }) {
                   ? `Passou ${formatarReais(-o.restaCentavos)} do previsto`
                   : `Faltam ${formatarReais(o.restaCentavos)}`}
               </p>
+            </li>
+          );
+        })}
+      </ul>
+    </section>
+  );
+}
+
+// "Gastos por forma de pagamento": quanto saiu em cada forma (cartões, Pix...).
+// Em destaque, o total no crédito, para acompanhar os cartões.
+function CardFormas({ formas }) {
+  const noCredito = formas
+    .filter((f) => f.forma?.tipo === 'CREDITO')
+    .reduce((soma, f) => soma + f.totalCentavos, 0);
+  // As formas informadas primeiro (maior para menor); "Não informada" sempre por último.
+  const ordenadas = [...formas.filter((f) => f.forma), ...formas.filter((f) => !f.forma)];
+  const maior = Math.max(...formas.map((f) => f.totalCentavos));
+
+  return (
+    <section className="card secao area-formas">
+      <div className="secao-topo">
+        <h2>Por forma de pagamento</h2>
+        <Link to="/casa/formas">Ajustar</Link>
+      </div>
+      {noCredito > 0 && (
+        <p className="label muted" style={{ marginBottom: 'var(--space-3)' }}>
+          No crédito este mês: <strong style={{ color: 'var(--ink)' }}>{formatarReais(noCredito)}</strong>
+        </p>
+      )}
+      <ul className="lista-categorias">
+        {ordenadas.map((f) => {
+          const { Icone } = TIPOS_FORMA[f.forma?.tipo] ?? TIPOS_FORMA.OUTRO;
+          return (
+            <li key={f.forma?.id ?? 'sem'} className={f.forma ? undefined : 'muted'}>
+              <div className="linha-categoria">
+                <span className="nome-forma">
+                  <Icone size={16} strokeWidth={1.75} aria-hidden="true" /> {f.forma?.nome ?? 'Não informada'}
+                </span>
+                <strong className="valor">{formatarReais(f.totalCentavos)}</strong>
+              </div>
+              <div className="barra" role="img" aria-label={f.percentual + '% das saídas'}>
+                <span style={{ width: Math.max(Math.round((f.totalCentavos / maior) * 100), 2) + '%' }} />
+              </div>
             </li>
           );
         })}

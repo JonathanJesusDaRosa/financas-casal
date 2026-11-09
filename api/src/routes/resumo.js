@@ -3,6 +3,7 @@
 //   porCategoria  quanto SAIU em cada categoria, do maior para o menor, com a %
 //   ultimos       os 5 lançamentos mais recentes do mês
 //   orcamento     categorias com limite: quanto já saiu e quanto falta (ou passou)
+//   porFormaPagamento  quanto SAIU por forma de pagamento (ex.: quanto foi no crédito)
 import { Router } from 'express';
 import { prisma } from '../lib/prisma.js';
 import { autenticar } from '../middlewares/autenticar.js';
@@ -73,7 +74,7 @@ router.get('/', async (req, res) => {
   const doMes = { casalId: req.casalId, data: { gte: inicio, lt: fim } };
 
   // As 3 consultas rodam ao mesmo tempo (Promise.all).
-  const [porTipo, porCategoriaBruto, ultimos] = await Promise.all([
+  const [porTipo, porCategoriaBruto, ultimos, porFormaBruto, formas] = await Promise.all([
     // soma por tipo (RECEITA, DESPESA, GUARDADO...)
     prisma.lancamento.groupBy({ by: ['tipo'], where: doMes, _sum: { valorCentavos: true } }),
     // soma das DESPESAS por categoria
@@ -95,8 +96,16 @@ router.get('/', async (req, res) => {
         categoria: { select: { id: true, nome: true, icone: true } },
         pagoPor: { select: { id: true, nome: true } },
         caixinha: { select: { id: true, nome: true, icone: true } },
+        formaPagamento: { select: { id: true, nome: true, tipo: true } },
       },
     }),
+    // soma das DESPESAS por forma de pagamento
+    prisma.lancamento.groupBy({
+      by: ['formaPagamentoId'],
+      where: { ...doMes, tipo: 'DESPESA' },
+      _sum: { valorCentavos: true },
+    }),
+    prisma.formaPagamento.findMany({ where: { casalId: req.casalId }, select: { id: true, nome: true, tipo: true } }),
   ]);
 
   const soma = (tipo) => porTipo.find((g) => g.tipo === tipo)?._sum.valorCentavos ?? 0;
@@ -143,6 +152,13 @@ router.get('/', async (req, res) => {
         };
       })
       .sort((a, b) => b.percentual - a.percentual),
+    porFormaPagamento: porFormaBruto
+      .map((g) => ({
+        forma: formas.find((f) => f.id === g.formaPagamentoId) ?? null, // null = "Não informada"
+        totalCentavos: g._sum.valorCentavos ?? 0,
+        percentual: saidas ? Math.round(((g._sum.valorCentavos ?? 0) / saidas) * 100) : 0,
+      }))
+      .sort((a, b) => b.totalCentavos - a.totalCentavos),
     ultimos: ultimos.map((l) => ({ ...l, data: paraTexto(l.data) })),
   });
 });

@@ -1,7 +1,7 @@
 // Aba "Casa": a casa, os membros, o convite (se ainda houver vaga), categorias e sair.
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { BookOpen, CalendarClock, ChevronRight, Copy, LogOut, MessageCircle, RefreshCw, Tag } from 'lucide-react';
+import { BookOpen, CalendarClock, ChevronRight, CreditCard, Copy, LogOut, MessageCircle, RefreshCw, Tag } from 'lucide-react';
 import { api } from '../api.js';
 import { useAuth } from '../auth.jsx';
 import Cabecalho from '../components/Cabecalho.jsx';
@@ -64,6 +64,16 @@ export default function Casa() {
                   <span className="item-textos">
                     <span className="item-titulo">Contas fixas</span>
                     <span className="item-sub">Aluguel, internet, luz… com vencimento</span>
+                  </span>
+                  <ChevronRight size={20} strokeWidth={1.75} aria-hidden="true" className="muted" />
+                </Link>
+              </li>
+              <li>
+                <Link to="/casa/formas" className="item">
+                  <span className="item-icone"><CreditCard size={20} strokeWidth={1.75} aria-hidden="true" /></span>
+                  <span className="item-textos">
+                    <span className="item-titulo">Formas de pagamento</span>
+                    <span className="item-sub">Pix, cartões de crédito e débito…</span>
                   </span>
                   <ChevronRight size={20} strokeWidth={1.75} aria-hidden="true" className="muted" />
                 </Link>

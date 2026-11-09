@@ -33,17 +33,18 @@ enum Papel {
 
 // O "espaço do casal": tudo pertence a um casal.
 model Casal {
-  id              Int            @id @default(autoincrement())
+  id              Int              @id @default(autoincrement())
   nome            String
-  codigoConvite   String?        @unique // ex.: "K7M-4QX"; vira null quando o casal fica completo
+  codigoConvite   String?          @unique // ex.: "K7M-4QX"; vira null quando o casal fica completo
   conviteExpiraEm DateTime?
-  criadoEm        DateTime       @default(now())
+  criadoEm        DateTime         @default(now())
   usuarios        Usuario[]
   categorias      Categoria[]
   lancamentos     Lancamento[]
   caixinhas       Caixinha[]
   investimentos   Investimento[]
   contasFixas     ContaFixa[]
+  formasPagamento FormaPagamento[]
 }
 
 model Usuario {
@@ -82,19 +83,22 @@ model Lancamento {
   criadoEm      DateTime       @default(now())
   atualizadoEm  DateTime       @updatedAt
 
-  casalId     Int
-  casal       Casal      @relation(fields: [casalId], references: [id], onDelete: Cascade)
-  categoriaId Int?
-  categoria   Categoria? @relation(fields: [categoriaId], references: [id], onDelete: SetNull)
-  pagoPorId   Int
-  pagoPor     Usuario    @relation(fields: [pagoPorId], references: [id])
+  casalId          Int
+  casal            Casal           @relation(fields: [casalId], references: [id], onDelete: Cascade)
+  categoriaId      Int?
+  categoria        Categoria?      @relation(fields: [categoriaId], references: [id], onDelete: SetNull)
+  pagoPorId        Int
+  pagoPor          Usuario         @relation(fields: [pagoPorId], references: [id])
   // Só nos movimentos de caixinha. NoAction: o banco não deixa apagar uma caixinha que tem movimentos.
-  caixinhaId  Int?
-  caixinha    Caixinha?  @relation(fields: [caixinhaId], references: [id], onDelete: NoAction)
+  caixinhaId       Int?
+  caixinha         Caixinha?       @relation(fields: [caixinhaId], references: [id], onDelete: NoAction)
   // Pagamento de conta fixa: qual conta e de qual mês ("2026-11"). Apagar a conta mantém o lançamento.
-  contaFixaId Int?
-  contaFixa   ContaFixa? @relation(fields: [contaFixaId], references: [id], onDelete: SetNull)
-  competencia String?
+  contaFixaId      Int?
+  contaFixa        ContaFixa?      @relation(fields: [contaFixaId], references: [id], onDelete: SetNull)
+  competencia      String?
+  // Como foi pago (Pix, cartão...). Opcional. Apagar a forma mantém o lançamento.
+  formaPagamentoId Int?
+  formaPagamento   FormaPagamento? @relation(fields: [formaPagamentoId], references: [id], onDelete: SetNull)
 
   @@unique([contaFixaId, competencia]) // cada conta só pode ser paga uma vez por mês
   @@index([casalId, data]) // deixa rápido o "resumo do mês"
@@ -145,4 +149,50 @@ model ContaFixa {
   categoriaId   Int?
   categoria     Categoria?     @relation(fields: [categoriaId], references: [id], onDelete: SetNull)
   pagamentos    Lancamento[]
+
+  // Quando começa: "2026-11". Nunca antes do mês do cadastro (nada retroativo).
+  mesInicio        String
+  // Com fim (parcelas): totalParcelas = 8. Sem fim: null.
+  totalParcelas    Int?
+  // Compra feita antes: começa na parcela 3 (as anteriores já foram pagas fora do app).
+  parcelaInicial   Int               @default(1)
+  // Forma de pagamento de costume (já vem marcada ao pagar)
+  formaPagamentoId Int?
+  formaPagamento   FormaPagamento?   @relation(fields: [formaPagamentoId], references: [id], onDelete: SetNull)
+  ajustes          ContaFixaAjuste[]
+}
+
+// Valor de um mês específico, ajustado antes de pagar (ex.: a conta de luz veio R$ 102).
+model ContaFixaAjuste {
+  id            Int       @id @default(autoincrement())
+  competencia   String // "2026-11"
+  valorCentavos Int
+  contaFixaId   Int
+  contaFixa     ContaFixa @relation(fields: [contaFixaId], references: [id], onDelete: Cascade)
+
+  @@unique([contaFixaId, competencia])
+}
+
+// Tipos de forma de pagamento (o tipo permite analisar, ex.: tudo que foi no crédito)
+enum TipoFormaPagamento {
+  PIX
+  DEBITO
+  CREDITO
+  DINHEIRO
+  BOLETO
+  OUTRO
+}
+
+// Formas de pagamento da casa: "Pix", "Nubank Crédito", "Itaú Débito"...
+model FormaPagamento {
+  id          Int                @id @default(autoincrement())
+  nome        String
+  tipo        TipoFormaPagamento
+  criadoEm    DateTime           @default(now())
+  casalId     Int
+  casal       Casal              @relation(fields: [casalId], references: [id], onDelete: Cascade)
+  lancamentos Lancamento[]
+  contasFixas ContaFixa[]
+
+  @@unique([casalId, nome])
 }

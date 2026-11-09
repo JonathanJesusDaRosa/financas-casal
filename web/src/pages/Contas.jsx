@@ -1,12 +1,14 @@
 // Aba de contas fixas do mês: o que está atrasado, a pagar e já pago.
-// "Pagar" abre uma confirmação (valor, data, quem pagou) e cria o lançamento.
+// "Ajustar" muda o valor só deste mês, antes de pagar (ex.: a conta de luz veio R$ 102).
+// "Pagar" abre uma confirmação (valor, data, quem pagou, forma) e cria o lançamento.
 import { useCallback, useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { ChevronRight, Plus } from 'lucide-react';
+import { Pencil, Plus } from 'lucide-react';
 import { api } from '../api.js';
 import { useAuth } from '../auth.jsx';
 import { useValoresOcultos } from '../hooks/useValoresOcultos.js';
 import Cabecalho from '../components/Cabecalho.jsx';
+import EscolherForma from '../components/EscolherForma.jsx';
 import Icone from '../components/Icone.jsx';
 import SeletorMes from '../components/SeletorMes.jsx';
 import { centavosParaTexto, formatarReais, textoParaCentavos } from '../utils/dinheiro.js';
@@ -19,7 +21,9 @@ export default function Contas() {
   const mes = parametros.get('mes') || mesAtual();
   const [dados, setDados] = useState(null); // { mes, contas, resumo }
   const [membros, setMembros] = useState([]);
-  const [pagando, setPagando] = useState(null); // id da conta com a confirmação aberta
+  const [formas, setFormas] = useState([]);
+  // Painel aberto embaixo de uma conta: { id, acao: 'pagar' | 'ajustar' } ou null
+  const [aberto, setAberto] = useState(null);
   const [erro, setErro] = useState('');
 
   const carregar = useCallback(() => {
@@ -32,12 +36,13 @@ export default function Contas() {
 
   useEffect(() => {
     api('/casal').then((d) => setMembros(d.casal.membros)).catch(() => {});
+    api('/formas-pagamento').then((d) => setFormas(d.formas)).catch(() => {});
   }, []);
 
   function irParaMes(novo) {
     setErro('');
     setDados(null);
-    setPagando(null);
+    setAberto(null);
     setParametros(novo === mesAtual() ? {} : { mes: novo });
   }
 
@@ -52,14 +57,27 @@ export default function Contas() {
       <ul className="lista">
         {contas.map((c) => (
           <li key={c.id}>
-            <ItemConta conta={c} aoPagar={() => { setErro(''); setPagando(c.id); }} />
-            {pagando === c.id && (
+            <ItemConta
+              conta={c}
+              aoPagar={() => { setErro(''); setAberto({ id: c.id, acao: 'pagar' }); }}
+              aoAjustar={() => { setErro(''); setAberto({ id: c.id, acao: 'ajustar' }); }}
+            />
+            {aberto?.id === c.id && aberto.acao === 'pagar' && (
               <ConfirmarPagamento
                 conta={c}
                 mes={mes}
                 membros={membros}
-                aoTerminar={() => { setPagando(null); carregar(); }}
-                aoCancelar={() => setPagando(null)}
+                formas={formas}
+                aoTerminar={() => { setAberto(null); carregar(); }}
+                aoCancelar={() => setAberto(null)}
+              />
+            )}
+            {aberto?.id === c.id && aberto.acao === 'ajustar' && (
+              <AjustarValor
+                conta={c}
+                mes={mes}
+                aoTerminar={() => { setAberto(null); carregar(); }}
+                aoCancelar={() => setAberto(null)}
               />
             )}
           </li>
@@ -125,37 +143,47 @@ export default function Contas() {
 }
 
 // Uma conta na lista. Tocar no nome edita a conta (ou abre o lançamento, se já paga).
-function ItemConta({ conta: c, aoPagar }) {
+function ItemConta({ conta: c, aoPagar, aoAjustar }) {
   const paga = c.situacao === 'paga';
   const atrasada = c.situacao === 'atrasada';
   const entra = c.tipo === 'RECEITA';
   const destino = paga ? `/lancamentos/${c.pagamento.id}` : `/contas/${c.id}/editar`;
 
   return (
-    <div className="item">
+    // Duas linhas: em cima nome/vencimento/valor; embaixo "Ajustar valor" e "Pagar"
+    // (assim o nome não fica espremido em celular pequeno).
+    <div className="item item-conta">
       <Link to={destino} className="item-link">
         <span className="item-icone"><Icone nome={c.categoria?.icone} /></span>
         <span className="item-textos">
           <span className="item-titulo">{c.nome}</span>
-          <span className={`item-sub ${atrasada ? 'texto-atencao' : ''}`}>{textoVencimento(c)}</span>
+          <span className={`item-sub ${atrasada ? 'texto-atencao' : ''}`}>
+            {c.parcela && `${c.parcela}/${c.totalParcelas} · `}{textoVencimento(c)}
+            {!paga && c.valorAjustado && ' · valor ajustado'}
+          </span>
         </span>
         <span className={`valor-lista ${paga ? (entra ? 'entrada' : 'saida') : ''}`}>
-          {formatarReais(paga ? c.pagamento.valorCentavos : c.valorCentavos)}
+          {formatarReais(paga ? c.pagamento.valorCentavos : c.valorDoMes)}
         </span>
       </Link>
-      {paga ? (
-        <ChevronRight size={20} strokeWidth={1.75} aria-hidden="true" className="muted" />
-      ) : (
-        <button className="botao-secundario botao-pequeno" onClick={aoPagar}>{entra ? 'Recebi' : 'Pagar'}</button>
+      {!paga && (
+        <div className="acoes-conta">
+          <button className="botao-quieto botao-pequeno" onClick={aoAjustar} aria-label={'Ajustar o valor de ' + c.nome + ' neste mês'}>
+            <Pencil size={16} strokeWidth={1.75} aria-hidden="true" /> Ajustar valor
+          </button>
+          <button className="botao-secundario botao-pequeno" onClick={aoPagar}>{entra ? 'Recebi' : 'Pagar'}</button>
+        </div>
       )}
     </div>
   );
 }
 
 // Confirmação do pagamento: dá para ajustar valor (ex.: conta de luz), data e quem pagou.
-function ConfirmarPagamento({ conta, mes, membros, aoTerminar, aoCancelar }) {
+function ConfirmarPagamento({ conta, mes, membros, formas, aoTerminar, aoCancelar }) {
   const { usuario } = useAuth();
-  const [valor, setValor] = useState(centavosParaTexto(conta.valorCentavos));
+  // Já vem com o valor do mês (o ajustado, se houver) e a forma de costume da conta.
+  const [valor, setValor] = useState(centavosParaTexto(conta.valorDoMes));
+  const [formaPagamentoId, setFormaPagamentoId] = useState(conta.formaPagamento?.id ?? null);
   const [data, setData] = useState(hoje());
   const [pagoPorId, setPagoPorId] = useState(usuario.id);
   const [erro, setErro] = useState('');
@@ -172,7 +200,7 @@ function ConfirmarPagamento({ conta, mes, membros, aoTerminar, aoCancelar }) {
     }
     setEnviando(true);
     try {
-      await api(`/contas-fixas/${conta.id}/pagar`, { metodo: 'POST', corpo: { mes, valorCentavos, data, pagoPorId } });
+      await api(`/contas-fixas/${conta.id}/pagar`, { metodo: 'POST', corpo: { mes, valorCentavos, data, pagoPorId, formaPagamentoId } });
       aoTerminar();
     } catch (e) {
       setErro(e.message);
@@ -182,7 +210,9 @@ function ConfirmarPagamento({ conta, mes, membros, aoTerminar, aoCancelar }) {
 
   return (
     <form className="card formulario confirmar-conta" onSubmit={aoEnviar}>
-      <p className="aviso">Confira antes de salvar. Vira um lançamento em {conta.categoria?.nome ?? 'Sem categoria'}.</p>
+      <p className="aviso">
+        Confira antes de salvar. Vira um lançamento{conta.categoria ? ` em ${conta.categoria.nome}` : ' sem categoria'}.
+      </p>
       <div className="linha-campos">
         <label className="campo">
           Valor (R$)
@@ -206,11 +236,69 @@ function ConfirmarPagamento({ conta, mes, membros, aoTerminar, aoCancelar }) {
           </div>
         </fieldset>
       )}
+      <EscolherForma formas={formas} valor={formaPagamentoId} aoMudar={setFormaPagamentoId}
+        rotulo={entra ? 'Recebido por' : 'Forma de pagamento'} />
       {erro && <p className="erro" role="alert">{erro}</p>}
       <div className="botoes">
         <button type="button" className="botao-secundario" onClick={aoCancelar}>Cancelar</button>
         <button type="submit" className="botao" disabled={enviando}>{enviando ? 'Salvando…' : 'Confirmar'}</button>
       </div>
+    </form>
+  );
+}
+
+// Ajustar o valor SÓ deste mês, antes de pagar (o valor de costume continua para os outros meses).
+function AjustarValor({ conta, mes, aoTerminar, aoCancelar }) {
+  const [valor, setValor] = useState(centavosParaTexto(conta.valorDoMes));
+  const [erro, setErro] = useState('');
+  const [enviando, setEnviando] = useState(false);
+
+  async function aoEnviar(evento) {
+    evento.preventDefault();
+    setErro('');
+    const valorCentavos = textoParaCentavos(valor);
+    if (!valorCentavos) {
+      setErro('Valor inválido. Exemplos: 102 ou 98,50');
+      return;
+    }
+    setEnviando(true);
+    try {
+      await api('/contas-fixas/' + conta.id + '/valor-mes', { metodo: 'PUT', corpo: { mes, valorCentavos } });
+      aoTerminar();
+    } catch (e) {
+      setErro(e.message);
+      setEnviando(false);
+    }
+  }
+
+  async function voltarAoPrevisto() {
+    setEnviando(true);
+    try {
+      await api('/contas-fixas/' + conta.id + '/valor-mes?mes=' + mes, { metodo: 'DELETE' });
+      aoTerminar();
+    } catch (e) {
+      setErro(e.message);
+      setEnviando(false);
+    }
+  }
+
+  return (
+    <form className="card formulario confirmar-conta" onSubmit={aoEnviar}>
+      <label className="campo">
+        <span>Valor deste mês (R$) <small>Previsto: {formatarReais(conta.valorCentavos)}</small></span>
+        <input type="text" inputMode="decimal" required autoFocus value={valor} onChange={(e) => setValor(e.target.value)} />
+      </label>
+      <p className="caption muted">Muda só este mês. Ao pagar, este valor já vem preenchido.</p>
+      {erro && <p className="erro" role="alert">{erro}</p>}
+      <div className="botoes">
+        <button type="button" className="botao-secundario" onClick={aoCancelar}>Cancelar</button>
+        <button type="submit" className="botao" disabled={enviando}>{enviando ? 'Salvando…' : 'Salvar valor'}</button>
+      </div>
+      {conta.valorAjustado && (
+        <button type="button" className="botao-quieto" onClick={voltarAoPrevisto} disabled={enviando}>
+          Voltar ao valor previsto
+        </button>
+      )}
     </form>
   );
 }
