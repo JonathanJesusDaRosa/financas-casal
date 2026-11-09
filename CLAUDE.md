@@ -132,6 +132,10 @@ Cada fase só começa quando a anterior está em uso no dia a dia.
 - Computador (>= 1024px): a MESMA navegação vira barra lateral só por CSS (logo, botão "Lançar", abas e "Contas", que só aparece no computador). Início vira painel de 2 colunas por `grid-template-areas` (classes `area-*`), mantendo a ordem do celular. Páginas com `.tela.larga` (Início, Metas, Investimentos) usam até 1280px; as outras até 880px. No computador o casal ANALISA; no celular LANÇA no dia a dia.
 - Ao editar arquivos por script, usar `split/join` em vez de `replace` quando o texto tiver `$` (em `replace`, `$'` e `$&` são códigos especiais).
 
+### Manual de uso
+
+- Tela "Como usar" em `web/src/pages/Ajuda.jsx` (Casa → Ajustes → Como usar), em seções que abrem ao tocar. **Sempre que uma funcionalidade mudar ou for criada, atualizar o texto dali também.**
+
 ## Pendências combinadas
 
 - Ajustes finos de visual conforme o uso (celular e computador).

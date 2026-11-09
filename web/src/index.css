@@ -1317,3 +1317,81 @@ body {
     color: var(--ink);
   }
 }
+
+/* ---------- Tela "Como usar" ---------- */
+.ajuda {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.ajuda-secao.card + .ajuda-secao.card {
+  margin-top: 0;
+}
+
+.ajuda-secao {
+  padding: 0;
+}
+
+/* Cabeçalho que abre/fecha a seção */
+.ajuda-secao summary {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: 64px;
+  padding: var(--space-3) var(--space-4);
+  cursor: pointer;
+  list-style: none; /* tira a setinha padrão do navegador */
+}
+
+.ajuda-secao summary::-webkit-details-marker {
+  display: none;
+}
+
+/* Setinha própria: aponta para baixo e gira quando abre */
+.ajuda-secao summary::after {
+  content: "";
+  width: 8px;
+  height: 8px;
+  margin-left: auto;
+  border-right: 2px solid var(--ink-muted);
+  border-bottom: 2px solid var(--ink-muted);
+  transform: rotate(45deg);
+  transition: transform 0.2s ease;
+}
+
+.ajuda-secao[open] summary::after {
+  transform: rotate(-135deg);
+}
+
+.ajuda-titulo {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.ajuda-conteudo {
+  padding: 0 var(--space-4) var(--space-4);
+  border-top: 1px solid var(--line);
+}
+
+.ajuda-conteudo h3 {
+  font-size: 15px;
+  line-height: 22px;
+  font-weight: 600;
+  margin: var(--space-4) 0 var(--space-1);
+}
+
+.ajuda-conteudo p,
+.ajuda-conteudo ul,
+.ajuda-conteudo ol {
+  margin: var(--space-3) 0 0;
+}
+
+.ajuda-conteudo ul,
+.ajuda-conteudo ol {
+  padding-left: var(--space-6);
+}
+
+.ajuda-conteudo li + li {
+  margin-top: var(--space-2);
+}
