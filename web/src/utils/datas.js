@@ -76,3 +76,29 @@ export function mesesParaEscolher(mesSelecionado) {
   if (!meses.includes(mesSelecionado)) meses.push(mesSelecionado);
   return meses;
 }
+
+// "2026-11-08" + 3 dias -> "2026-11-11" (conta em UTC, sem fuso)
+export function somarDias(dia, quantidade) {
+  const d = new Date(`${dia}T00:00:00Z`);
+  d.setUTCDate(d.getUTCDate() + quantidade);
+  return d.toISOString().slice(0, 10);
+}
+
+// Segunda-feira da semana do dia (a semana vai de segunda a domingo).
+// "2026-11-08" (domingo) -> "2026-11-02"
+export function segundaDaSemana(dia) {
+  const diaDaSemana = new Date(`${dia}T00:00:00Z`).getUTCDay(); // 0 = domingo, 1 = segunda...
+  return somarDias(dia, diaDaSemana === 0 ? -6 : 1 - diaDaSemana);
+}
+
+// Texto curto de um período: "2 a 8 de nov", "26 de out a 1 de nov", "28 de dez de 2026 a 3 de jan de 2027"
+export function textoPeriodo(de, ate) {
+  const meses = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
+  const partes = (d) => ({ ano: d.slice(0, 4), mes: meses[Number(d.slice(5, 7)) - 1], dia: Number(d.slice(8, 10)) });
+  const a = partes(de);
+  const b = partes(ate);
+  if (a.ano !== b.ano) return `${a.dia} de ${a.mes} de ${a.ano} a ${b.dia} de ${b.mes} de ${b.ano}`;
+  if (a.mes !== b.mes) return `${a.dia} de ${a.mes} a ${b.dia} de ${b.mes}`;
+  if (a.dia === b.dia) return `${a.dia} de ${a.mes}`;
+  return `${a.dia} a ${b.dia} de ${b.mes}`;
+}

@@ -80,7 +80,13 @@ const SECOES = [
     Icone: List,
     conteudo: (
       <>
-        <p>Mostra <strong>todos os lançamentos do mês</strong>, agrupados por dia, com os totais de Entrou, Saiu, Guardado e Sobrou no topo.</p>
+        <p>Mostra os lançamentos agrupados por dia, com os totais de Entrou, Saiu, Guardado e Sobrou no topo. Escolha o que ver:</p>
+        <ul>
+          <li><strong>Mês</strong>: o mês inteiro (botão do mês no canto de cima).</li>
+          <li><strong>Semana</strong>: de segunda a domingo. Use as setas para andar de semana em semana.</li>
+          <li><strong>Período</strong>: escolha as datas <strong>De</strong> e <strong>Até</strong> (ex.: os dias de uma viagem). Até 1 ano.</li>
+        </ul>
+        <p><strong>Exportar planilha</strong>: gera um arquivo do que está na tela, que abre no Excel ou no Google Planilhas. No celular, abre o compartilhar (salvar em Arquivos, mandar no WhatsApp); no computador, baixa o arquivo. Os valores saem completos, mesmo com o olho ocultando na tela.</p>
         <p>Toque num lançamento para editar ou apagar. Os movimentos de metas (guardado e resgate) abrem a meta.</p>
       </>
     ),

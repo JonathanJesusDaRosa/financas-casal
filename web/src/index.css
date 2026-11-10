@@ -1444,3 +1444,41 @@ body {
 .meses-fatura button {
   flex-shrink: 0;
 }
+
+/* ---------- Extrato: semana, período e exportar ---------- */
+.seletor-semana {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+}
+
+.seletor-semana span {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.periodo-livre {
+  margin-top: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.botao-exportar {
+  margin: 0 0 var(--space-2) auto;
+  display: flex;
+  min-height: 36px;
+  font-size: 13px;
+}
+
+/* Campos lado a lado: deixam encolher (o campo de data tem largura mínima própria
+   e, sem isto, passava da borda em celular de 360px) */
+.linha-campos > * {
+  min-width: 0;
+}
+
+.linha-campos input {
+  min-width: 0;
+}

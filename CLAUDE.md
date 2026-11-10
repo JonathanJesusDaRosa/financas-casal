@@ -155,6 +155,12 @@ Cada fase só começa quando a anterior está em uso no dia a dia.
 - Casa nova vem com Pix, Débito, Dinheiro e Boleto (SEM cartão de crédito: cada casa cadastra os seus).
 - "Apagar dados" (Casa, fim da página): `DELETE /casal/lancamentos { confirmacao: nome da casa }` apaga TODOS os lançamentos da casa + ajustes de valor do mês. Mantém casa, membros, categorias, formas, contas fixas, metas (zeradas) e investimentos. Sem volta.
 
+### Extrato por período e exportar
+
+- Extrato (`web/src/pages/Lancamentos.jsx`): Mês / Semana (segunda a domingo) / Período (De–Até). Escolha fica na URL (`?modo=semana&de=...`, `?modo=periodo&de=...&ate=...`).
+- API: `GET /lancamentos?de=AAAA-MM-DD&ate=AAAA-MM-DD` (os dois dias entram; máx. 366 dias) além de `?mes=`; resposta traz `periodo`. Início, orçamento e contas continuam só mensais (decisão combinada).
+- "Exportar planilha": CSV gerado no front (`web/src/utils/exportar.js`), padrão Excel BR (";" , vírgula decimal, BOM UTF-8). Celular usa o compartilhar (Web Share); computador baixa. Valores sempre reais (ignora o olho).
+
 ### Testes automáticos
 
 - `cd api` e `npm test`: liga a API numa porta livre e roda os cenários de `api/tests/cenarios/` (dados fictícios `teste-*@exemplo.com`, apagados no final). Trava: recusa rodar se `DATABASE_URL` for igual a `PRODUCAO_DATABASE_URL`.

@@ -127,17 +127,39 @@ const noCartao = (l) => l.tipo === 'DESPESA' && Boolean(l.faturaMes);
 
 // ---------- Rotas ----------
 
-// GET /lancamentos?mes=2026-11 -> lançamentos do mês + totais
+// Período livre do extrato: ?de=2026-11-03&ate=2026-11-09 (os dois dias entram).
+const MAXIMO_DIAS = 366;
+const periodoSchema = z
+  .object({ de: dataSchema, ate: dataSchema })
+  .refine((p) => p.de <= p.ate, { error: 'A data inicial precisa ser antes da final.' })
+  .refine((p) => (paraData(p.ate) - paraData(p.de)) / 86400000 < MAXIMO_DIAS, {
+    error: 'Escolha um período de até 1 ano.',
+  });
+
+// GET /lancamentos?mes=2026-11            -> lançamentos do mês + totais
+// GET /lancamentos?de=AAAA-MM-DD&ate=...  -> lançamentos do período (semana, viagem...) + totais
 //   entradas   = receitas + resgates de metas (dinheiro que ficou disponível)
 //   saidas     = despesas pagas na hora + pagamentos de fatura (dinheiro que SAIU)
-//   noCartao   = compras no cartão neste mês (vão para as faturas; só informativo)
+//   noCartao   = compras no cartão no período (vão para as faturas; só informativo)
 //   guardado   = o que foi separado para as metas
 //   sobra      = entradas - saidas - guardado
-//   rendimento = juros das metas no mês (só informativo, NÃO entra na sobra)
+//   rendimento = juros das metas no período (só informativo, NÃO entra na sobra)
 router.get('/', async (req, res) => {
-  const mes = validar(mesSchema, req.query.mes ?? new Date().toISOString().slice(0, 7), res);
-  if (!mes) return;
-  const { inicio, fim } = intervaloDoMes(mes);
+  let inicio;
+  let fim;
+  let mes = null;
+  let periodo;
+  if (req.query.de || req.query.ate) {
+    periodo = validar(periodoSchema, { de: req.query.de, ate: req.query.ate }, res);
+    if (!periodo) return;
+    inicio = paraData(periodo.de);
+    fim = new Date(paraData(periodo.ate).getTime() + 86400000); // até o fim do último dia
+  } else {
+    mes = validar(mesSchema, req.query.mes ?? new Date().toISOString().slice(0, 7), res);
+    if (!mes) return;
+    ({ inicio, fim } = intervaloDoMes(mes));
+    periodo = { de: paraTexto(inicio), ate: paraTexto(new Date(fim.getTime() - 86400000)) };
+  }
 
   const doMes = await prisma.lancamento.findMany({
     where: { casalId: req.casalId, data: { gte: inicio, lt: fim } },
@@ -152,7 +174,8 @@ router.get('/', async (req, res) => {
   const guardado = somar(doTipo('GUARDADO'));
 
   res.json({
-    mes,
+    mes, // null quando foi pedido um período (de/ate)
+    periodo, // sempre { de, ate }
     totais: {
       entradas,
       saidas,

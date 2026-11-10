@@ -44,6 +44,7 @@ const CENARIOS = [
   ['parcelas, ajuste do mês e formas de pagamento', 'parcelas-e-formas.mjs'],
   ['fatura do cartão de crédito', 'fatura.mjs'],
   ['apagar o histórico de lançamentos', 'apagar-historico.mjs'],
+  ['extrato por semana ou período', 'extrato-periodo.mjs'],
 ];
 
 for (const [nome, arquivo] of CENARIOS) {
