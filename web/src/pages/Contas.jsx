@@ -61,8 +61,8 @@ export default function Contas() {
           <li key={c.id}>
             <ItemConta
               conta={c}
+              aberto={aberto?.id === c.id}
               aoPagar={() => { setErro(''); setAberto({ id: c.id, acao: 'pagar' }); }}
-              aoAjustar={() => { setErro(''); setAberto({ id: c.id, acao: 'ajustar' }); }}
             />
             {aberto?.id === c.id && aberto.acao === 'pagar' && (
               <ConfirmarPagamento
@@ -72,6 +72,7 @@ export default function Contas() {
                 formas={formas}
                 aoTerminar={() => { setAberto(null); carregar(); }}
                 aoCancelar={() => setAberto(null)}
+                aoAjustar={() => setAberto({ id: c.id, acao: 'ajustar' })}
               />
             )}
             {aberto?.id === c.id && aberto.acao === 'ajustar' && (
@@ -100,22 +101,40 @@ export default function Contas() {
       {carregado && (
         <>
           {dados.contas.length === 0 && dados.faturas.length === 0 ? (
-            <p className="vazio">
-              Nenhuma conta fixa ainda.<br />Cadastre aluguel, internet, luz… e o app lembra dos vencimentos.
-            </p>
-          ) : (
-            <section className="card">
-              <p className="label muted">{dados.resumo.pagas} de {dados.resumo.quantidade} pagas</p>
-              <p className="valor-lista">
-                {dados.resumo.faltaPagarCentavos > 0
-                  ? <>Faltam {formatarReais(dados.resumo.faltaPagarCentavos)}</>
-                  : 'Tudo pago neste mês'}
+            <section className="card vazio-convite">
+              <span className="item-icone"><Icone nome="conta" /></span>
+              <h2>Contas que chegam todo mês</h2>
+              <p className="muted">
+                Cadastre aluguel, internet, luz e parcelas. O app mostra o que vence e o que já foi pago,
+                e o pagamento vira lançamento com um toque.
               </p>
-              {dados.resumo.atrasadas > 0 && (
-                <p className="caption texto-atencao">
-                  {dados.resumo.atrasadas} {dados.resumo.atrasadas === 1 ? 'conta atrasada' : 'contas atrasadas'}
-                </p>
+              <Link to="/contas/nova" className="botao">Cadastrar conta fixa</Link>
+            </section>
+          ) : (
+            // Resumo: o número que importa (quanto falta) em destaque e a barra de quantas já foram pagas
+            <section className="card resumo-contas">
+              {dados.resumo.faltaPagarCentavos > 0 ? (
+                <>
+                  <p className="label muted">Falta pagar</p>
+                  <p className="valor-medio">{formatarReais(dados.resumo.faltaPagarCentavos)}</p>
+                </>
+              ) : (
+                <p className="valor-lista">Tudo pago neste mês</p>
               )}
+              {dados.resumo.quantidade > 0 && (
+                <div className="barra" role="progressbar" aria-label="Contas pagas"
+                  aria-valuemin={0} aria-valuemax={dados.resumo.quantidade} aria-valuenow={dados.resumo.pagas}>
+                  <span style={{ width: `${Math.max(2, (dados.resumo.pagas / dados.resumo.quantidade) * 100)}%` }} />
+                </div>
+              )}
+              <p className="caption muted">
+                {dados.resumo.pagas} de {dados.resumo.quantidade} pagas
+                {dados.resumo.atrasadas > 0 && (
+                  <span className="texto-atencao">
+                    {' · '}{dados.resumo.atrasadas} {dados.resumo.atrasadas === 1 ? 'atrasada' : 'atrasadas'}
+                  </span>
+                )}
+              </p>
             </section>
           )}
 
@@ -134,16 +153,17 @@ export default function Contas() {
                             {SITUACAO_FATURA[f.situacao]} · {textoVencimento({ ...f, tipo: 'DESPESA' })}
                           </span>
                         </span>
-                        <span className={`valor-lista ${f.situacao === 'paga' ? 'saida' : ''}`}>{formatarReais(f.totalCentavos)}</span>
                       </Link>
-                      {f.situacao !== 'paga' && (
-                        <div className="acoes-conta">
+                      <div className="lado-conta">
+                        <span className={`valor-lista ${f.situacao === 'paga' ? 'saida' : ''}`}>{formatarReais(f.totalCentavos)}</span>
+                        {f.situacao !== 'paga' && aberto?.id !== `fatura-${f.cartao.id}` && (
                           <button className="botao-secundario botao-pequeno"
+                            aria-label={`Pagar fatura ${f.cartao.nome}`}
                             onClick={() => { setErro(''); setAberto({ id: `fatura-${f.cartao.id}`, acao: 'pagar' }); }}>
-                            Pagar fatura
+                            Pagar
                           </button>
-                        </div>
-                      )}
+                        )}
+                      </div>
                     </div>
                     {aberto?.id === `fatura-${f.cartao.id}` && (
                       <PagarFatura cartao={f.cartao} fatura={f}
@@ -169,11 +189,11 @@ export default function Contas() {
             </section>
           )}
 
-          <div className="secao">
+          {(dados.contas.length > 0 || dados.faturas.length > 0) && <div className="secao">
             <Link to="/contas/nova" className="botao-secundario bloco">
               <Plus size={20} strokeWidth={1.75} aria-hidden="true" /> Nova conta fixa
             </Link>
-          </div>
+          </div>}
         </>
       )}
     </main>
@@ -181,15 +201,15 @@ export default function Contas() {
 }
 
 // Uma conta na lista. Tocar no nome edita a conta (ou abre o lançamento, se já paga).
-function ItemConta({ conta: c, aoPagar, aoAjustar }) {
+// Uma linha só: ícone e nome à esquerda; valor e "Pagar" empilhados à direita.
+// O "Ajustar valor" fica dentro do painel que abre ao tocar em "Pagar" (menos botões na lista).
+function ItemConta({ conta: c, aberto, aoPagar }) {
   const paga = c.situacao === 'paga';
   const atrasada = c.situacao === 'atrasada';
   const entra = c.tipo === 'RECEITA';
   const destino = paga ? `/lancamentos/${c.pagamento.id}` : `/contas/${c.id}/editar`;
 
   return (
-    // Duas linhas: em cima nome/vencimento/valor; embaixo "Ajustar valor" e "Pagar"
-    // (assim o nome não fica espremido em celular pequeno).
     <div className="item item-conta">
       <Link to={destino} className="item-link">
         <span className="item-icone"><Icone nome={c.categoria?.icone} /></span>
@@ -200,24 +220,24 @@ function ItemConta({ conta: c, aoPagar, aoAjustar }) {
             {!paga && c.valorAjustado && ' · valor ajustado'}
           </span>
         </span>
+      </Link>
+      <div className="lado-conta">
         <span className={`valor-lista ${paga ? (entra ? 'entrada' : 'saida') : ''}`}>
           {formatarReais(paga ? c.pagamento.valorCentavos : c.valorDoMes)}
         </span>
-      </Link>
-      {!paga && (
-        <div className="acoes-conta">
-          <button className="botao-quieto botao-pequeno" onClick={aoAjustar} aria-label={'Ajustar o valor de ' + c.nome + ' neste mês'}>
-            <Pencil size={16} strokeWidth={1.75} aria-hidden="true" /> Ajustar valor
+        {!paga && !aberto && (
+          <button className="botao-secundario botao-pequeno" onClick={aoPagar}
+            aria-label={`${entra ? 'Marcar como recebida' : 'Pagar'}: ${c.nome}`}>
+            {entra ? 'Recebi' : 'Pagar'}
           </button>
-          <button className="botao-secundario botao-pequeno" onClick={aoPagar}>{entra ? 'Recebi' : 'Pagar'}</button>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }
 
 // Confirmação do pagamento: dá para ajustar valor (ex.: conta de luz), data e quem pagou.
-function ConfirmarPagamento({ conta, mes, membros, formas, aoTerminar, aoCancelar }) {
+function ConfirmarPagamento({ conta, mes, membros, formas, aoTerminar, aoCancelar, aoAjustar }) {
   const { usuario } = useAuth();
   // Já vem com o valor do mês (o ajustado, se houver) e a forma de costume da conta.
   const [valor, setValor] = useState(centavosParaTexto(conta.valorDoMes));
@@ -281,6 +301,10 @@ function ConfirmarPagamento({ conta, mes, membros, formas, aoTerminar, aoCancela
         <button type="button" className="botao-secundario" onClick={aoCancelar}>Cancelar</button>
         <button type="submit" className="botao" disabled={enviando}>{enviando ? 'Salvando…' : 'Confirmar'}</button>
       </div>
+      {/* Para quando a conta chegou com outro valor, mas ainda não vai pagar agora */}
+      <button type="button" className="botao-quieto" onClick={aoAjustar}>
+        <Pencil size={16} strokeWidth={1.75} aria-hidden="true" /> Só ajustar o valor deste mês (pagar depois)
+      </button>
     </form>
   );
 }

@@ -3,7 +3,7 @@
 // A escolha fica na URL (ex.: ?modo=semana&de=2026-11-02): ao abrir um lançamento e voltar,
 // continua no mesmo lugar. Botão "Exportar" gera uma planilha do que está na tela.
 import { useEffect, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, Download } from 'lucide-react';
 import { api } from '../api.js';
 import { useValoresOcultos } from '../hooks/useValoresOcultos.js';
@@ -165,7 +165,12 @@ export default function Lancamentos() {
           )}
 
           {dados.lancamentos.length === 0 ? (
-            <p className="vazio">Nenhum lançamento em {nomePeriodo}.<br />Toque em + para lançar.</p>
+            <div className="vazio">
+              <p>Nenhum lançamento em {nomePeriodo}.</p>
+              <Link to="/lancamentos/novo" className="botao-secundario" style={{ marginTop: 'var(--space-3)' }}>
+                Lançar agora
+              </Link>
+            </div>
           ) : (
             agruparPorDia(dados.lancamentos).map(([dia, itens]) => (
               <section key={dia}>

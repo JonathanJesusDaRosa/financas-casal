@@ -219,9 +219,12 @@ export default function FormLancamento() {
 
         {erro && <p className="erro" role="alert">{erro}</p>}
 
-        <button type="submit" className="botao" disabled={enviando}>
-          {enviando ? 'Salvando…' : 'Salvar'}
-        </button>
+        {/* Fica preso no fim da tela enquanto rola: o "Salvar" está sempre à mão */}
+        <div className="rodape-fixo">
+          <button type="submit" className="botao bloco" disabled={enviando}>
+            {enviando ? 'Salvando…' : 'Salvar'}
+          </button>
+        </div>
 
         {editando && (
           <button type="button" className="botao-perigo" onClick={() => apagar(false)} disabled={enviando}>

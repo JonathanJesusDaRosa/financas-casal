@@ -14,6 +14,22 @@ function mesesAte(prazo) {
   return (anoP - anoH) * 12 + (mesP - mesH) + 1;
 }
 
+// Versão curta para o card da lista de metas: "R$ 666,00/mês até jul/2027".
+// Sem prazo: "Faltam R$ X". Alcançada: "Meta alcançada". Prazo vencido: "Prazo passou".
+export function ritmoCurto(caixinha) {
+  const falta = caixinha.valorAlvoCentavos - caixinha.saldoCentavos;
+  if (falta <= 0) return 'Meta alcançada';
+  if (!caixinha.prazo) return `Faltam ${formatarReais(falta)}`;
+  const meses = mesesAte(caixinha.prazo);
+  if (meses < 1) return `Prazo passou · faltam ${formatarReais(falta)}`;
+  const porMes = Math.ceil(falta / meses / 100) * 100;
+  const prazo = new Date(`${caixinha.prazo}T12:00:00Z`)
+    .toLocaleDateString('pt-BR', { month: 'short', year: 'numeric', timeZone: 'UTC' })
+    .replace('.', '')
+    .replace(' de ', '/');
+  return `${formatarReais(porMes)}/mês até ${prazo}`;
+}
+
 // Frase de planejamento:
 // "Faltam R$ 3.800,00. Guardando R$ 475,00 por mês, vocês chegam lá até julho de 2027."
 export function planejamento(caixinha) {

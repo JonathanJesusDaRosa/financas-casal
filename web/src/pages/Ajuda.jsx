@@ -62,13 +62,13 @@ const SECOES = [
         <ul>
           <li><strong>Saldo do mês</strong>: quanto entrou, menos o que saiu, menos o que foi guardado nas metas.</li>
           <li><strong>Entrou e Saiu</strong>: o dinheiro que entrou e saiu da conta no mês. Resgates de metas contam como entrada. Compras no cartão <strong>não</strong> contam no Saiu: o que conta é o pagamento da fatura.</li>
-          <li><strong>Compras no cartão</strong>: quanto vocês compraram no crédito no mês (vai para as faturas).</li>
+          <li>Embaixo do saldo, quando houver: <strong>Metas</strong> (guardado no mês), <strong>Rendeu</strong> (juros das metas, só informativo) e <strong>No cartão</strong> (compras no crédito, que vão para as faturas).</li>
           <li><strong>Contas do mês</strong>: as próximas contas fixas a vencer e as atrasadas.</li>
           <li><strong>Gastos por categoria</strong>: as 3 maiores, contando também as compras no cartão pela data da compra. Toque em <strong>Ver todos</strong> para ver o resto.</li>
-          <li><strong>Orçamento do mês</strong>: as categorias com limite e quanto ainda falta.</li>
-          <li><strong>Por forma de pagamento</strong>: quanto saiu em cada forma (Pix, cada cartão...), com o total no crédito em destaque.</li>
-          <li><strong>Evolução</strong>: entrou e saiu nos últimos 6 meses. Toque num mês para abrir o Início daquele mês. Em <strong>Ver em tabela</strong>, aparecem os números.</li>
           <li><strong>Últimos lançamentos</strong>: os 5 mais recentes.</li>
+          <li><strong>Orçamento do mês</strong>: as categorias com limite e quanto ainda falta.</li>
+          <li><strong>Evolução</strong>: entrou e saiu nos últimos 6 meses. Toque num mês para abrir o Início daquele mês. Em <strong>Ver em tabela</strong>, aparecem os números. Só aparece depois do primeiro lançamento.</li>
+          <li><strong>Por forma de pagamento</strong>: quanto saiu em cada forma (Pix, cada cartão...), com o total no crédito em destaque.</li>
         </ul>
         <p>Para ver outro mês, toque no botão do mês (ex.: <strong>Novembro</strong>), no canto de cima.</p>
       </>
@@ -111,7 +111,7 @@ const SECOES = [
         </ol>
         <p><strong>Nada é retroativo</strong>: a conta só aparece a partir do mês em que começa, nunca nos meses anteriores. Comprou parcelado e já pagou algumas parcelas? Use <strong>Começa na parcela</strong> (ex.: 3) para seguir dali.</p>
         <h3>Valor que muda (ex.: conta de luz)</h3>
-        <p>Cadastre um valor previsto (ex.: R$ 120). Quando a conta chegar, toque no <strong>lápis</strong> ao lado de "Pagar" e informe o valor real (ex.: R$ 102). Muda só aquele mês. Na hora de pagar, o valor já vem preenchido.</p>
+        <p>Cadastre um valor previsto (ex.: R$ 120). Quando a conta chegar, toque em <strong>Pagar</strong> e corrija o valor ali mesmo (ex.: R$ 102). Vai pagar só depois? No mesmo painel, toque em <strong>Só ajustar o valor deste mês</strong>: muda só aquele mês, e na hora de pagar o valor já vem preenchido.</p>
         <h3>Pagar</h3>
         <ul>
           <li>A conta aparece como <strong>a pagar</strong> e, depois do vencimento, como <strong>atrasada</strong>.</li>
@@ -151,7 +151,7 @@ const SECOES = [
           <li><strong>Resgatar:</strong> tira dinheiro da meta. Conta como entrada no mês.</li>
           <li><strong>Atualizar saldo:</strong> digite o saldo que o banco mostra. A diferença vira <strong>rendimento</strong> (juros), que aparece só como informação e não muda o saldo do mês.</li>
         </ul>
-        <p>Com prazo, o app calcula <strong>quanto guardar por mês</strong>. No histórico, o X desfaz um movimento lançado errado. Meta com saldo zero pode ser <strong>arquivada</strong> quando o sonho for realizado.</p>
+        <p>Com prazo, o app calcula <strong>quanto guardar por mês</strong> (aparece no card da meta, ex.: "R$ 500,00/mês até jul/2027"). No histórico, o X desfaz um movimento lançado errado. Meta com saldo zero pode ser <strong>arquivada</strong> quando o sonho for realizado.</p>
       </>
     ),
   },
@@ -161,7 +161,7 @@ const SECOES = [
     Icone: TrendingUp,
     conteudo: (
       <>
-        <p>Cadastre onde vocês aplicam (ex.: "CDB Nubank", "Tesouro Selic") e ligue cada meta a um deles, ao criar ou editar a meta.</p>
+        <p>Toque no <strong>+</strong> do topo para cadastrar onde vocês aplicam (ex.: "CDB Nubank", "Tesouro Selic") e ligue cada meta a um deles, ao criar ou editar a meta. Para renomear ou apagar, toque no <strong>lápis</strong> do investimento.</p>
         <p>O total de cada investimento é a <strong>soma das metas ligadas a ele</strong>. Para incluir os juros, use <strong>Atualizar saldo</strong> em cada meta.</p>
       </>
     ),
@@ -192,7 +192,7 @@ const SECOES = [
           <li>Em <strong>Casa → Formas de pagamento</strong>, abra o cartão e informe o <strong>dia em que a fatura fecha</strong> e o <strong>dia em que vence</strong>.</li>
           <li>Ao lançar no cartão, a compra <strong>vai para a fatura</strong> e não sai da conta na hora. O app mostra em qual fatura ela cai. Compra no dia do fechamento ou depois vai para a fatura seguinte.</li>
           <li>Parcelado: informe as parcelas e o <strong>valor total</strong>. Cada parcela vai para uma fatura.</li>
-          <li>A fatura aparece em <strong>Contas</strong> como uma conta a pagar. Toque em <strong>Pagar fatura</strong> (sempre o valor inteiro). Só então o valor entra no Saiu do mês.</li>
+          <li>A fatura aparece em <strong>Contas</strong> como uma conta a pagar. Toque em <strong>Pagar</strong> ao lado da fatura (sempre o valor inteiro). Só então o valor entra no Saiu do mês.</li>
           <li>Toque na fatura para ver as compras dela, as próximas faturas (com as parcelas) e para <strong>desfazer</strong> um pagamento marcado sem querer.</li>
         </ol>
         <p>Compras no crédito lançadas antes desta regra continuam como estavam (já contaram como saída).</p>

@@ -89,19 +89,26 @@ export default function Inicio() {
                 <strong className="saida">− {formatarReais(t.saidas)}</strong>
               </div>
             </div>
-            {/* Extra nosso (não está na referência): o que foi separado para as metas */}
+            {/* Extra nosso (não está na referência): metas e cartão, em "pílulas" curtas
+                numa linha só (antes eram 3 linhas e o card ficava pesado) */}
             {(t.guardado !== 0 || t.rendimento !== 0 || t.noCartao !== 0) && (
-              <div className="notas-saldo">
+              <ul className="notas-saldo">
                 {t.guardado !== 0 && (
-                  <p><PiggyBank size={16} strokeWidth={1.75} aria-hidden="true" /> Guardado nas metas: <strong>{formatarReais(t.guardado)}</strong></p>
+                  <li title="Separado para as metas neste mês">
+                    <PiggyBank size={16} strokeWidth={1.75} aria-hidden="true" /> Metas <strong>{formatarReais(t.guardado)}</strong>
+                  </li>
                 )}
                 {t.rendimento !== 0 && (
-                  <p><TrendingUp size={16} strokeWidth={1.75} aria-hidden="true" /> Rendimento das metas: <strong>{formatarReais(t.rendimento)}</strong></p>
+                  <li title="Rendimento das metas neste mês (não entra no saldo)">
+                    <TrendingUp size={16} strokeWidth={1.75} aria-hidden="true" /> Rendeu <strong>{formatarReais(t.rendimento)}</strong>
+                  </li>
                 )}
                 {t.noCartao !== 0 && (
-                  <p><CreditCard size={16} strokeWidth={1.75} aria-hidden="true" /> Compras no cartão (nas faturas): <strong>{formatarReais(t.noCartao)}</strong></p>
+                  <li title="Compras no cartão: entram no Saiu quando a fatura é paga">
+                    <CreditCard size={16} strokeWidth={1.75} aria-hidden="true" /> No cartão <strong>{formatarReais(t.noCartao)}</strong>
+                  </li>
                 )}
-              </div>
+              </ul>
             )}
           </section>
 
@@ -136,13 +143,37 @@ export default function Inicio() {
             )}
           </section>
 
+          {/* Últimos lançamentos: logo depois dos gastos (como na referência), sem caixa em volta */}
+          <section className="secao area-ultimos">
+            <div className="secao-topo">
+              <h2>Últimos lançamentos</h2>
+              {resumo.ultimos.length > 0 && (
+                <Link to={mes === mesAtual() ? '/lancamentos' : `/lancamentos?mes=${mes}`}>Ver todos</Link>
+              )}
+            </div>
+            {resumo.ultimos.length === 0 ? (
+              <div className="card vazio-convite">
+                <p className="muted">
+                  Nenhum lançamento neste mês. Registre o que entrou e o que saiu e o resumo se monta sozinho.
+                </p>
+                <Link to="/lancamentos/novo" className="botao">Lançar agora</Link>
+                {!contas?.contas?.length && (
+                  <Link to="/contas/nova" className="botao-quieto">Cadastrar contas fixas (aluguel, luz…)</Link>
+                )}
+              </div>
+            ) : (
+              <ul className="lista">
+                {resumo.ultimos.map((l) => (
+                  <li key={l.id}><ItemLancamento lancamento={l} /></li>
+                ))}
+              </ul>
+            )}
+          </section>
+
           {resumo.orcamento.length > 0 && <CardOrcamento orcamento={resumo.orcamento} />}
 
-          {resumo.porFormaPagamento.some((f) => f.forma) && (
-            <CardFormas formas={resumo.porFormaPagamento} />
-          )}
-
-          {evolucao && evolucao.ate === mes && (
+          {/* Sem nenhum movimento nos 6 meses (casa nova), o gráfico vazio só ocuparia espaço */}
+          {evolucao && evolucao.ate === mes && evolucao.meses.some((m) => m.entradas || m.saidas) && (
             <section className="card secao area-evolucao">
               <div className="secao-topo">
                 <h2>Evolução</h2>
@@ -152,24 +183,10 @@ export default function Inicio() {
             </section>
           )}
 
-          {/* Últimos lançamentos: soltos no fundo, sem caixa em volta */}
-          <section className="secao area-ultimos">
-            <div className="secao-topo">
-              <h2>Últimos lançamentos</h2>
-              {resumo.ultimos.length > 0 && (
-                <Link to={mes === mesAtual() ? '/lancamentos' : `/lancamentos?mes=${mes}`}>Ver todos</Link>
-              )}
-            </div>
-            {resumo.ultimos.length === 0 ? (
-              <p className="muted">Nenhum lançamento neste mês. Toque em + para lançar.</p>
-            ) : (
-              <ul className="lista">
-                {resumo.ultimos.map((l) => (
-                  <li key={l.id}><ItemLancamento lancamento={l} /></li>
-                ))}
-              </ul>
-            )}
-          </section>
+          {/* Formas de pagamento por último no celular: é análise, não o dia a dia */}
+          {resumo.porFormaPagamento.some((f) => f.forma) && (
+            <CardFormas formas={resumo.porFormaPagamento} />
+          )}
         </div>
       )}
     </main>
@@ -292,7 +309,7 @@ function CardFormas({ formas }) {
                 </span>
                 <strong className="valor">{formatarReais(f.totalCentavos)}</strong>
               </div>
-              <div className="barra" role="img" aria-label={f.percentual + '% das saídas'}>
+              <div className={`barra ${f.forma ? '' : 'neutra'}`} role="img" aria-label={f.percentual + '% das saídas'}>
                 <span style={{ width: Math.max(Math.round((f.totalCentavos / maior) * 100), 2) + '%' }} />
               </div>
             </li>

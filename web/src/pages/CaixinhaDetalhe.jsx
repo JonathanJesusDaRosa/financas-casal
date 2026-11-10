@@ -89,7 +89,7 @@ export default function CaixinhaDetalhe() {
         <Link to="/metas" className="botao-icone" aria-label="Voltar para Metas">
           <ChevronLeft size={24} strokeWidth={1.75} />
         </Link>
-        <h1 className="item-titulo">{caixinha.nome}</h1>
+        <h1 className="titulo-duas-linhas">{caixinha.nome}</h1>
         <Link to={`/metas/${id}/editar`} className="botao-quieto">Editar</Link>
       </header>
 

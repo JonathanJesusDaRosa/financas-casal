@@ -84,6 +84,16 @@ a {
   min-width: 0;
 }
 
+/* Título longo (ex.: nome da meta) quebra em até 2 linhas em vez de cortar com "…" */
+.cabecalho h1.titulo-duas-linhas {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+}
+
 .secao {
   margin-top: var(--space-6);
 }
@@ -234,11 +244,46 @@ select:focus {
   border-color: var(--indigo);
 }
 
-.campo-valor {
-  font-size: 28px;
-  line-height: 36px;
+/* Campo de valor: o número é o principal da tela (mesmo tamanho do saldo, 36px) */
+.campo .campo-valor {
+  font-size: 36px;
+  line-height: 44px;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
+  padding-top: var(--space-3);
+  padding-bottom: var(--space-3);
+}
+
+/* Chips numa linha só que rola para o lado (formas de pagamento).
+   O html só deixa rolar na vertical (pan-y); aqui liberamos o lado. */
+.chips.chips-rolar {
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  touch-action: pan-x pan-y;
+  scrollbar-width: none;
+  padding: 0 var(--space-8) var(--space-1) 0;
+  /* Esmaece a ponta direita: mostra que tem mais opções para o lado.
+     (máscara só usa a transparência; "black" aqui não aparece como cor) */
+  mask-image: linear-gradient(to right, black 85%, transparent);
+}
+
+.chips.chips-rolar::-webkit-scrollbar {
+  display: none;
+}
+
+.chips.chips-rolar button {
+  flex-shrink: 0;
+}
+
+/* Botão principal preso no fim da tela enquanto o formulário rola */
+.rodape-fixo {
+  position: sticky;
+  bottom: 0;
+  z-index: 5;
+  margin: 0 calc(-1 * var(--space-4));
+  padding: var(--space-3) var(--space-4) calc(var(--space-3) + env(safe-area-inset-bottom));
+  background: var(--surface);
+  border-top: 1px solid var(--line);
 }
 
 /* Troca de opções (Saiu/Entrou, Criar/Tenho código...) */
@@ -581,19 +626,37 @@ button.link {
   white-space: nowrap;
 }
 
+/* Metas / Rendeu / No cartão: pílulas pequenas numa linha (quebram se não couber) */
 .notas-saldo {
-  margin-top: var(--space-3);
+  list-style: none;
+  margin: var(--space-3) 0 0;
+  padding: 0;
   display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
+  flex-wrap: wrap;
+  gap: var(--space-2);
   font-size: 13px;
   line-height: 18px;
 }
 
-.notas-saldo p {
-  display: flex;
+.notas-saldo li {
+  display: inline-flex;
   align-items: center;
-  gap: var(--space-2);
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-full);
+  background: var(--surface-raised);
+  white-space: nowrap;
+}
+
+.notas-saldo strong {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Barra de "Não informada": cinza, para não competir com as formas de verdade */
+.barra.neutra > span {
+  background: var(--ink-muted);
+  opacity: 0.5;
 }
 
 /* Entrou / Saiu / Guardado: uma linha cada, nome à esquerda e valor à direita
@@ -1408,22 +1471,72 @@ body {
 
 /* ---------- Parcelas, ajuste de valor e formas de pagamento ---------- */
 
-/* Conta fixa em duas linhas: dados em cima, botões embaixo à direita */
+/* Conta fixa em UMA linha: ícone + nome à esquerda; valor e "Pagar" empilhados à direita */
 .item-conta {
-  flex-wrap: wrap;
-  row-gap: var(--space-2);
+  gap: var(--space-3);
 }
 
-.item-conta .item-link {
-  flex: 1 1 100%;
-}
-
-.acoes-conta {
+.lado-conta {
+  flex-shrink: 0;
   display: flex;
-  align-items: center;
-  justify-content: flex-end;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--space-1);
+}
+
+/* Botão só com ícone, quadrado (44px, do tamanho mínimo de toque) */
+.botao-quadrado {
+  width: 44px;
+  padding: 0;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* Card da meta: "R$ X de R$ Y" à esquerda e o ritmo ("R$ 666/mês até jul/2027") à direita */
+.rodape-meta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--space-1) var(--space-3);
+}
+
+/* Investimentos: formulário de novo (card no topo) e de renomear (dentro do card) */
+.form-novo {
+  margin-bottom: var(--space-4);
+}
+
+.form-nome {
+  margin-top: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--line);
+}
+
+/* Tela vazia que convida a agir: ícone, título, explicação curta e um botão */
+.vazio-convite {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-6) var(--space-4);
+}
+
+.vazio-convite .botao {
+  align-self: stretch;
+}
+
+/* Resumo das contas: quanto falta em destaque e a barra de pagas */
+.resumo-contas {
+  display: flex;
+  flex-direction: column;
   gap: var(--space-2);
-  margin-left: auto;
+}
+
+.valor-medio {
+  font-size: 28px;
+  line-height: 36px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 
 .nome-forma {

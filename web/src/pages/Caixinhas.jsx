@@ -8,7 +8,7 @@ import Cabecalho from '../components/Cabecalho.jsx';
 import Icone from '../components/Icone.jsx';
 import Progresso from '../components/Progresso.jsx';
 import { formatarReais } from '../utils/dinheiro.js';
-import { porcentagem } from '../utils/caixinhas.js';
+import { porcentagem, ritmoCurto } from '../utils/caixinhas.js';
 
 export default function Caixinhas() {
   useValoresOcultos(); // redesenha a tela quando tocam no "olho" do topo
@@ -46,9 +46,15 @@ export default function Caixinhas() {
           )}
 
           {ativas.length === 0 && (
-            <p className="vazio">
-              Nenhuma meta ainda.<br />Crie uma para cada sonho: viagem, reserva, carro.
-            </p>
+            <section className="card vazio-convite">
+              <span className="item-icone meta"><Icone nome="cofrinho" /></span>
+              <h2>Para que vocês estão guardando?</h2>
+              <p className="muted">
+                Crie uma meta para cada sonho (viagem, reserva de emergência, carro). O app mostra
+                quanto já têm e quanto guardar por mês para chegar no prazo.
+              </p>
+              <Link to="/metas/nova" className="botao">Criar meta</Link>
+            </section>
           )}
 
           <div className="grade-cards">
@@ -85,10 +91,14 @@ function CartaoMeta({ caixinha: c }) {
         <span className="label">{porcentagem(c)}%</span>
       </div>
       <Progresso caixinha={c} />
-      <p className="caption muted">
-        <strong className="valor" style={{ color: 'var(--ink)' }}>{formatarReais(c.saldoCentavos)}</strong>
-        {' '}de {formatarReais(c.valorAlvoCentavos)}
-      </p>
+      {/* Embaixo: quanto já tem (esquerda) e o ritmo para chegar no prazo (direita) */}
+      <div className="rodape-meta caption muted">
+        <span>
+          <strong className="valor" style={{ color: 'var(--ink)' }}>{formatarReais(c.saldoCentavos)}</strong>
+          {' '}de {formatarReais(c.valorAlvoCentavos)}
+        </span>
+        {!c.arquivada && <span>{ritmoCurto(c)}</span>}
+      </div>
     </Link>
   );
 }
