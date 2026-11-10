@@ -8,3 +8,7 @@ import { PrismaClient } from '@prisma/client';
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
 
 export const prisma = new PrismaClient({ adapter });
+
+// Tempo máximo das transações "interativas" (padrão do Prisma: 5 segundos).
+// Damos folga porque, na Vercel, cada ida ao banco leva mais tempo que no computador.
+export const OPCOES_TRANSACAO = { timeout: 15000, maxWait: 10000 };

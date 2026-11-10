@@ -245,11 +245,20 @@ router.post('/', async (req, res) => {
     };
   });
 
-  // $transaction: ou cria todas as parcelas, ou nenhuma
-  const criados = await prisma.$transaction(
-    registros.map((data) => prisma.lancamento.create({ data, select: selecao })),
-  );
-  res.status(201).json({ lancamento: formatar(criados[0]), parcelasCriadas: criados.length });
+  // createMany = UM comando só no banco com todas as parcelas (ou entram todas, ou nenhuma).
+  // Antes eram N comandos dentro de uma transação: com a API longe do banco, 10 parcelas
+  // passavam do limite de 5 segundos da transação e davam "Erro interno".
+  const { count } = await prisma.lancamento.createMany({ data: registros });
+
+  // Devolve a 1ª parcela (ou a compra à vista) já com categoria, forma etc.
+  const primeiro = await prisma.lancamento.findFirst({
+    where: grupoParcelas
+      ? { casalId: req.casalId, grupoParcelas, parcela: 1 }
+      : { casalId: req.casalId, formaPagamentoId: forma.id, faturaMes: registros[0].faturaMes },
+    orderBy: { id: 'desc' },
+    select: selecao,
+  });
+  res.status(201).json({ lancamento: formatar(primeiro), parcelasCriadas: count });
 });
 
 // PATCH /lancamentos/:id

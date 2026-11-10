@@ -1,7 +1,7 @@
 // Caixinhas para sonhos: criar, editar, guardar, resgatar, atualizar saldo (juros).
 import { Router } from 'express';
 import { z } from 'zod';
-import { prisma } from '../lib/prisma.js';
+import { OPCOES_TRANSACAO, prisma } from '../lib/prisma.js';
 import { autenticar } from '../middlewares/autenticar.js';
 import { exigirCasal } from '../middlewares/exigirCasal.js';
 import { calcularSaldos, efeitoNoSaldo } from '../lib/saldos.js';
@@ -239,7 +239,7 @@ async function criarMovimento(req, res, tipo, calcularValor) {
           pagoPorId,
         },
       });
-    });
+    }, OPCOES_TRANSACAO);
 
     res.status(201).json({ caixinha: await caixinhaComSaldo(id, req.casalId) });
   });
@@ -287,7 +287,7 @@ router.delete('/:id/movimentos/:movimentoId', async (req, res) => {
         throw new ErroDeRegra(409, 'Apagar este movimento deixaria o saldo negativo. Apague antes o resgate.');
       }
       await tx.lancamento.delete({ where: { id: movimentoId } });
-    });
+    }, OPCOES_TRANSACAO);
 
     res.json({ caixinha: await caixinhaComSaldo(id, req.casalId) });
   });

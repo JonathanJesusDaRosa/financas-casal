@@ -1,7 +1,7 @@
 // Rotas do espaço do casal: criar, entrar com código, ver e gerar novo convite.
 import { Router } from 'express';
 import { z } from 'zod';
-import { prisma } from '../lib/prisma.js';
+import { OPCOES_TRANSACAO, prisma } from '../lib/prisma.js';
 import { autenticar } from '../middlewares/autenticar.js';
 import { exigirCasal } from '../middlewares/exigirCasal.js';
 import { limiteConvite } from '../middlewares/limitarTentativas.js';
@@ -108,7 +108,7 @@ router.post('/', async (req, res) => {
         if (count === 0) throw new ErroDeRegra(409, 'Você já faz parte de uma casa.');
 
         return novo;
-      }),
+      }, OPCOES_TRANSACAO),
     );
 
     res.status(201).json({ casal: await montarCasal(casal.id, 'TITULAR') });
@@ -150,7 +150,7 @@ router.post('/entrar', limiteConvite, async (req, res) => {
         });
       }
       return casal.id;
-    });
+    }, OPCOES_TRANSACAO);
 
     res.json({ casal: await montarCasal(casalId, 'TITULAR') });
   } catch (erro) {

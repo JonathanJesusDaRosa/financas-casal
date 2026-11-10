@@ -33,6 +33,8 @@ Visão completa do projeto: https://claude.ai/artifact/1iXKbJSAJDdfKFPmdAuVEz
 - App: https://financas-casal-gold.vercel.app (projeto Vercel `financas-casal`, pasta `web`, variável `VITE_API_URL`)
 - API: https://financas-casal-api-beta.vercel.app (projeto Vercel `financas-casal-api`, pasta `api`, variáveis `DATABASE_URL`, `JWT_SECRET`, `WEB_URL`)
 - Cada push na `main` publica os dois sozinho. Variável nova na Vercel só vale depois de um Redeploy.
+- A API roda em São Paulo (`api/vercel.json`: `"regions": ["gru1"]`), perto do banco. O padrão da Vercel é Washington (iad1), e cada ida ao banco atravessava o continente.
+- Evitar muitos comandos dentro de uma transação: o limite padrão do Prisma é 5 s (deu "Erro interno" em compra 10x). Use `createMany` para inserir vários de uma vez; transações interativas usam `OPCOES_TRANSACAO` (15 s) de `api/src/lib/prisma.js`.
 - Banco: branch `production` do Neon = app publicado (dados reais); branch `dev` = computador local.
 - Mudou o schema? Testar na dev (`npm run db:migrate`) e, antes do push, aplicar em produção com `npm run db:migrar-producao` (o usuário roda; é dado real).
 
