@@ -38,6 +38,14 @@ Visão completa do projeto: https://claude.ai/artifact/1iXKbJSAJDdfKFPmdAuVEz
 - Banco: branch `production` do Neon = app publicado (dados reais); branch `dev` = computador local.
 - Mudou o schema? Testar na dev (`npm run db:migrate`) e, antes do push, aplicar em produção com `npm run db:migrar-producao` (o usuário roda; é dado real).
 
+## Visão do código
+
+O sistema tem duas partes que conversam por HTTP com JSON:
+- `web/`: SPA React instalável como PWA. As telas ficam em `src/pages/`, as peças em `src/components/` e as funções puras em `src/utils/`.
+- `api/`: Express. Cada recurso tem um arquivo em `src/routes/`, as regras ficam em `src/lib/` e a proteção em `src/middlewares/`. Ela fala com o Postgres pelo Prisma.
+
+Mapa completo (rotas, telas, fluxos, cuidados e onde mexer para cada tarefa): [docs/CODEBASE_MAP.md](docs/CODEBASE_MAP.md). Atualizar o mapa quando a estrutura mudar.
+
 ## Estrutura
 
 ```
