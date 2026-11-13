@@ -18,6 +18,13 @@ registerSW({
   },
 });
 
+// O app abriu: libera o guarda do index.html (recarregar se o JS falhar) para a próxima vez.
+try {
+  sessionStorage.removeItem('casa-em-conta:recarregou-em');
+} catch {
+  // sem sessionStorage (modo privado): nada a fazer
+}
+
 // Sem zoom de pinça no iPhone: o Safari ignora o "user-scalable=no" do index.html,
 // mas avisa quando começa um gesto de pinça ("gesturestart"), e aí cancelamos.
 document.addEventListener('gesturestart', (evento) => evento.preventDefault());

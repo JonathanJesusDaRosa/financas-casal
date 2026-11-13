@@ -190,6 +190,6 @@ Conexão direta com bancos (Open Finance), integração com WhatsApp, cotações
 
 ### Detalhes de comportamento do app
 
-- Tela branca depois de deploy ("Expected a JavaScript module script but the server responded with text/html"): o service worker abria o index.html antigo apontando para um JS que não existe mais. Guarda em `web/index.html` (script inline, FORA do pacote): se um `<script>` de `/assets/` falhar, recarrega a página uma vez (no máximo a cada 10 s, via sessionStorage, para não entrar em loop).
+- Tela branca depois de deploy ("Expected a JavaScript module script but the server responded with text/html"). Causa: o rewrite da Vercel mandava QUALQUER caminho para o index.html, então um JS inexistente voltava "200 + HTML" e o service worker guardava esse HTML como se fosse o JS. Correções: (1) `web/vercel.json` não reescreve `/assets/` (arquivo que falta dá 404 e o SW não guarda lixo); (2) guarda em `web/index.html` (script inline, FORA do pacote): se um `<script>` de `/assets/` falhar, recarrega uma vez (no máximo a cada 10 s, via sessionStorage; `main.jsx` limpa a marca quando o app abre).
 - Sem zoom de pinça e sem rolar de lado: `maximum-scale=1, user-scalable=no` no index.html (Android), `touch-action: pan-y` + `overflow-x: hidden` no CSS e `gesturestart` cancelado em main.jsx (iPhone ignora o meta).
 - "Olho" no topo (Cabecalho) oculta valores: `formatarReais` devolve `R$ ••••`; escolha salva no aparelho (localStorage). Toda tela que mostra dinheiro chama `useValoresOcultos()` para redesenhar quando o olho muda.
