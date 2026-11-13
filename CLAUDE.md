@@ -190,5 +190,6 @@ Conexão direta com bancos (Open Finance), integração com WhatsApp, cotações
 
 ### Detalhes de comportamento do app
 
+- Tela branca depois de deploy ("Expected a JavaScript module script but the server responded with text/html"): o service worker abria o index.html antigo apontando para um JS que não existe mais. Guarda em `web/index.html` (script inline, FORA do pacote): se um `<script>` de `/assets/` falhar, recarrega a página uma vez (no máximo a cada 10 s, via sessionStorage, para não entrar em loop).
 - Sem zoom de pinça e sem rolar de lado: `maximum-scale=1, user-scalable=no` no index.html (Android), `touch-action: pan-y` + `overflow-x: hidden` no CSS e `gesturestart` cancelado em main.jsx (iPhone ignora o meta).
 - "Olho" no topo (Cabecalho) oculta valores: `formatarReais` devolve `R$ ••••`; escolha salva no aparelho (localStorage). Toda tela que mostra dinheiro chama `useValoresOcultos()` para redesenhar quando o olho muda.

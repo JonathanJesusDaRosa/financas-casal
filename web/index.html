@@ -22,6 +22,30 @@
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-title" content="Casa em Conta" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+
+    <!-- Guarda contra a "tela branca" depois de uma versão nova:
+         o navegador pode abrir o index.html antigo (guardado pelo service worker) enquanto
+         a cópia antiga do JS já foi apagada. O script principal falha e nada aparece.
+         Como o código que recarregaria a página fica DENTRO desse JS, o guarda precisa
+         morar aqui, fora do pacote. Ele recarrega uma vez (no máximo a cada 10 s, para
+         nunca entrar em loop) e a página volta com a versão nova. -->
+    <script>
+      window.addEventListener(
+        'error',
+        function (evento) {
+          var alvo = evento.target;
+          if (!alvo || alvo.tagName !== 'SCRIPT' || !alvo.src || alvo.src.indexOf('/assets/') === -1) return;
+          try {
+            var chave = 'casa-em-conta:recarregou-em';
+            var ultima = Number(sessionStorage.getItem(chave) || 0);
+            if (Date.now() - ultima < 10000) return;
+            sessionStorage.setItem(chave, String(Date.now()));
+          } catch (e) { /* sem sessionStorage (modo privado): recarrega mesmo assim */ }
+          window.location.reload();
+        },
+        true, // captura: o erro de <script> não "sobe" até o window de outro jeito
+      );
+    </script>
   </head>
   <body>
     <div id="root"></div>
