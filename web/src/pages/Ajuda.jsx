@@ -80,7 +80,9 @@ const SECOES = [
     Icone: List,
     conteudo: (
       <>
-        <p>Mostra os lançamentos agrupados por dia, com os totais de Entrou, Saiu, Guardado e Sobrou no topo. Escolha o que ver:</p>
+        <p>É o extrato da <strong>conta</strong>: o que entrou e saiu de verdade (Pix, débito, dinheiro, boleto, receitas e metas), agrupado por dia, com os totais de Entrou, Saiu, Guardado e Sobrou no topo.</p>
+        <p>As <strong>compras no cartão de crédito não aparecem aqui</strong>: elas ficam no extrato de cada cartão (toque no nome do cartão, logo abaixo dos totais). No Extrato aparece só o <strong>pagamento da fatura</strong>, no dia em que vocês pagam.</p>
+        <p>Escolha o que ver:</p>
         <ul>
           <li><strong>Mês</strong>: o mês inteiro (botão do mês no canto de cima).</li>
           <li><strong>Semana</strong>: de segunda a domingo. Use as setas para andar de semana em semana.</li>
@@ -193,7 +195,8 @@ const SECOES = [
           <li>Ao lançar no cartão, a compra <strong>vai para a fatura</strong> e não sai da conta na hora. O app mostra em qual fatura ela cai. Compra no dia do fechamento ou depois vai para a fatura seguinte.</li>
           <li>Parcelado: informe as parcelas e o <strong>valor total</strong>. Cada parcela vai para uma fatura.</li>
           <li>A fatura aparece em <strong>Contas</strong> como uma conta a pagar. Toque em <strong>Pagar</strong> ao lado da fatura (sempre o valor inteiro). Só então o valor entra no Saiu do mês.</li>
-          <li>Toque na fatura para ver as compras dela, as próximas faturas (com as parcelas) e para <strong>desfazer</strong> um pagamento marcado sem querer.</li>
+          <li>Toque na fatura (ou no nome do cartão, no <strong>Extrato</strong>) para ver o extrato do cartão: as compras de cada fatura, as próximas faturas (com as parcelas) e o botão para <strong>desfazer</strong> um pagamento marcado sem querer.</li>
+          <li>As compras do cartão ficam em ordem pela <strong>data da compra</strong>: a parcela 3/10 de uma compra feita em setembro aparece com a data de setembro, e não no meio das compras deste mês.</li>
         </ol>
         <p>Compras no crédito lançadas antes desta regra continuam como estavam (já contaram como saída).</p>
       </>

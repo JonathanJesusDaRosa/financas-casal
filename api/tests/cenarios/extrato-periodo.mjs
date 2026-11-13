@@ -31,7 +31,8 @@ try {
   await L('2026-11-04', 700, { formaPagamentoId: cartao.id });
 
   const semana = (await chamar('/lancamentos?de=2026-11-02&ate=2026-11-08', t)).dados;
-  igual('semana seg 2 a dom 8: entram os dois extremos', semana.lancamentos.map((l) => l.data), ['2026-11-08', '2026-11-05', '2026-11-04', '2026-11-02']);
+  // A compra de 04/11 no cartão fica fora da lista (vai para o extrato do cartão), mas conta em noCartao
+  igual('semana seg 2 a dom 8: entram os dois extremos', semana.lancamentos.map((l) => l.data), ['2026-11-08', '2026-11-05', '2026-11-02']);
   igual('totais da semana', semana.totais, { entradas: 50000, saidas: 500, noCartao: 700, guardado: 0, sobra: 49500, rendimento: 0 });
   igual('devolve o período e mes null', [semana.periodo, semana.mes], [{ de: '2026-11-02', ate: '2026-11-08' }, null]);
   igual('semana que atravessa o mês (26/10 a 01/11)', (await chamar('/lancamentos?de=2026-10-26&ate=2026-11-01', t)).dados.lancamentos.map((l) => l.data), ['2026-10-31']);

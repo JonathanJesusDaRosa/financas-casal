@@ -184,8 +184,10 @@ router.get('/', async (req, res) => {
       sobra: entradas - saidas - guardado,
       rendimento: somar(doTipo('RENDIMENTO')),
     },
-    // Rendimentos ficam fora da lista (aparecem no histórico da meta).
-    lancamentos: doMes.filter((l) => l.tipo !== 'RENDIMENTO').map(formatar),
+    // A lista é o extrato da CONTA: só o que mexeu no dinheiro.
+    // Ficam fora: rendimentos (aparecem no histórico da meta) e compras no cartão
+    // (aparecem no extrato do cartão, /faturas/:id; aqui entra só o pagamento da fatura).
+    lancamentos: doMes.filter((l) => l.tipo !== 'RENDIMENTO' && !noCartao(l)).map(formatar),
   });
 });
 

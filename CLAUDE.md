@@ -168,6 +168,8 @@ Cada fase só começa quando a anterior está em uso no dia a dia.
 ### Extrato por período e exportar
 
 - Extrato (`web/src/pages/Lancamentos.jsx`): Mês / Semana (segunda a domingo) / Período (De–Até). Escolha fica na URL (`?modo=semana&de=...`, `?modo=periodo&de=...&ate=...`).
+- Extrato = extrato da CONTA: a lista NÃO traz compras no cartão (DESPESA com `faturaMes`); só o pagamento da fatura (FATURA). Os totais continuam com `noCartao`. Abaixo dos totais, atalhos para o extrato de cada cartão (`/cartoes/:id`).
+- Extrato do cartão (`GET /faturas/:id`): cada compra traz `dataCompra` (à vista = data; parcela = data da parcela 1 do `grupoParcelas`, ou volta os meses se a 1ª foi apagada) e a lista vem ordenada por ela (decisão do usuário: opção "data da compra", não blocos separados).
 - API: `GET /lancamentos?de=AAAA-MM-DD&ate=AAAA-MM-DD` (os dois dias entram; máx. 366 dias) além de `?mes=`; resposta traz `periodo`. Início, orçamento e contas continuam só mensais (decisão combinada).
 - "Exportar planilha": CSV gerado no front (`web/src/utils/exportar.js`), padrão Excel BR (";" , vírgula decimal, BOM UTF-8). Celular usa o compartilhar (Web Share); computador baixa. Valores sempre reais (ignora o olho).
 

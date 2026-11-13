@@ -115,13 +115,15 @@ export default function Cartao() {
       <section className="secao">
         <div className="secao-topo">
           <h2>Compras nesta fatura</h2>
-          <span className="caption muted">{compras.length}</span>
+          <span className="caption muted">{compras.length} · pela data da compra</span>
         </div>
         {compras.length === 0 ? (
           <p className="card muted">Nenhuma compra nesta fatura.</p>
         ) : (
+          // A API já manda na ordem da data da COMPRA (dataCompra). Mostramos essa data:
+          // a parcela 2/3 de uma compra de 20/nov aparece como "20 nov · 2/3", junto das compras de novembro.
           <ul className="lista">
-            {compras.map((l) => <li key={l.id}><ItemLancamento lancamento={l} /></li>)}
+            {compras.map((l) => <li key={l.id}><ItemLancamento lancamento={{ ...l, data: l.dataCompra ?? l.data }} /></li>)}
           </ul>
         )}
       </section>

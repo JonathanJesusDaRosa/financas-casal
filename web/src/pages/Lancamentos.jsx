@@ -4,7 +4,7 @@
 // continua no mesmo lugar. Botão "Exportar" gera uma planilha do que está na tela.
 import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { ChevronLeft, ChevronRight, Download } from 'lucide-react';
+import { ChevronLeft, ChevronRight, CreditCard, Download } from 'lucide-react';
 import { api } from '../api.js';
 import { useValoresOcultos } from '../hooks/useValoresOcultos.js';
 import Cabecalho from '../components/Cabecalho.jsx';
@@ -13,6 +13,7 @@ import SeletorMes from '../components/SeletorMes.jsx';
 import { formatarReais } from '../utils/dinheiro.js';
 import { hoje, mesAtual, nomeDoDia, nomeDoMes, segundaDaSemana, somarDias, textoPeriodo } from '../utils/datas.js';
 import { gerarCsv, salvarArquivo } from '../utils/exportar.js';
+import { cartaoConfigurado } from '../utils/fatura.js';
 
 // [{data, ...}, ...] -> [["2026-11-08", [...]], ["2026-11-07", [...]]]
 function agruparPorDia(lancamentos) {
@@ -50,6 +51,13 @@ export default function Lancamentos() {
   // O erro guarda de qual consulta ele é: ao trocar de período, o erro antigo some sozinho.
   const [falha, setFalha] = useState(null); // { consulta, mensagem }
   const [exportando, setExportando] = useState(false);
+  const [cartoes, setCartoes] = useState([]); // cartões de crédito configurados (atalhos para o extrato de cada um)
+
+  useEffect(() => {
+    api('/formas-pagamento')
+      .then((d) => setCartoes(d.formas.filter((f) => cartaoConfigurado(f))))
+      .catch(() => {}); // se falhar, só não aparecem os atalhos
+  }, []);
 
   useEffect(() => {
     let cancelado = false; // evita mostrar uma resposta antiga se trocar rápido
@@ -151,10 +159,23 @@ export default function Lancamentos() {
               </strong>
             </div>
           </section>
-          {t.noCartao > 0 && (
-            <p className="caption muted" style={{ marginBottom: 'var(--space-2)' }}>
-              Compras no cartão no período: {formatarReais(t.noCartao)}. Elas entram nas faturas e saem quando vocês pagam a fatura.
-            </p>
+          {/* Este é o extrato da CONTA. As compras no cartão de crédito ficam no extrato de
+              cada cartão (aqui só aparece o pagamento da fatura). */}
+          {cartoes.length > 0 && (
+            <section className="atalho-cartoes">
+              <p className="caption muted">
+                {t.noCartao > 0
+                  ? <>Compras no cartão no período: <strong>{formatarReais(t.noCartao)}</strong>. Elas aparecem no extrato do cartão; aqui entra só o pagamento da fatura.</>
+                  : 'Compras no cartão aparecem no extrato do cartão; aqui entra só o pagamento da fatura.'}
+              </p>
+              <div className="chips">
+                {cartoes.map((c) => (
+                  <Link key={c.id} to={`/cartoes/${c.id}`} className="chip-link">
+                    <CreditCard size={18} strokeWidth={1.75} aria-hidden="true" /> {c.nome}
+                  </Link>
+                ))}
+              </div>
+            </section>
           )}
 
           {dados.lancamentos.length > 0 && (

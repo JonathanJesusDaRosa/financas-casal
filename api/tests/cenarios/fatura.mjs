@@ -68,6 +68,8 @@ try {
   igual('extrato de dez: mesmos totais', [extratoDez.totais.saidas, extratoDez.totais.noCartao], [53334, 33333]);
   const pagamento = extratoDez.lancamentos.find((l) => l.tipo === 'FATURA');
   igual('pagamento aparece no extrato', [pagamento.descricao, pagamento.competencia], ['Fatura Nubank', '2026-12']);
+  igual('compras no cartão NÃO aparecem na lista do extrato', extratoDez.lancamentos.filter((l) => l.faturaMes).length, 0);
+  igual('extrato de nov também sem compras no cartão', (await chamar('/lancamentos?mes=2026-11', t)).dados.lancamentos.length, 0);
   igual('evolução de dez: Saiu = fatura paga', (await chamar('/resumo/evolucao?ate=2026-12&meses=2', t)).dados.meses[1].saidas, 53334);
   igual('editar o pagamento pela rota de lançamentos: recusado', (await chamar(`/lancamentos/${pagamento.id}`, { metodo: 'PATCH', corpo: { valorCentavos: 1 }, ...t })).status, 400);
   igual('apagar o pagamento pela rota de lançamentos: recusado', (await chamar(`/lancamentos/${pagamento.id}`, { metodo: 'DELETE', ...t })).status, 400);
@@ -75,6 +77,17 @@ try {
   igual('fatura aparece nas contas do mês, paga', contasDez.faturas.map((f) => [f.cartao.nome, f.situacao, f.totalCentavos]), [['Nubank', 'paga', 53334]]);
   igual('desfazer pagamento', (await chamar(`/faturas/${nubank.id}/pagamento?mes=2026-12`, { metodo: 'DELETE', ...t })).status, 204);
   igual('dezembro volta a Saiu 0', (await resumo('2026-12')).saidas, 0);
+
+  console.log('\n--- Extrato do cartão pela data da compra ---');
+  await compra({ valorCentavos: 1500, data: '2026-12-15', formaPagamentoId: nubank.id, descricao: 'Farmácia' });
+  const fJan = (await chamar(`/faturas/${nubank.id}?mes=2027-01`, t)).dados;
+  igual('fatura de jan: compra de 15/dez antes da parcela 2/3 (comprada em 20/nov)',
+    fJan.compras.map((c) => [c.descricao, c.data, c.dataCompra]),
+    [['Farmácia', '2026-12-15', '2026-12-15'], ['Geladeira', '2026-12-20', '2026-11-20']]);
+  await prisma.lancamento.delete({ where: { id: parcelas[0].id } }); // some a parcela 1
+  const fJan2 = (await chamar(`/faturas/${nubank.id}?mes=2027-01`, t)).dados;
+  igual('sem a parcela 1, a data da compra é calculada voltando os meses',
+    fJan2.compras.find((c) => c.descricao === 'Geladeira').dataCompra, '2026-11-20');
 
   console.log('\n--- Editar e apagar ---');
   igual('mudar data da compra (2 -> 4/nov) muda a fatura', (await chamar(`/lancamentos/${c1.id}`, { metodo: 'PATCH', corpo: { data: '2026-11-04' }, ...t })).dados.lancamento.faturaMes, '2026-12');
