@@ -37,7 +37,11 @@ try {
 
   const r = await chamar('/resumo?mes=2026-10', t);
   igual('status', r.status, 200);
-  igual('totais outubro', r.dados.totais, { entradas: 600000, saidas: 250000, noCartao: 0, consumo: 250000, guardado: 40000, sobra: 310000, rendimento: 0 });
+  igual('totais outubro', r.dados.totais, { entradas: 600000, saidas: 250000, noCartao: 0, consumo: 250000, guardado: 40000, sobra: 310000, rendimento: 0, saldoAnterior: 0, saldoAcumulado: 310000 });
+  const nov = (await chamar('/resumo?mes=2026-11', t)).dados.totais;
+  igual('novembro: veio de outubro a sobra (310.000) e acumula com o mês (−9.900)', [nov.saldoAnterior, nov.saldoAcumulado], [310000, 300100]);
+  await chamar('/lancamentos', { metodo: 'POST', corpo: { ...base, valorCentavos: 10000, data: '2026-10-28' }, ...t }); // lançado atrasado em outubro
+  igual('lançamento atrasado em outubro corrige novembro sozinho', (await chamar('/resumo?mes=2026-11', t)).dados.totais.saldoAnterior, 300000);
   igual('por categoria (maior primeiro)', r.dados.porCategoria.map((c) => `${c.categoria?.nome ?? 'Sem categoria'} ${c.totalCentavos} ${c.percentual}%`), ['Moradia 150000 60%', 'Mercado 50000 20%', 'Sem categoria 50000 20%']);
   igual('ícone na categoria', r.dados.porCategoria[0].categoria.icone, 'casa');
   igual('últimos (5, mais novo primeiro)', r.dados.ultimos.map((l) => `${l.data} ${l.tipo}`), ['2026-10-25 GUARDADO', '2026-10-20 DESPESA', '2026-10-10 RECEITA', '2026-10-10 DESPESA', '2026-10-10 DESPESA']);

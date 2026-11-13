@@ -626,6 +626,24 @@ button.link {
   white-space: nowrap;
 }
 
+/* "Veio de outubro: R$ X · Sobrou em novembro: R$ Y", logo abaixo do número grande */
+.origem-saldo {
+  margin: calc(-1 * var(--space-2)) 0 var(--space-4);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 var(--space-4); /* cada parte quebra inteira para a linha de baixo */
+}
+
+.origem-saldo span {
+  white-space: nowrap;
+}
+
+.origem-saldo strong {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
 /* Metas / Rendeu / No cartão: pílulas pequenas numa linha (quebram se não couber) */
 .notas-saldo {
   list-style: none;

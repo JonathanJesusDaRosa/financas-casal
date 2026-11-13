@@ -60,7 +60,7 @@ const SECOES = [
     conteudo: (
       <>
         <ul>
-          <li><strong>Saldo do mês</strong>: quanto entrou, menos o que saiu, menos o que foi guardado nas metas.</li>
+          <li><strong>Na conta</strong> (número grande): o dinheiro acumulado, isto é, o que <strong>veio do mês passado</strong> mais o que <strong>sobrou neste mês</strong> (entrou − saiu − guardado nas metas). Ninguém precisa lançar nada na virada do mês: o app calcula sozinho, e se alguém lançar algo atrasado num mês antigo, os meses seguintes se corrigem.</li>
           <li><strong>Entrou e Saiu</strong>: o dinheiro que entrou e saiu da conta no mês. Resgates de metas contam como entrada. Compras no cartão <strong>não</strong> contam no Saiu: o que conta é o pagamento da fatura.</li>
           <li>Embaixo do saldo, quando houver: <strong>Metas</strong> (guardado no mês), <strong>Rendeu</strong> (juros das metas, só informativo) e <strong>No cartão</strong> (compras no crédito, que vão para as faturas).</li>
           <li><strong>Contas do mês</strong>: as próximas contas fixas a vencer e as atrasadas.</li>

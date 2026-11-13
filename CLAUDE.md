@@ -90,6 +90,7 @@ financas-casal/
 - Saldo da caixinha = guardado + rendimento − resgatado, sempre calculado (`api/src/lib/saldos.js`), nunca salvo.
 - "Atualizar saldo": a pessoa digita o saldo do banco e a diferença vira `RENDIMENTO` (pode ser negativo).
 - Totais do mês: entradas = receitas + resgates; guardado = GUARDADO; sobra = entradas − saídas − guardado. Rendimento é só informativo e NÃO entra na sobra (decisão do usuário).
+- Saldo que passa de um mês para o outro: `/resumo` devolve `saldoAnterior` (soma das sobras de TODOS os meses antes, mesmas regras de dinheiro) e `saldoAcumulado` (anterior + sobra). É CALCULADO, nunca lançado (lançamento automático no dia 1º distorceria o "Entrou" e ficaria velho se lançassem algo atrasado). Sem saldo inicial: o casal lançou tudo o que tinha como entrada no 1º mês. Início mostra "Na conta" (acumulado) com "Veio de outubro / Sobrou em novembro".
 - Saldo de um investimento = soma das caixinhas ligadas a ele (sem saldo próprio).
 - Caixinha com histórico não pode ser apagada; com saldo zero pode ser arquivada.
 

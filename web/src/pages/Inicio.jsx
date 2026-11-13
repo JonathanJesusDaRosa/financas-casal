@@ -12,11 +12,14 @@ import Icone from '../components/Icone.jsx';
 import ItemLancamento from '../components/ItemLancamento.jsx';
 import SeletorMes from '../components/SeletorMes.jsx';
 import { formatarReais } from '../utils/dinheiro.js';
-import { mesAtual, nomeDoMes } from '../utils/datas.js';
+import { mesAtual, nomeDoMes, somarMeses } from '../utils/datas.js';
 import { ordenarPendentes, textoVencimento } from '../utils/contas.js';
 import { TIPOS_FORMA } from '../utils/formas.js';
 
 const CATEGORIAS_NO_RESUMO = 3; // as 3 maiores; "Ver todos" mostra o resto
+
+// R$ com "−" na frente quando for negativo (ex.: − R$ 200,00)
+const comSinal = (centavos) => `${centavos < 0 ? '− ' : ''}${formatarReais(Math.abs(centavos))}`;
 
 export default function Inicio() {
   useValoresOcultos(); // redesenha a tela quando tocam no "olho" do topo
@@ -73,12 +76,20 @@ export default function Inicio() {
         // viram um painel de duas colunas (cada card tem sua "area-..." no index.css)
         // Sem orçamento, o painel do computador usa outro arranjo (ver "sem-orcamento" no index.css)
         <div className={`painel-inicio ${resumo.orcamento.length === 0 ? 'sem-orcamento' : ''}`}>
-          {/* Card de saldo: saldo grande + mini-cards Entrou e Saiu */}
+          {/* Card de saldo: o número grande é o que tem NA CONTA (o que veio dos meses
+              anteriores + a sobra deste mês). Embaixo, de onde vem: o que veio do mês
+              passado e o que sobrou neste. Entrou e Saiu continuam só do mês. */}
           <section className="card-saldo area-saldo">
-            <p className="label">Saldo de {nomeMes}</p>
-            <p className={`valor-grande ${t.sobra < 0 ? 'saida' : ''}`}>
-              {t.sobra < 0 ? '− ' : ''}{formatarReais(Math.abs(t.sobra))}
+            <p className="label">{mes === mesAtual() ? 'Na conta agora' : `Na conta no fim de ${nomeMes}`}</p>
+            <p className={`valor-grande ${t.saldoAcumulado < 0 ? 'saida' : ''}`}>
+              {comSinal(t.saldoAcumulado)}
             </p>
+            {t.saldoAnterior !== 0 && (
+              <p className="origem-saldo caption">
+                <span>Veio de {nomeDoMes(somarMeses(mes, -1)).split(' ')[0].toLowerCase()}: <strong>{comSinal(t.saldoAnterior)}</strong></span>
+                <span>Sobrou em {nomeMes}: <strong className={t.sobra < 0 ? 'saida' : ''}>{comSinal(t.sobra)}</strong></span>
+              </p>
+            )}
             <div className="mini-cards">
               <div>
                 <span className="caption muted">Entrou</span>

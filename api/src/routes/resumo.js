@@ -1,5 +1,6 @@
 // GET /resumo?mes=2026-11 -> os números da tela Início (o "dashboard" do mês):
-//   totais        entradas, saídas, guardado, sobra e rendimento (mesmas regras da lista)
+//   totais        entradas, saídas, guardado, sobra e rendimento (mesmas regras da lista),
+//                 saldoAnterior (sobras dos meses anteriores) e saldoAcumulado (anterior + sobra)
 //   porCategoria  quanto SAIU em cada categoria, do maior para o menor, com a %
 //   ultimos       os 5 lançamentos mais recentes do mês
 //   orcamento     categorias com limite: quanto já saiu e quanto falta (ou passou)
@@ -75,7 +76,7 @@ router.get('/', async (req, res) => {
   const doMes = { casalId: req.casalId, data: { gte: inicio, lt: fim } };
 
   // As 3 consultas rodam ao mesmo tempo (Promise.all).
-  const [porTipo, porCategoriaBruto, ultimos, porFormaBruto, formas, noCartaoBruto] = await Promise.all([
+  const [porTipo, porCategoriaBruto, ultimos, porFormaBruto, formas, noCartaoBruto, antesBruto] = await Promise.all([
     // soma por tipo (RECEITA, DESPESA, GUARDADO, FATURA...) do dinheiro que entrou/saiu da conta:
     // compras no cartão (faturaMes preenchido) ficam de fora; elas saem ao pagar a fatura.
     prisma.lancamento.groupBy({ by: ['tipo'], where: { ...doMes, faturaMes: null }, _sum: { valorCentavos: true } }),
@@ -114,7 +115,20 @@ router.get('/', async (req, res) => {
     prisma.formaPagamento.findMany({ where: { casalId: req.casalId }, select: { id: true, nome: true, tipo: true } }),
     // compras no cartão neste mês (vão para as faturas)
     prisma.lancamento.aggregate({ where: { ...doMes, tipo: 'DESPESA', faturaMes: { not: null } }, _sum: { valorCentavos: true } }),
+    // tudo ANTES deste mês, somado por tipo (mesmas regras de dinheiro): é o que "veio" dos meses anteriores
+    prisma.lancamento.groupBy({
+      by: ['tipo'],
+      where: { casalId: req.casalId, data: { lt: inicio }, faturaMes: null },
+      _sum: { valorCentavos: true },
+    }),
   ]);
+
+  // Saldo que veio dos meses anteriores = soma das sobras de todos os meses antes deste.
+  // Calculado na hora (nada é lançado): se alguém lançar algo atrasado num mês antigo,
+  // os meses seguintes se corrigem sozinhos. Rendimento fica fora, como na sobra.
+  const somaAntes = (tipo) => antesBruto.find((g) => g.tipo === tipo)?._sum.valorCentavos ?? 0;
+  const saldoAnterior =
+    somaAntes('RECEITA') + somaAntes('RESGATE') - somaAntes('DESPESA') - somaAntes('FATURA') - somaAntes('GUARDADO');
 
   const soma = (tipo) => porTipo.find((g) => g.tipo === tipo)?._sum.valorCentavos ?? 0;
   const entradas = soma('RECEITA') + soma('RESGATE');
@@ -157,6 +171,8 @@ router.get('/', async (req, res) => {
       guardado,
       sobra: entradas - saidas - guardado,
       rendimento: soma('RENDIMENTO'),
+      saldoAnterior, // veio dos meses anteriores
+      saldoAcumulado: saldoAnterior + entradas - saidas - guardado, // o que tem "na conta" no fim deste mês
     },
     porCategoria,
     orcamento: categorias
